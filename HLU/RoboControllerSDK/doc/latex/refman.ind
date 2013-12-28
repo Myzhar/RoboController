@@ -1,0 +1,232 @@
+\begin{theindex}
+
+  \item {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Board\discretionary {-}{}{}Status}, 
+		\hyperpage{5}
+    \subitem {accel\discretionary {-}{}{}Ramp\discretionary {-}{}{}Enable}, 
+		\hyperpage{5}
+    \subitem {pid\discretionary {-}{}{}Enable}, \hyperpage{5}
+    \subitem {save\discretionary {-}{}{}To\discretionary {-}{}{}Eeprom}, 
+		\hyperpage{5}
+    \subitem {wd\discretionary {-}{}{}Enable}, \hyperpage{5}
+  \item {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{6}
+    \subitem {Encoder\discretionary {-}{}{}Cpr\discretionary {-}{}{}Left}, 
+		\hyperpage{6}
+    \subitem {Encoder\discretionary {-}{}{}Cpr\discretionary {-}{}{}Right}, 
+		\hyperpage{6}
+    \subitem {Encoder\discretionary {-}{}{}Position}, \hyperpage{6}
+    \subitem {Height}, \hyperpage{6}
+    \subitem {Lenght}, \hyperpage{7}
+    \subitem {Max\discretionary {-}{}{}Ampere\discretionary {-}{}{}Motor\discretionary {-}{}{}Left}, 
+		\hyperpage{7}
+    \subitem {Max\discretionary {-}{}{}Ampere\discretionary {-}{}{}Motor\discretionary {-}{}{}Right}, 
+		\hyperpage{7}
+    \subitem {Max\discretionary {-}{}{}Rpm\discretionary {-}{}{}Motor\discretionary {-}{}{}Left}, 
+		\hyperpage{7}
+    \subitem {Max\discretionary {-}{}{}Rpm\discretionary {-}{}{}Motor\discretionary {-}{}{}Right}, 
+		\hyperpage{7}
+    \subitem {Max\discretionary {-}{}{}Torque\discretionary {-}{}{}Motor\discretionary {-}{}{}Left}, 
+		\hyperpage{7}
+    \subitem {Max\discretionary {-}{}{}Torque\discretionary {-}{}{}Motor\discretionary {-}{}{}Right}, 
+		\hyperpage{7}
+    \subitem {Motor\discretionary {-}{}{}Enable\discretionary {-}{}{}Level}, 
+		\hyperpage{7}
+    \subitem {Ratio\discretionary {-}{}{}Motor\discretionary {-}{}{}Left}, 
+		\hyperpage{7}
+    \subitem {Ratio\discretionary {-}{}{}Motor\discretionary {-}{}{}Right}, 
+		\hyperpage{7}
+    \subitem {Ratio\discretionary {-}{}{}Shaft\discretionary {-}{}{}Left}, 
+		\hyperpage{7}
+    \subitem {Ratio\discretionary {-}{}{}Shaft\discretionary {-}{}{}Right}, 
+		\hyperpage{7}
+    \subitem {Weight}, \hyperpage{8}
+    \subitem {Wheel\discretionary {-}{}{}Base}, \hyperpage{8}
+    \subitem {Wheel\discretionary {-}{}{}Radius\discretionary {-}{}{}Left}, 
+		\hyperpage{8}
+    \subitem {Wheel\discretionary {-}{}{}Radius\discretionary {-}{}{}Right}, 
+		\hyperpage{8}
+    \subitem {Width}, \hyperpage{8}
+
+  \indexspace
+
+  \item {accel\discretionary {-}{}{}Ramp\discretionary {-}{}{}Enable}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Board\discretionary {-}{}{}Status}, 
+		\hyperpage{5}
+
+  \indexspace
+
+  \item {Encoder\discretionary {-}{}{}Cpr\discretionary {-}{}{}Left}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{6}
+  \item {Encoder\discretionary {-}{}{}Cpr\discretionary {-}{}{}Right}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{6}
+  \item {Encoder\discretionary {-}{}{}Position}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{6}
+
+  \indexspace
+
+  \item {Get\discretionary {-}{}{}Message}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Rc\discretionary {-}{}{}Exception}, 
+		\hyperpage{9}
+  \item {get\discretionary {-}{}{}Motor\discretionary {-}{}{}P\discretionary {-}{}{}W\discretionary {-}{}{}M}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K}, 
+		\hyperpage{11}
+  \item {get\discretionary {-}{}{}Motor\discretionary {-}{}{}Pid\discretionary {-}{}{}Gains}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K}, 
+		\hyperpage{11}
+  \item {get\discretionary {-}{}{}Motor\discretionary {-}{}{}Speed}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K}, 
+		\hyperpage{11}
+  \item {get\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration\discretionary {-}{}{}From\discretionary {-}{}{}Ini}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K}, 
+		\hyperpage{12}
+  \item {Get\discretionary {-}{}{}Type}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Rc\discretionary {-}{}{}Exception}, 
+		\hyperpage{9}
+
+  \indexspace
+
+  \item {Height}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{6}
+
+  \indexspace
+
+  \item {Lenght}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{7}
+
+  \indexspace
+
+  \item {Max\discretionary {-}{}{}Ampere\discretionary {-}{}{}Motor\discretionary {-}{}{}Left}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{7}
+  \item {Max\discretionary {-}{}{}Ampere\discretionary {-}{}{}Motor\discretionary {-}{}{}Right}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{7}
+  \item {Max\discretionary {-}{}{}Rpm\discretionary {-}{}{}Motor\discretionary {-}{}{}Left}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{7}
+  \item {Max\discretionary {-}{}{}Rpm\discretionary {-}{}{}Motor\discretionary {-}{}{}Right}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{7}
+  \item {Max\discretionary {-}{}{}Torque\discretionary {-}{}{}Motor\discretionary {-}{}{}Left}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{7}
+  \item {Max\discretionary {-}{}{}Torque\discretionary {-}{}{}Motor\discretionary {-}{}{}Right}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{7}
+  \item {Motor\discretionary {-}{}{}Enable\discretionary {-}{}{}Level}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{7}
+
+  \indexspace
+
+  \item {operator const char $\ast $}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Rc\discretionary {-}{}{}Exception}, 
+		\hyperpage{9}
+
+  \indexspace
+
+  \item {pid\discretionary {-}{}{}Enable}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Board\discretionary {-}{}{}Status}, 
+		\hyperpage{5}
+
+  \indexspace
+
+  \item {Ratio\discretionary {-}{}{}Motor\discretionary {-}{}{}Left}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{7}
+  \item {Ratio\discretionary {-}{}{}Motor\discretionary {-}{}{}Right}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{7}
+  \item {Ratio\discretionary {-}{}{}Shaft\discretionary {-}{}{}Left}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{7}
+  \item {Ratio\discretionary {-}{}{}Shaft\discretionary {-}{}{}Right}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{7}
+  \item {Rc\discretionary {-}{}{}Exception}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Rc\discretionary {-}{}{}Exception}, 
+		\hyperpage{9}
+  \item {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Rc\discretionary {-}{}{}Exception}, 
+		\hyperpage{8}
+    \subitem {Get\discretionary {-}{}{}Message}, \hyperpage{9}
+    \subitem {Get\discretionary {-}{}{}Type}, \hyperpage{9}
+    \subitem {operator const char $\ast $}, \hyperpage{9}
+    \subitem {Rc\discretionary {-}{}{}Exception}, \hyperpage{9}
+  \item {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K}, 
+		\hyperpage{10}
+    \subitem {get\discretionary {-}{}{}Motor\discretionary {-}{}{}P\discretionary {-}{}{}W\discretionary {-}{}{}M}, 
+		\hyperpage{11}
+    \subitem {get\discretionary {-}{}{}Motor\discretionary {-}{}{}Pid\discretionary {-}{}{}Gains}, 
+		\hyperpage{11}
+    \subitem {get\discretionary {-}{}{}Motor\discretionary {-}{}{}Speed}, 
+		\hyperpage{11}
+    \subitem {get\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration\discretionary {-}{}{}From\discretionary {-}{}{}Ini}, 
+		\hyperpage{12}
+    \subitem {run}, \hyperpage{12}
+    \subitem {save\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration\discretionary {-}{}{}To\discretionary {-}{}{}Ini}, 
+		\hyperpage{12}
+    \subitem {set\discretionary {-}{}{}Board\discretionary {-}{}{}Status}, 
+		\hyperpage{12}
+    \subitem {set\discretionary {-}{}{}Comm\discretionary {-}{}{}Mode}, 
+		\hyperpage{12}
+    \subitem {set\discretionary {-}{}{}Motor\discretionary {-}{}{}P\discretionary {-}{}{}W\discretionary {-}{}{}M}, 
+		\hyperpage{13}
+    \subitem {set\discretionary {-}{}{}Motor\discretionary {-}{}{}Pid\discretionary {-}{}{}Gains}, 
+		\hyperpage{13}
+    \subitem {set\discretionary {-}{}{}Motor\discretionary {-}{}{}Speed}, 
+		\hyperpage{13}
+  \item {run}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K}, 
+		\hyperpage{12}
+
+  \indexspace
+
+  \item {save\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration\discretionary {-}{}{}To\discretionary {-}{}{}Ini}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K}, 
+		\hyperpage{12}
+  \item {save\discretionary {-}{}{}To\discretionary {-}{}{}Eeprom}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Board\discretionary {-}{}{}Status}, 
+		\hyperpage{5}
+  \item {set\discretionary {-}{}{}Board\discretionary {-}{}{}Status}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K}, 
+		\hyperpage{12}
+  \item {set\discretionary {-}{}{}Comm\discretionary {-}{}{}Mode}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K}, 
+		\hyperpage{12}
+  \item {set\discretionary {-}{}{}Motor\discretionary {-}{}{}P\discretionary {-}{}{}W\discretionary {-}{}{}M}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K}, 
+		\hyperpage{13}
+  \item {set\discretionary {-}{}{}Motor\discretionary {-}{}{}Pid\discretionary {-}{}{}Gains}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K}, 
+		\hyperpage{13}
+  \item {set\discretionary {-}{}{}Motor\discretionary {-}{}{}Speed}
+    \subitem {roboctrl\discretionary {-}{}{}::\discretionary {-}{}{}Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K}, 
+		\hyperpage{13}
+
+  \indexspace
+
+  \item {wd\discretionary {-}{}{}Enable}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Board\discretionary {-}{}{}Status}, 
+		\hyperpage{5}
+  \item {Weight}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{8}
+  \item {Wheel\discretionary {-}{}{}Base}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{8}
+  \item {Wheel\discretionary {-}{}{}Radius\discretionary {-}{}{}Left}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{8}
+  \item {Wheel\discretionary {-}{}{}Radius\discretionary {-}{}{}Right}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{8}
+  \item {Width}
+    \subitem {\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration}, 
+		\hyperpage{8}
+
+\end{theindex}

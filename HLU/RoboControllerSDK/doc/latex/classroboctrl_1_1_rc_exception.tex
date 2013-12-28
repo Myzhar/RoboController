@@ -1,0 +1,119 @@
+\hypertarget{classroboctrl_1_1_rc_exception}{\section{roboctrl\-:\-:Rc\-Exception Class Reference}
+\label{classroboctrl_1_1_rc_exception}\index{roboctrl\-::\-Rc\-Exception@{roboctrl\-::\-Rc\-Exception}}
+}
+
+
+A generic error exception that can be thrown by the application.  
+
+
+
+
+{\ttfamily \#include $<$exception.\-h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classroboctrl_1_1_rc_exception_a75ba892300f0f4f21baf59fc4a21cdb9}{Rc\-Exception} (Rc\-Exception\-Type type, const char $\ast$message,...)
+\item 
+\hyperlink{classroboctrl_1_1_rc_exception_a0a62b1eb8e813b6c81c6d83362e06aac}{Rc\-Exception} (Rc\-Exception\-Type type, const char $\ast$message, \hyperlink{classroboctrl_1_1_rc_exception}{Rc\-Exception} $\ast$e,...)
+\item 
+const char $\ast$ \hyperlink{classroboctrl_1_1_rc_exception_a8e166d8fddad6efa30639a68d221ab7d}{Get\-Message} () const 
+\begin{DoxyCompactList}\small\item\em The exception error message. \end{DoxyCompactList}\item 
+\hyperlink{classroboctrl_1_1_rc_exception_a96edcbe8e8340ec36710c50570e2d0d1}{operator const char $\ast$} () const 
+\begin{DoxyCompactList}\small\item\em The exception error message. \end{DoxyCompactList}\item 
+Rc\-Exception\-Type \hyperlink{classroboctrl_1_1_rc_exception_a6c722fbdc3dc0155d2c6066a74cf3dcc}{Get\-Type} ()
+\begin{DoxyCompactList}\small\item\em The exception error type. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classroboctrl_1_1_rc_exception_ac043987b2f9a26cef2fe73645865dd03}{char {\bfseries message} \mbox{[}1024\mbox{]}}\label{classroboctrl_1_1_rc_exception_ac043987b2f9a26cef2fe73645865dd03}
+
+\item 
+\hypertarget{classroboctrl_1_1_rc_exception_adfc432aa2f96f6bced31606505ee8a8d}{Rc\-Exception\-Type {\bfseries m\-Exc\-Type}}\label{classroboctrl_1_1_rc_exception_adfc432aa2f96f6bced31606505ee8a8d}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+A generic error exception that can be thrown by the application. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classroboctrl_1_1_rc_exception_a75ba892300f0f4f21baf59fc4a21cdb9}{\index{roboctrl\-::\-Rc\-Exception@{roboctrl\-::\-Rc\-Exception}!Rc\-Exception@{Rc\-Exception}}
+\index{Rc\-Exception@{Rc\-Exception}!roboctrl::RcException@{roboctrl\-::\-Rc\-Exception}}
+\subsubsection[{Rc\-Exception}]{\setlength{\rightskip}{0pt plus 5cm}roboctrl\-::\-Rc\-Exception\-::\-Rc\-Exception (
+\begin{DoxyParamCaption}
+\item[{Rc\-Exception\-Type}]{type, }
+\item[{const char $\ast$}]{message, }
+\item[{}]{...}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classroboctrl_1_1_rc_exception_a75ba892300f0f4f21baf59fc4a21cdb9}
+Construct an exception 
+\begin{DoxyParams}{Parameters}
+{\em message} & It is a printf-\/like format string, arguments follows ;) \\
+\hline
+\end{DoxyParams}
+\hypertarget{classroboctrl_1_1_rc_exception_a0a62b1eb8e813b6c81c6d83362e06aac}{\index{roboctrl\-::\-Rc\-Exception@{roboctrl\-::\-Rc\-Exception}!Rc\-Exception@{Rc\-Exception}}
+\index{Rc\-Exception@{Rc\-Exception}!roboctrl::RcException@{roboctrl\-::\-Rc\-Exception}}
+\subsubsection[{Rc\-Exception}]{\setlength{\rightskip}{0pt plus 5cm}roboctrl\-::\-Rc\-Exception\-::\-Rc\-Exception (
+\begin{DoxyParamCaption}
+\item[{Rc\-Exception\-Type}]{type, }
+\item[{const char $\ast$}]{message, }
+\item[{{\bf Rc\-Exception} $\ast$}]{e, }
+\item[{}]{...}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classroboctrl_1_1_rc_exception_a0a62b1eb8e813b6c81c6d83362e06aac}
+Construct an exception 
+\begin{DoxyParams}{Parameters}
+{\em message} & It is a printf-\/like format string, arguments follows ;) \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classroboctrl_1_1_rc_exception_a8e166d8fddad6efa30639a68d221ab7d}{\index{roboctrl\-::\-Rc\-Exception@{roboctrl\-::\-Rc\-Exception}!Get\-Message@{Get\-Message}}
+\index{Get\-Message@{Get\-Message}!roboctrl::RcException@{roboctrl\-::\-Rc\-Exception}}
+\subsubsection[{Get\-Message}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ roboctrl\-::\-Rc\-Exception\-::\-Get\-Message (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}}\label{classroboctrl_1_1_rc_exception_a8e166d8fddad6efa30639a68d221ab7d}
+
+
+The exception error message. 
+
+\begin{DoxyReturn}{Returns}
+The error message associated to the exception 
+\end{DoxyReturn}
+\hypertarget{classroboctrl_1_1_rc_exception_a6c722fbdc3dc0155d2c6066a74cf3dcc}{\index{roboctrl\-::\-Rc\-Exception@{roboctrl\-::\-Rc\-Exception}!Get\-Type@{Get\-Type}}
+\index{Get\-Type@{Get\-Type}!roboctrl::RcException@{roboctrl\-::\-Rc\-Exception}}
+\subsubsection[{Get\-Type}]{\setlength{\rightskip}{0pt plus 5cm}Rc\-Exception\-Type roboctrl\-::\-Rc\-Exception\-::\-Get\-Type (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classroboctrl_1_1_rc_exception_a6c722fbdc3dc0155d2c6066a74cf3dcc}
+
+
+The exception error type. 
+
+\begin{DoxyReturn}{Returns}
+The error type associated to the exception 
+\end{DoxyReturn}
+\hypertarget{classroboctrl_1_1_rc_exception_a96edcbe8e8340ec36710c50570e2d0d1}{\index{roboctrl\-::\-Rc\-Exception@{roboctrl\-::\-Rc\-Exception}!operator const char $\ast$@{operator const char $\ast$}}
+\index{operator const char $\ast$@{operator const char $\ast$}!roboctrl::RcException@{roboctrl\-::\-Rc\-Exception}}
+\subsubsection[{operator const char $\ast$}]{\setlength{\rightskip}{0pt plus 5cm}roboctrl\-::\-Rc\-Exception\-::operator const char $\ast$ (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}}\label{classroboctrl_1_1_rc_exception_a96edcbe8e8340ec36710c50570e2d0d1}
+
+
+The exception error message. 
+
+\begin{DoxyReturn}{Returns}
+The error message associated to the exception 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+exception.\-h\end{DoxyCompactItemize}

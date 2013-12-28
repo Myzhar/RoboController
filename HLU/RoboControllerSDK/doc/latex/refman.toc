@@ -1,0 +1,59 @@
+\contentsline {chapter}{\numberline {1}Hierarchical Index}{1}{chapter.1}
+\contentsline {section}{\numberline {1.1}Class Hierarchy}{1}{section.1.1}
+\contentsline {chapter}{\numberline {2}Class Index}{3}{chapter.2}
+\contentsline {section}{\numberline {2.1}Class List}{3}{section.2.1}
+\contentsline {chapter}{\numberline {3}Class Documentation}{5}{chapter.3}
+\contentsline {section}{\numberline {3.1}\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Board\discretionary {-}{}{}Status Struct Reference}{5}{section.3.1}
+\contentsline {subsection}{\numberline {3.1.1}Detailed Description}{5}{subsection.3.1.1}
+\contentsline {subsection}{\numberline {3.1.2}Member Data Documentation}{5}{subsection.3.1.2}
+\contentsline {subsubsection}{\numberline {3.1.2.1}accel\discretionary {-}{}{}Ramp\discretionary {-}{}{}Enable}{5}{subsubsection.3.1.2.1}
+\contentsline {subsubsection}{\numberline {3.1.2.2}pid\discretionary {-}{}{}Enable}{5}{subsubsection.3.1.2.2}
+\contentsline {subsubsection}{\numberline {3.1.2.3}save\discretionary {-}{}{}To\discretionary {-}{}{}Eeprom}{5}{subsubsection.3.1.2.3}
+\contentsline {subsubsection}{\numberline {3.1.2.4}wd\discretionary {-}{}{}Enable}{5}{subsubsection.3.1.2.4}
+\contentsline {section}{\numberline {3.2}\discretionary {-}{}{}\_\discretionary {-}{}{}\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration Struct Reference}{6}{section.3.2}
+\contentsline {subsection}{\numberline {3.2.1}Detailed Description}{6}{subsection.3.2.1}
+\contentsline {subsection}{\numberline {3.2.2}Member Data Documentation}{6}{subsection.3.2.2}
+\contentsline {subsubsection}{\numberline {3.2.2.1}Encoder\discretionary {-}{}{}Cpr\discretionary {-}{}{}Left}{6}{subsubsection.3.2.2.1}
+\contentsline {subsubsection}{\numberline {3.2.2.2}Encoder\discretionary {-}{}{}Cpr\discretionary {-}{}{}Right}{6}{subsubsection.3.2.2.2}
+\contentsline {subsubsection}{\numberline {3.2.2.3}Encoder\discretionary {-}{}{}Position}{6}{subsubsection.3.2.2.3}
+\contentsline {subsubsection}{\numberline {3.2.2.4}Height}{7}{subsubsection.3.2.2.4}
+\contentsline {subsubsection}{\numberline {3.2.2.5}Lenght}{7}{subsubsection.3.2.2.5}
+\contentsline {subsubsection}{\numberline {3.2.2.6}Max\discretionary {-}{}{}Ampere\discretionary {-}{}{}Motor\discretionary {-}{}{}Left}{7}{subsubsection.3.2.2.6}
+\contentsline {subsubsection}{\numberline {3.2.2.7}Max\discretionary {-}{}{}Ampere\discretionary {-}{}{}Motor\discretionary {-}{}{}Right}{7}{subsubsection.3.2.2.7}
+\contentsline {subsubsection}{\numberline {3.2.2.8}Max\discretionary {-}{}{}Rpm\discretionary {-}{}{}Motor\discretionary {-}{}{}Left}{7}{subsubsection.3.2.2.8}
+\contentsline {subsubsection}{\numberline {3.2.2.9}Max\discretionary {-}{}{}Rpm\discretionary {-}{}{}Motor\discretionary {-}{}{}Right}{7}{subsubsection.3.2.2.9}
+\contentsline {subsubsection}{\numberline {3.2.2.10}Max\discretionary {-}{}{}Torque\discretionary {-}{}{}Motor\discretionary {-}{}{}Left}{7}{subsubsection.3.2.2.10}
+\contentsline {subsubsection}{\numberline {3.2.2.11}Max\discretionary {-}{}{}Torque\discretionary {-}{}{}Motor\discretionary {-}{}{}Right}{7}{subsubsection.3.2.2.11}
+\contentsline {subsubsection}{\numberline {3.2.2.12}Motor\discretionary {-}{}{}Enable\discretionary {-}{}{}Level}{7}{subsubsection.3.2.2.12}
+\contentsline {subsubsection}{\numberline {3.2.2.13}Ratio\discretionary {-}{}{}Motor\discretionary {-}{}{}Left}{7}{subsubsection.3.2.2.13}
+\contentsline {subsubsection}{\numberline {3.2.2.14}Ratio\discretionary {-}{}{}Motor\discretionary {-}{}{}Right}{7}{subsubsection.3.2.2.14}
+\contentsline {subsubsection}{\numberline {3.2.2.15}Ratio\discretionary {-}{}{}Shaft\discretionary {-}{}{}Left}{7}{subsubsection.3.2.2.15}
+\contentsline {subsubsection}{\numberline {3.2.2.16}Ratio\discretionary {-}{}{}Shaft\discretionary {-}{}{}Right}{8}{subsubsection.3.2.2.16}
+\contentsline {subsubsection}{\numberline {3.2.2.17}Weight}{8}{subsubsection.3.2.2.17}
+\contentsline {subsubsection}{\numberline {3.2.2.18}Wheel\discretionary {-}{}{}Base}{8}{subsubsection.3.2.2.18}
+\contentsline {subsubsection}{\numberline {3.2.2.19}Wheel\discretionary {-}{}{}Radius\discretionary {-}{}{}Left}{8}{subsubsection.3.2.2.19}
+\contentsline {subsubsection}{\numberline {3.2.2.20}Wheel\discretionary {-}{}{}Radius\discretionary {-}{}{}Right}{8}{subsubsection.3.2.2.20}
+\contentsline {subsubsection}{\numberline {3.2.2.21}Width}{8}{subsubsection.3.2.2.21}
+\contentsline {section}{\numberline {3.3}roboctrl\discretionary {-}{}{}:\discretionary {-}{}{}:Rc\discretionary {-}{}{}Exception Class Reference}{8}{section.3.3}
+\contentsline {subsection}{\numberline {3.3.1}Detailed Description}{9}{subsection.3.3.1}
+\contentsline {subsection}{\numberline {3.3.2}Constructor \& Destructor Documentation}{9}{subsection.3.3.2}
+\contentsline {subsubsection}{\numberline {3.3.2.1}Rc\discretionary {-}{}{}Exception}{9}{subsubsection.3.3.2.1}
+\contentsline {subsubsection}{\numberline {3.3.2.2}Rc\discretionary {-}{}{}Exception}{9}{subsubsection.3.3.2.2}
+\contentsline {subsection}{\numberline {3.3.3}Member Function Documentation}{9}{subsection.3.3.3}
+\contentsline {subsubsection}{\numberline {3.3.3.1}Get\discretionary {-}{}{}Message}{9}{subsubsection.3.3.3.1}
+\contentsline {subsubsection}{\numberline {3.3.3.2}Get\discretionary {-}{}{}Type}{9}{subsubsection.3.3.3.2}
+\contentsline {subsubsection}{\numberline {3.3.3.3}operator const char $\ast $}{9}{subsubsection.3.3.3.3}
+\contentsline {section}{\numberline {3.4}roboctrl\discretionary {-}{}{}:\discretionary {-}{}{}:Robo\discretionary {-}{}{}Controller\discretionary {-}{}{}S\discretionary {-}{}{}D\discretionary {-}{}{}K Class Reference}{10}{section.3.4}
+\contentsline {subsection}{\numberline {3.4.1}Member Function Documentation}{11}{subsection.3.4.1}
+\contentsline {subsubsection}{\numberline {3.4.1.1}get\discretionary {-}{}{}Motor\discretionary {-}{}{}Pid\discretionary {-}{}{}Gains}{11}{subsubsection.3.4.1.1}
+\contentsline {subsubsection}{\numberline {3.4.1.2}get\discretionary {-}{}{}Motor\discretionary {-}{}{}P\discretionary {-}{}{}W\discretionary {-}{}{}M}{11}{subsubsection.3.4.1.2}
+\contentsline {subsubsection}{\numberline {3.4.1.3}get\discretionary {-}{}{}Motor\discretionary {-}{}{}Speed}{11}{subsubsection.3.4.1.3}
+\contentsline {subsubsection}{\numberline {3.4.1.4}get\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration\discretionary {-}{}{}From\discretionary {-}{}{}Ini}{12}{subsubsection.3.4.1.4}
+\contentsline {subsubsection}{\numberline {3.4.1.5}run}{12}{subsubsection.3.4.1.5}
+\contentsline {subsubsection}{\numberline {3.4.1.6}save\discretionary {-}{}{}Robot\discretionary {-}{}{}Configuration\discretionary {-}{}{}To\discretionary {-}{}{}Ini}{12}{subsubsection.3.4.1.6}
+\contentsline {subsubsection}{\numberline {3.4.1.7}set\discretionary {-}{}{}Board\discretionary {-}{}{}Status}{12}{subsubsection.3.4.1.7}
+\contentsline {subsubsection}{\numberline {3.4.1.8}set\discretionary {-}{}{}Comm\discretionary {-}{}{}Mode}{12}{subsubsection.3.4.1.8}
+\contentsline {subsubsection}{\numberline {3.4.1.9}set\discretionary {-}{}{}Motor\discretionary {-}{}{}Pid\discretionary {-}{}{}Gains}{13}{subsubsection.3.4.1.9}
+\contentsline {subsubsection}{\numberline {3.4.1.10}set\discretionary {-}{}{}Motor\discretionary {-}{}{}P\discretionary {-}{}{}W\discretionary {-}{}{}M}{13}{subsubsection.3.4.1.10}
+\contentsline {subsubsection}{\numberline {3.4.1.11}set\discretionary {-}{}{}Motor\discretionary {-}{}{}Speed}{13}{subsubsection.3.4.1.11}
+\contentsline {part}{Index}{14}{section*.10}

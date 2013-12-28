@@ -1,0 +1,46 @@
+\hypertarget{struct___board_status}{\section{\-\_\-\-Board\-Status Struct Reference}
+\label{struct___board_status}\index{\-\_\-\-Board\-Status@{\-\_\-\-Board\-Status}}
+}
+
+
+Used to mantain the state of the configuration of the board.  
+
+
+
+
+{\ttfamily \#include $<$Robo\-Controller\-S\-D\-K\-\_\-global.\-h$>$}
+
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+bool \hyperlink{struct___board_status_ab46b9c91875df3c2871962e1b5d7ac59}{pid\-Enable}
+\item 
+bool \hyperlink{struct___board_status_aacf5e62d8821a7ee164979f9f529a867}{wd\-Enable}
+\item 
+bool \hyperlink{struct___board_status_a30b34c999564107e05997c953d0fc31c}{save\-To\-Eeprom}
+\item 
+bool \hyperlink{struct___board_status_a950c73606e91c9302fde6d119f7e79a8}{accel\-Ramp\-Enable}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Used to mantain the state of the configuration of the board. 
+
+\subsection{Member Data Documentation}
+\hypertarget{struct___board_status_a950c73606e91c9302fde6d119f7e79a8}{\index{\-\_\-\-Board\-Status@{\-\_\-\-Board\-Status}!accel\-Ramp\-Enable@{accel\-Ramp\-Enable}}
+\index{accel\-Ramp\-Enable@{accel\-Ramp\-Enable}!_BoardStatus@{\-\_\-\-Board\-Status}}
+\subsubsection[{accel\-Ramp\-Enable}]{\setlength{\rightskip}{0pt plus 5cm}bool \-\_\-\-Board\-Status\-::accel\-Ramp\-Enable}}\label{struct___board_status_a950c73606e91c9302fde6d119f7e79a8}
+Indicates if acceleration is limited by speed ramps \hypertarget{struct___board_status_ab46b9c91875df3c2871962e1b5d7ac59}{\index{\-\_\-\-Board\-Status@{\-\_\-\-Board\-Status}!pid\-Enable@{pid\-Enable}}
+\index{pid\-Enable@{pid\-Enable}!_BoardStatus@{\-\_\-\-Board\-Status}}
+\subsubsection[{pid\-Enable}]{\setlength{\rightskip}{0pt plus 5cm}bool \-\_\-\-Board\-Status\-::pid\-Enable}}\label{struct___board_status_ab46b9c91875df3c2871962e1b5d7ac59}
+Indicates if the motor P\-I\-D controls are enabled \hypertarget{struct___board_status_a30b34c999564107e05997c953d0fc31c}{\index{\-\_\-\-Board\-Status@{\-\_\-\-Board\-Status}!save\-To\-Eeprom@{save\-To\-Eeprom}}
+\index{save\-To\-Eeprom@{save\-To\-Eeprom}!_BoardStatus@{\-\_\-\-Board\-Status}}
+\subsubsection[{save\-To\-Eeprom}]{\setlength{\rightskip}{0pt plus 5cm}bool \-\_\-\-Board\-Status\-::save\-To\-Eeprom}}\label{struct___board_status_a30b34c999564107e05997c953d0fc31c}
+Indicates if the Board parameters are saved to Eeprom when changed \hypertarget{struct___board_status_aacf5e62d8821a7ee164979f9f529a867}{\index{\-\_\-\-Board\-Status@{\-\_\-\-Board\-Status}!wd\-Enable@{wd\-Enable}}
+\index{wd\-Enable@{wd\-Enable}!_BoardStatus@{\-\_\-\-Board\-Status}}
+\subsubsection[{wd\-Enable}]{\setlength{\rightskip}{0pt plus 5cm}bool \-\_\-\-Board\-Status\-::wd\-Enable}}\label{struct___board_status_aacf5e62d8821a7ee164979f9f529a867}
+Indicates if the Command Watch\-Dod is enabled. If it is true and the board does not receive command for N msec (get\-Watch\-Dog\-Time and set\-Watch\-Dog\-Time)the motors stop 
+
+The documentation for this struct was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+Robo\-Controller\-S\-D\-K\-\_\-global.\-h\end{DoxyCompactItemize}
