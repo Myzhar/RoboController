@@ -1,7 +1,7 @@
 #include <robocontrollersdk.h>
 #include <exception.h>
 #include <QDataStream>
-#include <QApplication>
+#include <QCoreApplication>
 
 #include "network_msg.h"
 #include "modbus_registers.h"
@@ -83,7 +83,7 @@ void RoboControllerSDK::connectToTcpServer()
     while( count < 5 && !mTcpConnected )
     {
         sleep(1);
-        QApplication::processEvents();
+        QCoreApplication::processEvents();
         count ++;
     }
 

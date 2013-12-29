@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core network testlib serialport
+QT       += testlib
 
 QT       -= gui
 
@@ -14,12 +14,16 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
+ROBOCONTROLLERSDKPATH = ../RoboControllerSDK
+
 DEFINES += ROBOCONTROLLERSDK_LIBRARY
+
+include($$ROBOCONTROLLERSDKPATH/mod_CORE/RoboControllerSDK_CORE.pri) # Core module
+#include($$ROBOCONTROLLERSDKPATH/mod_GUI/RoboControllerSDK_GUI.pri) # GUI module
 
 INCLUDEPATH += \
                include \
                ../common/include\
-               ../RoboControllerSDK/include \
                ../common/3rdparty/libmodbus-3.0.1 \
                ../common/3rdparty/libmodbus-3.0.1/src
 
@@ -29,16 +33,12 @@ SOURCES +=  \
             ../common/3rdparty/libmodbus-3.0.1/src/modbus-tcp.c \
             ../common/3rdparty/libmodbus-3.0.1/src/modbus-rtu.c \
             ../common/3rdparty/libmodbus-3.0.1/src/modbus-data.c \
-            ../common/src/loghandler.cpp \            
-            ../RoboControllerSDK/src/qrobottcpserver.cpp \
-            ../RoboControllerSDK/src/exception.cpp
+            ../common/src/loghandler.cpp \
 
 HEADERS +=  \
             ../common/3rdparty/libmodbus-3.0.1/src/modbus.h \
             ../common/include/loghandler.h \
-            ../common/include/network_msg.h \            
-            ../RoboControllerSDK/include/qrobottcpserver.h \
-            ../RoboControllerSDK/include/exception.h
+            ../common/include/network_msg.h \
 
 unix {
     DEFINES += _TTY_POSIX_

@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
     catch(roboctrl::RcException &e)
     {
         qCritical() << QObject::tr("Server Exception: %1").arg(e.getExcMessage());
+        exit( EXIT_FAILURE );
     }
     
     return a.exec();

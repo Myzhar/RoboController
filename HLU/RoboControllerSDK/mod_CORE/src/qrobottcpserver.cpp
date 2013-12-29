@@ -62,7 +62,7 @@ QRobotTcpServer::QRobotTcpServer(int serverPort, QObject *parent) :
     QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
     if( ports.isEmpty() )
     {
-        QString err = tr("Robocontroller not connected in 10 seconds");
+        QString err = tr("No serial ports available. Cannot connect to RoboController");
         qCritical() << " ";
         qCritical() << err;
         qDebug() << "Server not started";
