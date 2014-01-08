@@ -1,0 +1,19 @@
+<<<<<<< .mine
+#
+#Wed Jan 18 15:08:05 CET 2012
+default.languagetoolchain.dir=C\:\\Program Files\\Microchip\\mplabc30\\v3.30c\\bin
+com-microchip-mplab-nbide-embedded-makeproject-MakeProject.md5=aacb4af1231509e2c363b0acdc0000a5
+default.languagetoolchain.version=3_30b
+default.com-microchip-mplab-nbide-toolchainC30-C30LanguageToolchain.md5=92a2af1b0e705d0c2accd4a128fa82c2
+host.platform=windows
+conf.ids=default
+=======
+#
+#Wed Jan 18 08:01:49 CET 2012
+default.languagetoolchain.dir=/opt/microchip/mplabc30/v3.30c/bin
+com-microchip-mplab-nbide-embedded-makeproject-MakeProject.md5=fb2cb59c6388ae2c771b1cd4c62bc949
+default.languagetoolchain.version=3_30
+default.com-microchip-mplab-nbide-toolchainC30-C30LanguageToolchain.md5=f17f54cc1178a92e50667be09449bcbe
+host.platform=linux
+conf.ids=default
+>>>>>>> .r91
