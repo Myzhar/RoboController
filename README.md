@@ -1,7 +1,14 @@
 RoboController
 ==============
 
-RoboController board High Level and Low Level Software
+This project contains the software and firmware developed for RoboController v2 board: http://www.tuttoelettronica.org/?p=455
 
-* HLU (High Level Unit) folder contains the High Level software, all the software that runs on a CPU (PC, embedded boards, mobile devices)
-* LLU (Low Level Unit) folder contains the Low Level software, the firmware, that runs on MCU (Motor control board, sensor boards, ...)
+RobotController v2 is a board created to perform advanced motor control when you need RealTime control of two motors with encoder feedback. 
+
+The RoboController v2 board is used to control MyzharBot robot: http://www.robot-home.it
+
+MODULES
+-------
+
+* HLU (High Level Unit): the HLU folder contains the High Level software, all the software that runs on a CPU (PC, embedded boards, mobile devices)
+* LLU (Low Level Unit): the LLU folder contains the Low Level software, "the firmware", that runs on a MCU (Motor control board, sensor boards, IMU)
