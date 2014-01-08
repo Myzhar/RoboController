@@ -4,6 +4,6 @@ LLU
 LOW LEVEL UNIT
 --------------
 
-HLU folder contains the High Level software:
+LLU folder contains the Low Level software, all the software that runs on a board powered by a MCU:
 
 * ......
