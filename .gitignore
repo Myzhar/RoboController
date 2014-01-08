@@ -40,3 +40,12 @@ Makefile*
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+####################################################
+# MPLABX 
+####################################################
+
+nbproject/Makefile-* 
+nbproject/Package-* 
+nbproject/private 
+nbproject/private/*
