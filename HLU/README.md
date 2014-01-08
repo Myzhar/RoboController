@@ -1,6 +1,9 @@
 HLU
 ===
 
+HIGH LEVEL UNIT
+---------------
+
 HLU folder contains the High Level software:
 
 * RoboController-PID_Regulator: Qt application used to tune the PIDs on the RoboController V2 board
