@@ -46,7 +46,7 @@ Thumbs.db
 # MPLABX 
 ####################################################
 
-nbproject/Makefile-* 
-nbproject/Package-* 
-nbproject/private 
-nbproject/private/*
+LLU/RoboController/nbproject/Makefile-* 
+LLU/RoboController/nbproject/Package-* 
+LLU/RoboController/nbproject/private 
+LLU/RoboController/nbproject/private/*
