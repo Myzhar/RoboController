@@ -5,7 +5,7 @@
 *.slo
 *.lo
 *.o
-*.a
+# *.a useful for static libraries for MplabX
 *.la
 *.lai
 *.so
