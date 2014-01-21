@@ -355,6 +355,21 @@ unsigned char ScriviWord(unsigned int Address,unsigned int Word)
 }
 
 
+unsigned char LeggiBit(unsigned int Address)
+{       //Mi permette di accedere a "Bit" a ciascuna word modbus
+        return((VarModbus[Address / BIT_PER_WORD] & TabMaskBitIO[Address % BIT_PER_WORD]) ? 1 : 0);
+}
+
+
+unsigned char ScriviBit(unsigned int Address,unsigned char Bit)
+{   if (Bit)
+        VarModbus[Address / BIT_PER_WORD] |= TabMaskBitIO[Address % BIT_PER_WORD];
+    else
+        VarModbus[Address / BIT_PER_WORD] &=~TabMaskBitIO[Address % BIT_PER_WORD];
+	return(OK);
+}
+
+
 /*  ***************************************************************************
  *  ***************************************************************************
  *                              Protocollo modbus
@@ -393,7 +408,7 @@ void ModbusRoutine(unsigned char Port)
 
                                         if (n == ByteAspettati)
                                         {
-                                            Check = CalcolaCheckCRC16(ModbusRxBuff[Port],n-2);
+                                            Check = ModbusCheckCRC16(ModbusRxBuff[Port],n-2);
                                             if ((ModbusRxBuff[Port][n-2] == (unsigned char)(Check)) && (ModbusRxBuff[Port][n-1] == (unsigned char)(Check >> 8))	)
                                             {   // Il Ckeck ricevuto è valido
 
@@ -456,10 +471,10 @@ void ModbusRxRoutine(unsigned char Code, unsigned char Port)
         case CODE_WORDS_READING             :
         case CODE_WORDS_READING_BIS         :   ModbusReadWord(Port);             break;
         case CODE_SINGLE_BIT_WRITING        :	ModbusWriteSingleBit(Port);         break;
-        case CODE_SINGLE_WORD_WRITING       :	SingleWordWriting(Port);        break;
-        case CODE_MULTIPLE_BITS_WRITING     :   MultipleBitsWriting(Port);	break;
-	case CODE_MULTIPLE_WORDS_WRITING    :	MultipleWordsWriting(Port);	break;
-	default                             :   RispostaErrore(ILLEGAL_FUNCTION_CODE, Port);	break;
+        case CODE_SINGLE_WORD_WRITING       :	ModbusWriteSingleWord(Port);        break;
+        case CODE_MULTIPLE_BITS_WRITING     :   ModbusWriteMultipleBits(Port);	break;
+	case CODE_MULTIPLE_WORDS_WRITING    :	ModbusWriteMultipleWords(Port);	break;
+	default                             :   ModbusErroreResponse(ILLEGAL_FUNCTION_CODE, Port);	break;
     }
 }
 
@@ -483,7 +498,7 @@ void ModbusReadBit(unsigned char Port)
 
 	}
 
-	Check = CalcolaCheckCRC16(ModbusTxBuff[Port],(3 + ModbusTxBuff[Port][2]));
+	Check = ModbusCheckCRC16(ModbusTxBuff[Port],(3 + ModbusTxBuff[Port][2]));
 	ModbusTxBuff[Port][3+ModbusTxBuff[Port][2]] = Check;
 	ModbusTxBuff[Port][4+ModbusTxBuff[Port][2]] = Check >> 8;
 	FreeRxBuffer(Port);;
@@ -498,7 +513,7 @@ void ModbusReadWord(unsigned char Port)
 
     if (NWord > MAX_WORD_LETTURA_MULTIPLA)
 	{
-            RispostaErrore(ILLEGAL_FUNCTION_CODE, Port);
+            ModbusErroreResponse(ILLEGAL_FUNCTION_CODE, Port);
 	}
 	else
 	{   ModbusTxBuff[Port][0] = ModbusRxBuff[Port][0];
@@ -509,7 +524,7 @@ void ModbusReadWord(unsigned char Port)
             	ModbusTxBuff[Port][3+(i*2)] = Word >> 8;
 		ModbusTxBuff[Port][4+(i*2)] = Word;
             }
-            Check = CalcolaCheckCRC16(ModbusTxBuff[Port],(3 + (NWord << 1)));
+            Check = ModbusCheckCRC16(ModbusTxBuff[Port],(3 + (NWord << 1)));
             ModbusTxBuff[Port][3+(i*2)] = Check;
             ModbusTxBuff[Port][4+(i*2)] = Check >> 8;
             FreeRxBuffer(Port);
@@ -532,12 +547,12 @@ void ModbusWriteSingleBit(unsigned char Port)
                     if (ModbusRxBuff[Port][0])
                         TxString(ModbusRxBuff[Port],8,Port);
                     break;
-        default :   RispostaErrore(Risultato,Port);
+        default :   ModbusErroreResponse(Risultato,Port);
                     break;
 	}
 }
 
-void SingleWordWriting(unsigned char Port)
+void ModbusWriteSingleWord(unsigned char Port)
 {   unsigned int Address,Word;
     unsigned char Risultato;
 
@@ -549,12 +564,12 @@ void SingleWordWriting(unsigned char Port)
         case OK	:   FreeRxBuffer(Port);
                     if (ModbusRxBuff[Port][0])    TxString(ModbusRxBuff[Port],8, Port);
                     break;
-        default	:   RispostaErrore(Risultato, Port);
+        default	:   ModbusErroreResponse(Risultato, Port);
                     break;
     }
 }
 
-void MultipleBitsWriting(unsigned char Port)
+void ModbusWriteMultipleBits(unsigned char Port)
 {
 	unsigned int StartAddress,NBit,Check,i;
 	unsigned char Risultato,Bit;
@@ -570,14 +585,14 @@ void MultipleBitsWriting(unsigned char Port)
 
 		switch(Risultato)
 		{	case OK		:	break;
-			default		:	RispostaErrore(Risultato,Port);
+			default		:	ModbusErroreResponse(Risultato,Port);
 							return;
 		}
 	}
 	for(i=0; i<6; i++)
 	{	ModbusTxBuff[Port][i] = ModbusRxBuff[Port][i];
 	}
-	Check = CalcolaCheckCRC16(ModbusRxBuff[Port],6);
+	Check = ModbusCheckCRC16(ModbusRxBuff[Port],6);
 	ModbusTxBuff[Port][6] = Check;
 	ModbusTxBuff[Port][7] = Check >> 8;
 	FreeRxBuffer(Port);
@@ -586,7 +601,7 @@ void MultipleBitsWriting(unsigned char Port)
 }
 
 
-void MultipleWordsWriting(unsigned char Port)
+void ModbusWriteMultipleWords(unsigned char Port)
 {
 	unsigned int StartAddress,NWord,Word,Check,i;
 	unsigned char Risultato;
@@ -600,14 +615,14 @@ void MultipleWordsWriting(unsigned char Port)
 
 		switch(Risultato)
 		{	case OK		:	break;
-			default		:	RispostaErrore(Risultato, Port);
+			default		:	ModbusErroreResponse(Risultato, Port);
 							return;
 		}
 	}
 	for(i=0; i<6; i++)
 	{	ModbusTxBuff[Port][i] = ModbusRxBuff[Port][i];
 	}
-	Check = CalcolaCheckCRC16(ModbusTxBuff[Port],6);
+	Check = ModbusCheckCRC16(ModbusTxBuff[Port],6);
 	ModbusTxBuff[Port][6] = Check;
 	ModbusTxBuff[Port][7] = Check >> 8;
 	FreeRxBuffer(Port);
@@ -616,12 +631,12 @@ void MultipleWordsWriting(unsigned char Port)
 }
 
 
-void RispostaErrore(unsigned char NumeroErrore, unsigned char Port)
+void ModbusErroreResponse(unsigned char NumeroErrore, unsigned char Port)
 {   unsigned int Check;
     ModbusTxBuff[Port][0] = ModbusRxBuff[Port][0];
     ModbusTxBuff[Port][1] = ModbusRxBuff[Port][1] | 0x80;
     ModbusTxBuff[Port][2] = NumeroErrore;
-    Check = CalcolaCheckCRC16(ModbusTxBuff[Port],3);
+    Check = ModbusCheckCRC16(ModbusTxBuff[Port],3);
     ModbusTxBuff[Port][3] = Check;
     ModbusTxBuff[Port][4] = Check >> 8;
     FreeRxBuffer(Port);
@@ -629,7 +644,7 @@ void RispostaErrore(unsigned char NumeroErrore, unsigned char Port)
     if (ModbusTxBuff[Port][0])    TxString(ModbusTxBuff[Port],5, Port);
 }
 
-unsigned int CalcolaCheckCRC16(unsigned char *P,unsigned char NByte)
+unsigned int ModbusCheckCRC16(unsigned char *P,unsigned char NByte)
 {   unsigned int Check;
     char i,a;
 
@@ -649,6 +664,12 @@ unsigned int CalcolaCheckCRC16(unsigned char *P,unsigned char NByte)
     }
     return(Check);
 }
+
+
+
+
+
+
 
 // Funzioni di Gestione della Seriale per protocollo Modbus
 void FreeRxBuffer(unsigned char Port)
@@ -673,17 +694,5 @@ void InizializzaSeriale(unsigned char Port)
 }
 
 
-unsigned char LeggiBit(unsigned int Address)
-{       //Mi permette di accedere a "Bit" a ciascuna word modbus
-        return((VarModbus[Address / BIT_PER_WORD] & TabMaskBitIO[Address % BIT_PER_WORD]) ? 1 : 0);
-}
 
-
-unsigned char ScriviBit(unsigned int Address,unsigned char Bit)
-{   if (Bit)
-        VarModbus[Address / BIT_PER_WORD] |= TabMaskBitIO[Address % BIT_PER_WORD];
-    else
-        VarModbus[Address / BIT_PER_WORD] &=~TabMaskBitIO[Address % BIT_PER_WORD];
-	return(OK);
-}
 

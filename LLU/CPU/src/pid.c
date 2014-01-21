@@ -124,25 +124,11 @@ void Pid2(void)
 }
 
 void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
-<<<<<<< .mine
-{   long    L_ScaledSetpoint; // Dato da mantenere/raggiungere ( velocità di crociera ) moltiplicato per 1000
-    long    L_ScaledProcesso; // Dato istantaneo ( velocità istantanea ) moltiplicato per 1000
-=======
 {   long    L_ScaledSetpoint=_SETPOINT; // Dato da mantenere/raggiungere ( velocità di crociera ) moltiplicato per 1000
     long    L_ScaledProcesso=_AXELSPEED; // Dato istantaneo ( velocità istantanea ) moltiplicato per 1000
->>>>>>> .r64
 
-<<<<<<< .mine
-
-
-    //__builtin_disi(0x3FFF); /* disable interrupts, vedere pg 181 di MPLAB_XC16_C_Compiler_UG_52081.pdf */
-
-
-
-=======
     __builtin_disi(0x3FFF); /* disable interrupts, vedere pg 181 di MPLAB_XC16_C_Compiler_UG_52081.pdf */
 
->>>>>>> .r64
     /*
      *  PWM varia da 0 a 4095 con centro a 2048, modalita LAP
      *  Tutti i calcoli sono a tre decimali, interi moltiplicati per 1000
@@ -156,32 +142,8 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
      *      L_ScaledSetpoint  :   Velore di velocità da raggiungere, dato moltiplicato per 1000
      *      L_ScaledProcesso  :   Velore di velocità istantaneo, dato moltiplicato per 1000
      */
-<<<<<<< .mine
-    //  PID->Current = (signed int)(MOTORE->I_MotorAxelSpeed);  // NON USATO
-    //  L_ScaledSetpoint = (long)(_SETPOINT) * 1;    // Scalo per usare dei K interi.
-    //  L_ScaledProcesso = (long)(_AXELSPEED) * 1;   // Scalo per usare dei K interi.
-=======
->>>>>>> .r64
 
 
-<<<<<<< .mine
-
-    /* ***************************************************************************************
-    * ************************************   __builtin_  ************************************
-    * ***************************************************************************************
-    *  I calcoli sono ottimizzati mediante l'utilizzo delle funzioni __builtin_
-    *  descritte nel documento "MPLAB_XC16_C_Compiler_UG_52081.pdf" presente nella directory
-    *  del compilatore XC16
-    *
-    * __builtin_mulss   :   MPLAB_XC16_C_Compiler_UG_52081.pdf pg294
-    * ***************************************************************************************
-    */
-
-    L_ScaledSetpoint = __builtin_mulss((int)_SETPOINT, 1);    // Scalo per usare dei K interi.  MPLAB_XC16_C_Compiler_UG_52081.pdf pg294
-    L_ScaledProcesso = __builtin_mulss((int)_AXELSPEED, 1);   // Scalo per usare dei K interi.  MPLAB_XC16_C_Compiler_UG_52081.pdf pg294
-
-
-=======
     /* ***************************************************************************************
     *  ************************************   __builtin_  ************************************
     *  ***************************************************************************************
@@ -195,7 +157,6 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
 
     int rescaleFact = 10;
 
->>>>>>> .r64
     int saturazione; // Indica se il controllo è in saturazione.
                      // Da usare per l'anti-windup
 
@@ -204,32 +165,13 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
     else
         saturazione = 0;
 
-<<<<<<< .mine
-    // Verifico limiti del setpoint.
-    if (L_ScaledSetpoint >  _MAX_RPM) L_ScaledSetpoint =  _MAX_RPM;
-    if (L_ScaledSetpoint < _MIN_RPM) L_ScaledSetpoint = _MIN_RPM;
-    if ((L_ScaledSetpoint < 50) & (L_ScaledSetpoint > -50)) L_ScaledSetpoint = 0;
-
-=======
->>>>>>> .r64
     // Rampa è il dato effettivo di "Setpoint" da raggiungere in ciascun ciclo.
     // Tende a raggiungere il valore di SetPoint in base all'ampiezza dello Step.
-<<<<<<< .mine
-//    if (_RAMPA < L_ScaledSetpoint) _RAMPA += _STEP_RAMPA;
-//    if (_RAMPA > L_ScaledSetpoint) _RAMPA -= _STEP_RAMPA;
-=======
     if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_RAMP_EN)
     {   //  Modalità rampa
         if (_RAMPA < L_ScaledSetpoint)
         {   // Rampa in salita
->>>>>>> .r64
 
-<<<<<<< .mine
-    if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_RAMP_EN)
-    {
-    if (_RAMPA < L_ScaledSetpoint) _RAMPA += _STEP_RAMPA;
-    if (_RAMPA > L_ScaledSetpoint) _RAMPA -= _STEP_RAMPA;
-=======
             if( (_RAMPA > -DEAD_ZONE) && (_RAMPA < DEAD_ZONE))
             {   //  Se _RAMPA cade nell'interno di +/- DEAD_ZONE
                 //  Salto all'esterno.
@@ -261,12 +203,8 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
             if ( _RAMPA < _MIN_RPM)
                 _RAMPA =  _MIN_RPM;
         }
->>>>>>> .r64
     }
     else
-<<<<<<< .mine
-    {   _RAMPA = L_ScaledSetpoint;
-=======
     {   // Modalità senza rampa
 
         // Verifico limiti del setpoint in modalità senza rampa
@@ -280,16 +218,10 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
             L_ScaledSetpoint = 0;
 
         _RAMPA = L_ScaledSetpoint;
->>>>>>> .r64
     }
 
-<<<<<<< .mine
-
-    _ERRORE = (_RAMPA - L_ScaledProcesso);       // calcolo errore tra il setpoint e il Current
-=======
     _ERRORE = (_RAMPA - L_ScaledProcesso);       // calcolo errore tra il setpoint e il Current
     long int resc_ERRORE = __builtin_mulss((int)_ERRORE, rescaleFact);
->>>>>>> .r64
     
 //    _COMPONENTE_FEEDFORWARD = resc_ERRORE * 2;
 //    if (_COMPONENTE_FEEDFORWARD >  2045 )
@@ -329,11 +261,7 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
     if (_SOMMATORIA < (LONG_MIN + 1000) )
         _SOMMATORIA = LONG_MIN;
 
-<<<<<<< .mine
-    if (L_ScaledSetpoint == 0 )
-=======
     if (_RAMPA == 0 )
->>>>>>> .r64
     {
         _OUT=2048;
         _INTEGRALE=0;
@@ -349,11 +277,6 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
     if (_OUT < 1) _OUT = 1;
 
     _OUT_PREC = _OUT;
-<<<<<<< .mine
-
-    //__builtin_disi(0x0000); /* enable interrupts, vedere pg 181 di MPLAB_XC16_C_Compiler_UG_52081.pdf */
-=======
 
     __builtin_disi(0x0000); /* enable interrupts, vedere pg 181 di MPLAB_XC16_C_Compiler_UG_52081.pdf */
->>>>>>> .r64
 }

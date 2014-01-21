@@ -240,22 +240,27 @@ void ReloadTimerSW(volatile Timer_t *Timer);
 void GestioneTimerSW(volatile Timer_t *Timer);
 
 //Modbus
+unsigned int LeggiWord(unsigned int Address);
+unsigned char ScriviWord(unsigned int Address,unsigned int Word);
+unsigned char LeggiBit(unsigned int Address);
+unsigned char ScriviBit(unsigned int Address,unsigned char Bit);
+
 void ModbusRoutine(unsigned char Port);
 void ModbusRxRoutine(unsigned char Code, unsigned char Port);
 void ModbusReadBit(unsigned char Port);
 void ModbusReadWord(unsigned char Port);
 void ModbusWriteSingleBit(unsigned char Port);
-void SingleWordWriting(unsigned char Port);
-void MultipleBitsWriting(unsigned char Port);
-void MultipleWordsWriting(unsigned char Port);
-void RispostaErrore(unsigned char NumeroErrore, unsigned char Port);
-unsigned int CalcolaCheckCRC16(unsigned char *P,unsigned char NByte);
-unsigned int LeggiWord(unsigned int Address);
-unsigned char ScriviWord(unsigned int Address,unsigned int Word);
+void ModbusWriteSingleWord(unsigned char Port);
+void ModbusWriteMultipleBits(unsigned char Port);
+void ModbusWriteMultipleWords(unsigned char Port);
+void ModbusErroreResponse(unsigned char NumeroErrore, unsigned char Port);
+unsigned int ModbusCheckCRC16(unsigned char *P,unsigned char NByte);
+
+
+
 void FreeRxBuffer(unsigned char Port);
 void InizializzaSeriale(unsigned char Port);
-unsigned char LeggiBit(unsigned int Address);
-unsigned char ScriviBit(unsigned int Address,unsigned char Bit);
+
 
 
 // Gestioni analogiche
