@@ -665,12 +665,6 @@ unsigned int ModbusCheckCRC16(unsigned char *P,unsigned char NByte)
     return(Check);
 }
 
-
-
-
-
-
-
 // Funzioni di Gestione della Seriale per protocollo Modbus
 void FreeRxBuffer(unsigned char Port)
 {   RxPointer[Port] = ModbusRxBuff[Port];	/*	azzera il puntatore di ricezione	*/
@@ -692,7 +686,4 @@ void InizializzaSeriale(unsigned char Port)
     StatoSeriale[Port] = WAIT_MESSAGE;
     // SET_DIR_RX; // Per RS485
 }
-
-
-
 

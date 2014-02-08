@@ -26,16 +26,16 @@ volatile fvalue CostanteTaraturaAN4;
 volatile Pid_t   PID1;
 volatile Pid_t   PID2;
 
-// PID [19d]
-tPID PIDstruct1;
-fractional abcCoefficient1[3] __attribute__ ((section (".xbss, bss, xmemory")));
-fractional controlHistory1[3] __attribute__ ((section (".ybss, bss, ymemory")));
-fractional kCoeffs1[] = {0,0,0};
-
-tPID PIDstruct2;
-fractional abcCoefficient2[3] __attribute__ ((section (".xbss, bss, xmemory")));
-fractional controlHistory2[3] __attribute__ ((section (".ybss, bss, ymemory")));
-fractional kCoeffs2[] = {0,0,0};
+//    // PID [19d]
+//    tPID PIDstruct1;
+//    fractional abcCoefficient1[3] __attribute__ ((section (".xbss, bss, xmemory")));
+//    fractional controlHistory1[3] __attribute__ ((section (".ybss, bss, ymemory")));
+//    fractional kCoeffs1[] = {0,0,0};
+//
+//    tPID PIDstruct2;
+//    fractional abcCoefficient2[3] __attribute__ ((section (".xbss, bss, xmemory")));
+//    fractional controlHistory2[3] __attribute__ ((section (".ybss, bss, ymemory")));
+//    fractional kCoeffs2[] = {0,0,0};
 
 unsigned char SampleICSwitcher;
 
@@ -92,7 +92,7 @@ unsigned char   TxComplete[NUMERO_PORT_SERIALI];
 
 // DMA buffers
 unsigned char Uart1TxBuff[MAX_TX_BUFF] __attribute__((space(dma),aligned(128))); //!< TX Buffer for Serial Port 1
-unsigned char Uart2TxBuff[MAX_TX_BUFF] __attribute__((space(dma),aligned(128))); //!< TX Buffer for Serial Port 2
+//unsigned char Uart2TxBuff[MAX_TX_BUFF] __attribute__((space(dma),aligned(128))); //!< TX Buffer for Serial Port 2
 
 unsigned int DmaAdc_A[MAX_CHNUM+1][SAMP_BUFF_SIZE] __attribute__((space(dma),aligned(128)));
 unsigned int DmaAdc_B[MAX_CHNUM+1][SAMP_BUFF_SIZE] __attribute__((space(dma),aligned(128)));
@@ -127,16 +127,16 @@ extern volatile fvalue CostanteTaraturaAN4;
 extern volatile Pid_t   PID1;
 extern volatile Pid_t   PID2;
 
-// PID [19d]
-extern tPID PIDstruct1;
-extern fractional abcCoefficient1[3] __attribute__ ((section (".xbss, bss, xmemory")));
-extern fractional controlHistory1[3] __attribute__ ((section (".ybss, bss, ymemory")));
-extern fractional kCoeffs1[];
-
-extern tPID PIDstruct2;
-extern fractional abcCoefficient2[3] __attribute__ ((section (".xbss, bss, xmemory")));
-extern fractional controlHistory2[3] __attribute__ ((section (".ybss, bss, ymemory")));
-extern fractional kCoeffs2[];
+//// PID [19d]
+//extern tPID PIDstruct1;
+//extern fractional abcCoefficient1[3] __attribute__ ((section (".xbss, bss, xmemory")));
+//extern fractional controlHistory1[3] __attribute__ ((section (".ybss, bss, ymemory")));
+//extern fractional kCoeffs1[];
+//
+//extern tPID PIDstruct2;
+//extern fractional abcCoefficient2[3] __attribute__ ((section (".xbss, bss, xmemory")));
+//extern fractional controlHistory2[3] __attribute__ ((section (".ybss, bss, ymemory")));
+//extern fractional kCoeffs2[];
 
 extern unsigned char SampleICSwitcher;
 // Timer software
@@ -180,7 +180,7 @@ extern unsigned char   TxComplete[NUMERO_PORT_SERIALI];
 
 // DMA buffers
 extern unsigned char Uart1TxBuff[MAX_TX_BUFF] __attribute__((space(dma),aligned(128))); //!< TX Buffer for Serial Port 1
-extern unsigned char Uart2TxBuff[MAX_TX_BUFF] __attribute__((space(dma),aligned(128))); //!< TX Buffer for Serial Port 2
+//extern unsigned char Uart2TxBuff[MAX_TX_BUFF] __attribute__((space(dma),aligned(128))); //!< TX Buffer for Serial Port 2
 
 extern unsigned int DmaAdc_A[MAX_CHNUM+1][SAMP_BUFF_SIZE] __attribute__((space(dma),aligned(128)));
 extern unsigned int DmaAdc_B[MAX_CHNUM+1][SAMP_BUFF_SIZE] __attribute__((space(dma),aligned(128)));

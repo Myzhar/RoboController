@@ -127,7 +127,7 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
 {   long    L_ScaledSetpoint=_SETPOINT; // Dato da mantenere/raggiungere ( velocità di crociera ) moltiplicato per 1000
     long    L_ScaledProcesso=_AXELSPEED; // Dato istantaneo ( velocità istantanea ) moltiplicato per 1000
 
-    __builtin_disi(0x3FFF); /* disable interrupts, vedere pg 181 di MPLAB_XC16_C_Compiler_UG_52081.pdf */
+//    __builtin_disi(0x3FFF); /* disable interrupts, vedere pg 181 di MPLAB_XC16_C_Compiler_UG_52081.pdf */
 
     /*
      *  PWM varia da 0 a 4095 con centro a 2048, modalita LAP
@@ -278,5 +278,6 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
 
     _OUT_PREC = _OUT;
 
-    __builtin_disi(0x0000); /* enable interrupts, vedere pg 181 di MPLAB_XC16_C_Compiler_UG_52081.pdf */
+//    __builtin_disi(0x0000); /* enable interrupts, vedere pg 181 di MPLAB_XC16_C_Compiler_UG_52081.pdf */
 }
+ 

@@ -1,6 +1,6 @@
 // Dimensioni buffer
-#define MODBUS_N_BYTE_RX                64
-#define MODBUS_N_BYTE_TX                64
+#define MODBUS_N_BYTE_RX                128
+#define MODBUS_N_BYTE_TX                128
 
 #define BIT_PER_WORD			16
 #define MAX_WORD_LETTURA_MULTIPLA       28 //14

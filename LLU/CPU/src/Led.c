@@ -298,3 +298,4 @@ void GestioneLed2ErrorCode(volatile Led_t *LED)
 #endif
 }
 
+

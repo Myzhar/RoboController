@@ -1,4 +1,4 @@
- /*!
+  /*!
 * \mainpage main.c
 * \author   Mauro Soligo -->mauro.soligo@gmail.com<--
 * \version 0.0.1
@@ -88,9 +88,10 @@ int main(int argc, char** argv)
     //VarModbus[INDICE_STATUSBIT1] &= ~(FLG_STATUSBI1_JOYMODE);     // Al reset disattivo la modalità JoyStick
     //VarModbus[INDICE_STATUSBIT1] &= ~(FLG_STATUSBI1_PID_EN);      // Al reset disattivo la modalità PID
     VarModbus[INDICE_STATUSBIT1] |= FLG_STATUSBI1_PID_EN;           // Al reset attivo la modalità PID
-    VarModbus[INDICE_STATUSBIT1] |= FLG_STATUSBI1_COMWATCHDOG;      // Al reset attivo il WatchDog sulla comunicazione
-//    VarModbus[INDICE_STATUSBIT1] &= ~(FLG_STATUSBI1_COMWATCHDOG); // Al reset disattivo il WatchDog sulla comunicazione
-    VarModbus[INDICE_STATUSBIT1] |= FLG_STATUSBI1_EEPROM_SAVE_EN;   // Al reset attivo il Salvataggio automatico dei parametri in EEPROM
+//    VarModbus[INDICE_STATUSBIT1] |= FLG_STATUSBI1_COMWATCHDOG;      // Al reset attivo il WatchDog sulla comunicazione
+    VarModbus[INDICE_STATUSBIT1] &= ~(FLG_STATUSBI1_COMWATCHDOG); // Al reset disattivo il WatchDog sulla comunicazione
+//    VarModbus[INDICE_STATUSBIT1] |= FLG_STATUSBI1_EEPROM_SAVE_EN;   // Al reset attivo il Salvataggio automatico dei parametri in EEPROM
+    VarModbus[INDICE_STATUSBIT1] &= ~(FLG_STATUSBI1_EEPROM_SAVE_EN);   // Al reset disattivo il Salvataggio automatico dei parametri in EEPROM
     VarModbus[INDICE_FLAG_TARATURA] = 0;
     //VarModbus[INDICE_PWM_CH1] = MOTORE_STOP;                      // Motori fermi all'accensione
     //VarModbus[INDICE_PWM_CH2] = MOTORE_STOP;                      // Motori fermi all'accensione
@@ -138,8 +139,8 @@ int main(int argc, char** argv)
         ModbusRoutine(PORT_COM2);
 
         // -----------------  PID and speed calculation every 1ms ----------------- //
-        // if(PID1_CALC_FLAG) Pid1(); // Ogni 1mSec ricalcola il prescaler, avvia un ciclo
-        // if(PID2_CALC_FLAG) Pid2(); // di lettura dell'IC e esegue il PID sul dato prec.
+         if(PID1_CALC_FLAG) Pid1(); // Ogni 1mSec ricalcola il prescaler, avvia un ciclo
+         if(PID2_CALC_FLAG) Pid2(); // di lettura dell'IC e esegue il PID sul dato prec.
 
         // ----------------------  Task eseguito ogni 1mSec  ---------------------- //
         if(Timer1mSec.T_flag)
@@ -245,11 +246,11 @@ void _ISR_PSV _T1Interrupt(void)	// Timer 1 [13]
      * richiamando le funzioni Pid1() e Pid2().
      */
     
-    //PID1_CALC_FLAG = 1;	// PID1 and speed calculation enabled
-    //PID2_CALC_FLAG = 1;	// PID2 and speed calculation enabled
+    PID1_CALC_FLAG = 1;	// PID1 and speed calculation enabled
+    PID2_CALC_FLAG = 1;	// PID2 and speed calculation enabled
 
-    Pid1(); // Ogni 1mSec ricalcola il prescaler, avvia un ciclo
-    Pid2(); // di lettura dell'IC e esegue il PID sul dato prec.
+//    Pid1(); // Ogni 1mSec ricalcola il prescaler, avvia un ciclo
+//    Pid2(); // di lettura dell'IC e esegue il PID sul dato prec.
 
     /* **************************** TIMER SOFTWARE ******************************/
     GestioneTimerSW(&Timer1mSec);
@@ -267,125 +268,38 @@ void _ISR_PSV _T1Interrupt(void)	// Timer 1 [13]
 }
 
 
-//    void _ISR_PSV _T3Interrupt(void)
-//    {   // Timer 1	1ms
-//        _T3IF=0;   		// interrupt flag reset
-//
-//        /* ****************************  GESTIONE PID  ******************************/
-//    #ifdef DEBUG
-//        //LED1 = PIN_ON;  LED2 = PIN_ON;
-//        //LED1 = PIN_OFF; LED2 = PIN_OFF; // T = 0 uSec, fronte di discesa per sincronizzarmi
-//        //LED2 = PIN_ON;
-//        //LED2 = ~LED2;
-//    #endif
-//
-//        //__builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
-//
-//        /* **************************** TIMER SOFTWARE ******************************/
-//        GestioneTimerSW(&Timer1mSec);
-//        GestioneTimerSW(&Timer10mSec);
-//        /* **************************************************************************/
-//
-//        /* ******************************** MODBUS **********************************/
-//        if(TimerRitardoModbus[0])  TimerRitardoModbus[0]--;
-//        if(TimerOutRxModbus[0])    TimerOutRxModbus[0]--;     //time-out dei dati in ricezione
-//        if(TimerRitardoModbus[1])  TimerRitardoModbus[1]--;
-//        if(TimerOutRxModbus[1])    TimerOutRxModbus[1]--;     //time-out dei dati in ricezione
-//        /* ************************************************************************* */
-//
-//        //DISICNT = 0; //re-enable interrupts
-//
-//
-//    #ifdef DEBUG
-//        //LED2 = PIN_OFF;
-//        //LED1 = PIN_OFF;  LED2 = PIN_ON;
-//        //LED2 = ~LED2;
-//    #endif
-//
-//    }
-
-//    // Timer 2 overflow
-//    // void _ISR_PSV _T2Interrupt(void) {
-//    void __attribute__((interrupt, auto_psv, shadow)) _T2Interrupt(void) {
-//        unsigned char i;
-//        //LED1 = PIN_ON;  // DEBUG
-//        __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
-//
-//        IFS0bits.T2IF = 0;
-//
-//        Motore1.UC_OverFlowCounter++;
-//        Motore2.UC_OverFlowCounter++;
-//
-//        // reset Vel M1
-//        if (Motore1.UC_OverFlowCounter > 4)
-//        {   //Motore1.UC_OverFlowErrorCounter++;
-//            Motore1.UC_OverFlowCounter=4;
-//            Motore1.I_MotorAxelSpeed=0;
-//            for (i=0;i<8;i++)
-//            {   Motore1.UI_MediaIC[i] = 0;
-//            }
-//        }
-//
-//        //reset Vel M2
-//        if (Motore2.UC_OverFlowCounter > 4)
-//        {   //Motore2.UC_OverFlowErrorCounter++;
-//            Motore2.UC_OverFlowCounter=4;
-//            Motore2.I_MotorAxelSpeed=0;
-//            for (i=0;i<8;i++)
-//            {   Motore2.UI_MediaIC[i] = 0;
-//            }
-//        }
-//        //LED1 = PIN_OFF; // DEBUG
-//
-//
-//        DISICNT = 0; //re-enable interrupts
-//        return;
-//    }
-
-// Timer 2 overflow
-// void _ISR_PSV _T2Interrupt(void) {
 void __attribute__((interrupt, auto_psv, shadow)) _T2Interrupt(void) {
     unsigned char i;
-//    PIN_CN_IC2_4 = PIN_ON;
     __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     IFS0bits.T2IF = 0;
 
     Motore1.UC_OverFlowCounter++;
     // reset Vel M1
-    if (Motore1.UC_OverFlowCounter > 4)
-    {   //Motore1.UC_OverFlowErrorCounter++;
+    if (Motore1.UC_OverFlowCounter > 4) {
         Motore1.UC_OverFlowCounter=4;
         Motore1.I_MotorAxelSpeed=0;
         for (i=0;i<8;i++)
         {   Motore1.UI_MediaIC[i] = 0;
         }
     }
-
-//    PIN_CN_IC2_4 = PIN_OFF;
     DISICNT = 0; //re-enable interrupts
     return;
 }
 
-// Timer 3 overflow
-// void _ISR_PSV _T3Interrupt(void) {
 void __attribute__((interrupt, auto_psv, shadow)) _T3Interrupt(void) {
     unsigned char i;
-    //LED1 = PIN_ON;  // DEBUG
     __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     IFS0bits.T3IF = 0;
     Motore2.UC_OverFlowCounter++;
 
     //reset Vel M2
-    if (Motore2.UC_OverFlowCounter > 4)
-    {   //Motore2.UC_OverFlowErrorCounter++;
+    if (Motore2.UC_OverFlowCounter > 4) {
         Motore2.UC_OverFlowCounter=4;
         Motore2.I_MotorAxelSpeed=0;
         for (i=0;i<8;i++)
         {   Motore2.UI_MediaIC[i] = 0;
         }
     }
-    
-    //LED1 = PIN_OFF; // DEBUG
     DISICNT = 0; //re-enable interrupts
     return;
 }
@@ -397,115 +311,110 @@ void __attribute__((interrupt, auto_psv, shadow)) _T3Interrupt(void) {
  *  ***************************************************************************
  *  ***************************************************************************
  */
-
 void __attribute__((interrupt, auto_psv, shadow)) _IC1Interrupt(void) {
-//    unsigned char i;
-//    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     long int tmp = 0;
+    unsigned char i;
     unsigned int ActualIC1BUF;
+    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     IFS0bits.IC1IF = 0;
+
     ActualIC1BUF = IC1BUF;
     
-    if (Motore1.UC_First_IC_Interrupt_Done == 0)
-    {   Motore1.UI_Old_Capture = ActualIC1BUF;  // 1st interrupt, acquire start time
+    if (Motore1.UC_First_IC_Interrupt_Done == 0) {
+        Motore1.UI_Old_Capture = ActualIC1BUF;  // 1st interrupt, acquire start time
         Motore1.UC_OverFlowCounter = 0;         // reset overflow
         Motore1.UC_First_IC_Interrupt_Done = 1; // next interrupt valid acquire
         Motore1.UC_OverFlowCounter = 0;         // reset overflow
     }
-    else
-    {   // 2nd interrupt
+    else {   // 2nd interrupt
         tmp  = TMR2_VALUE;
         tmp *= Motore1.UC_OverFlowCounter;  // overflow offset
         tmp += ActualIC1BUF;                // capture
         tmp -= Motore1.UI_Old_Capture;      // click period
 //
-//    /*
-//     * FILTRO MISURE ERRATE : Inizio
-//     */
+//                    /*
+//                     * FILTRO MISURE ERRATE : Inizio
+//                     */
 //
-//            /* FILTRO MISURE ERRATE PER ERRORI LEGATI A SOVRAPPOSIZIONE DI INTERRUPT
-//             * Nel caso l'evento del timerOverflow avvenga nello stesso istante
-//             * in cui vi è il fronte di salita del segnale da misurare ( ENCODER )
-//             * può essere conteggiato in modo errato il numero di Overflow.
-//             *
-//             * Provvisoriamente introduciamo un filtro che di fatto intercetta
-//             * se la nuova misura discosta dalla precedente per una quantità
-//             * prossima 0xFFFF.
-//             * Non possiamo usare oxFFFF perchè tra due misure consecutive, a causa
-//             * dell'accelerazione o decelerazione del motore, vi sarà comunque una
-//             * certa differenza il cui risultato è sommato al valore errato di Overflow.
-//             *
-//             * Se per 3 misure consecutive il dato misurato discosta dal primo dato
-//             * campionato aggiorno il filtro al nuovo dato.
-//             * Serve nella malaugurata ipotesi che andassimo a campionare come primo
-//             * dato un dato errato :)
-//             * */
-//
-//
-//            /* Mantengo aggiornato uno storico degli ultimi mille campioni per analisi
-//             *  -> TestInputCapture1.Anomalie è l'indice
-//             *  -> TestInputCapture1.LogginArea[x][0] : Valore della misura letta
-//             *  -> TestInputCapture1.LogginArea[x][1] : Valore restituito dal filtro nello stesso istante
-//             */
-//
-//            if(TestInputCapture1.Anomalie > (LOGSIZE - 1) )  TestInputCapture1.Anomalie = 0;
-//            else TestInputCapture1.Anomalie++ ;
-//            TestInputCapture1.LogginArea[TestInputCapture1.Anomalie][0] = tmp; // Registro dato calcolato
+//                            /* FILTRO MISURE ERRATE PER ERRORI LEGATI A SOVRAPPOSIZIONE DI INTERRUPT
+//                             * Nel caso l'evento del timerOverflow avvenga nello stesso istante
+//                             * in cui vi è il fronte di salita del segnale da misurare ( ENCODER )
+//                             * può essere conteggiato in modo errato il numero di Overflow.
+//                             *
+//                             * Provvisoriamente introduciamo un filtro che di fatto intercetta
+//                             * se la nuova misura discosta dalla precedente per una quantità
+//                             * prossima 0xFFFF.
+//                             * Non possiamo usare oxFFFF perchè tra due misure consecutive, a causa
+//                             * dell'accelerazione o decelerazione del motore, vi sarà comunque una
+//                             * certa differenza il cui risultato è sommato al valore errato di Overflow.
+//                             *
+//                             * Se per 3 misure consecutive il dato misurato discosta dal primo dato
+//                             * campionato aggiorno il filtro al nuovo dato.
+//                             * Serve nella malaugurata ipotesi che andassimo a campionare come primo
+//                             * dato un dato errato :)
+//                             * */
 //
 //
+//                            /* Mantengo aggiornato uno storico degli ultimi mille campioni per analisi
+//                             *  -> TestInputCapture1.Anomalie è l'indice
+//                             *  -> TestInputCapture1.LogginArea[x][0] : Valore della misura letta
+//                             *  -> TestInputCapture1.LogginArea[x][1] : Valore restituito dal filtro nello stesso istante
+//                             */
 //
-//            /*      FILTRO:
-//             *      se una misura è molto diversa da quella precedente il filtro ritorna quella precedente per
-//             *      un massimo di 3 cicli.
-//             *      Se la nuova misura "Errata" rimane stabile per 3 cicli allora il filtro si aggiorna,
-//             *      restituisce la nuova misura e prende questo valore come riferimento.
-//             */
-//            if( ((tmp > InputCapture1.OldMeasure+60000) || (tmp < InputCapture1.OldMeasure-60000)) &&
-//                (InputCapture1.ErrorCounter < 3) )
-//            {   // Conto quanti errori avvengono consecutivamente
-//                // oltre 3 errori consecutivi significa che la misura è stabile e aggiorno
-//                // il filtro al nuovo valore
-//                InputCapture1.ErrorCounter++;
+//                            if(TestInputCapture1.Anomalie > (LOGSIZE - 1) )  TestInputCapture1.Anomalie = 0;
+//                            else TestInputCapture1.Anomalie++ ;
+//                            TestInputCapture1.LogginArea[TestInputCapture1.Anomalie][0] = tmp; // Registro dato calcolato
 //
-//                /* Per il momento tengo buona la misura precedente. */
-//                tmp = InputCapture1.OldMeasure;
 //
-//                //PIN_CN_IC2_5 ^= PIN_ON;      // DEBUG
 //
-//            }
-//            else
-//            {
-//                InputCapture1.OldMeasure = tmp;
-//                InputCapture1.ErrorCounter = 0;
-//            }
+//                            /*      FILTRO:
+//                             *      se una misura è molto diversa da quella precedente il filtro ritorna quella precedente per
+//                             *      un massimo di 3 cicli.
+//                             *      Se la nuova misura "Errata" rimane stabile per 3 cicli allora il filtro si aggiorna,
+//                             *      restituisce la nuova misura e prende questo valore come riferimento.
+//                             */
+//                            if( ((tmp > InputCapture1.OldMeasure+60000) || (tmp < InputCapture1.OldMeasure-60000)) &&
+//                                (InputCapture1.ErrorCounter < 3) )
+//                            {   // Conto quanti errori avvengono consecutivamente
+//                                // oltre 3 errori consecutivi significa che la misura è stabile e aggiorno
+//                                // il filtro al nuovo valore
+//                                InputCapture1.ErrorCounter++;
 //
-//            /* -> TestInputCapture1.LogginArea[x][1] : Valore restituito dal filtro nello stesso istante */
-//            TestInputCapture1.LogginArea[TestInputCapture1.Anomalie][1] = tmp; // Registro dato restituito dal filtro
+//                                /* Per il momento tengo buona la misura precedente. */
+//                                tmp = InputCapture1.OldMeasure;
 //
-//            /*  In TestInputCapture1.LogginArea mi trovo le ultime lille musure e i relativi valori filtrati restituiti dal
-//             *  filtro in ogni istante.
-//             */
-//    /*
-//     * FILTRO MISURE ERRATE : Fine
-//     */
+//                                //PIN_CN_IC2_5 ^= PIN_ON;      // DEBUG
+//
+//                            }
+//                            else
+//                            {
+//                                InputCapture1.OldMeasure = tmp;
+//                                InputCapture1.ErrorCounter = 0;
+//                            }
+//
+//                            /* -> TestInputCapture1.LogginArea[x][1] : Valore restituito dal filtro nello stesso istante */
+//                            TestInputCapture1.LogginArea[TestInputCapture1.Anomalie][1] = tmp; // Registro dato restituito dal filtro
+//
+//                            /*  In TestInputCapture1.LogginArea mi trovo le ultime lille musure e i relativi valori filtrati restituiti dal
+//                             *  filtro in ogni istante.
+//                             */
+//                    /*
+//                     * FILTRO MISURE ERRATE : Fine
+//                     */
 
-        Motore1.I_MotorAxelSpeed = (unsigned int)((long)Motore1.L_RpmConversion/tmp);
+        Motore1.UI_Period = (unsigned int)((long)Motore1.L_RpmConversion/tmp);
 
+        Motore1.UI_MediaIC[Motore1.UC_IC_idx] = Motore1.UI_Period;
+        Motore1.UC_IC_idx++;
+        if(Motore1.UC_IC_idx > 7) Motore1.UC_IC_idx = 0;
 
-//        Motore1.UI_Period = (unsigned int)((long)Motore1.L_RpmConversion/tmp);
-//
-//        Motore1.UI_MediaIC[Motore1.UC_IC_idx] = Motore1.UI_Period;
-//        Motore1.UC_IC_idx++;
-//        if(Motore1.UC_IC_idx > 7) Motore1.UC_IC_idx = 0;
-//
-//        // media mobile
-//        tmp = 0;
-//        for (i=0;i<8;i++)   tmp += Motore1.UI_MediaIC[i]; // Sommatoria degli 8 campioni
-//
-//        Motore1.I_MotorAxelSpeed = __builtin_divud(tmp,8);
+        // media mobile
+        tmp = 0;
+        for (i=0;i<8;i++)   tmp += Motore1.UI_MediaIC[i]; // Sommatoria degli 8 campioni
+
+        Motore1.I_MotorAxelSpeed = __builtin_divud(tmp,8);
 
         // CCW or CW
-        // Deve essere posizionato dopo il cambio prescaler per evitare di dover gestire il segno.
         if (!QEI1CONbits.UPDN)
         {   Motore1.I_MotorAxelSpeed *= -1;
         }
@@ -514,177 +423,58 @@ void __attribute__((interrupt, auto_psv, shadow)) _IC1Interrupt(void) {
 
         IC1CONbits.ICM = 0; // Disable Input Capture 1 module,
                         // re-enabled after PID computation on 1mSec Interrupt Timer
-        
     }
-//    DISICNT = 0; //re-enable interrupts
+    DISICNT = 0; //re-enable interrupts
     Motore1.UC_OverFlowCounter = 0;         // reset overflow
 }
 
-// void _ISR_PSV _IC2Interrupt(void) {
 void __attribute__((interrupt, auto_psv, shadow)) _IC2Interrupt(void) {
-//    unsigned char i;
-//    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     long int tmp = 0;
+    unsigned char i;
     unsigned int ActualIC2BUF;
+
+    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     IFS0bits.IC2IF = 0;
+
     ActualIC2BUF = IC2BUF;
 
-    if (Motore2.UC_First_IC_Interrupt_Done == 0)
-    {   Motore2.UI_Old_Capture = ActualIC2BUF;        // 1st interrupt, acquire start time
+    if (Motore2.UC_First_IC_Interrupt_Done == 0) {
+        Motore2.UI_Old_Capture = ActualIC2BUF;        // 1st interrupt, acquire start time
         Motore2.UC_OverFlowCounter = 0;         // reset overflow
         Motore2.UC_First_IC_Interrupt_Done = 1; // next interrupt valid acquire
-        //return;
     }
-    else
-    {
-    // 2nd interrupt
-    tmp  = TMR2_VALUE;
-    tmp *= Motore2.UC_OverFlowCounter; // overflow offset
-    tmp += ActualIC2BUF;   // capture
-    tmp -= Motore2.UI_Old_Capture; // click period
-    
-    Motore2.I_MotorAxelSpeed = (unsigned int)((long)Motore2.L_RpmConversion/tmp);    // Valore istantaneo di periodo.
+    else {
+        // 2nd interrupt
+        tmp  = TMR2_VALUE;
+        tmp *= Motore2.UC_OverFlowCounter; // overflow offset
+        tmp += IC2BUF;   // capture
+        tmp -= Motore2.UI_Old_Capture; // click period
 
-//
-//
-//    Motore2.UI_Period = (unsigned int)((long)Motore2.L_RpmConversion/tmp);    // Valore istantaneo di periodo.
-//
-//    Motore2.UI_MediaIC[Motore2.UC_IC_idx] = Motore2.UI_Period;
-//    Motore2.UC_IC_idx++;
-//    if(Motore2.UC_IC_idx > 7) Motore2.UC_IC_idx = 0;
-//
-//    // media mobile
-//    tmp = 0;
-//    for (i=0;i<8;i++)   tmp += Motore2.UI_MediaIC[i];   // Sommatoria degli 8 campioni
-//
-//    Motore2.I_MotorAxelSpeed = __builtin_divud(tmp,8);
+        Motore2.UI_Period = (unsigned int)((long)Motore2.L_RpmConversion/tmp);    // Valore istantaneo di periodo.
 
-    // CCW or CW
-    // Deve essere posizionato dopo il cambio prescaler per evitare di dover gestire il segno.
-    if (!QEI2CONbits.UPDN)
-    {   Motore2.I_MotorAxelSpeed *= -1;
-    }
+        Motore2.UI_MediaIC[Motore2.UC_IC_idx] = Motore2.UI_Period;
+        Motore2.UC_IC_idx++;
+        if(Motore2.UC_IC_idx > 7) Motore2.UC_IC_idx = 0;
 
-    Motore2.UC_First_IC_Interrupt_Done = 0;
+        // media mobile
+        tmp = 0;
+        for (i=0;i<8;i++)   tmp += Motore2.UI_MediaIC[i];   // Sommatoria degli 8 campioni
 
-    IC2CONbits.ICM = 0; // Disable Input Capture 1 module,
-                        // re-enabled after PID computation on 1mSec Interrupt Timer
+        Motore2.I_MotorAxelSpeed = __builtin_divud(tmp,8);
+
+        // CCW or CW
+        if (!QEI2CONbits.UPDN)
+        {   Motore2.I_MotorAxelSpeed *= -1;
         }
-//    DISICNT = 0; //re-enable interrupts
+
+        Motore2.UC_First_IC_Interrupt_Done = 0;
+
+        IC2CONbits.ICM = 0; // Disable Input Capture 1 module,
+                            // re-enabled after PID computation on 1mSec Interrupt Timer
+    }
+    DISICNT = 0; //re-enable interrupts
     Motore1.UC_OverFlowCounter = 0;         // reset overflow
-//
-//    DISICNT = 0; //re-enable interrupts
-//    return;
 }
-
-
-//    // void _ISR_PSV _IC1Interrupt(void) {
-//    void __attribute__((interrupt, auto_psv, shadow)) _IC1Interrupt(void) {
-//        long int tmp = 0;
-//        unsigned char i;
-//        unsigned int ActualIC1BUF;
-//
-//        IFS0bits.IC1IF = 0;
-//        ActualIC1BUF = IC1BUF;
-//        LED2 = PIN_ON; // DEBUG
-//
-//        if (Motore1.UC_First_IC_Interrupt_Done == 0)
-//        {   //LED1 = PIN_ON;  // DEBUG
-//            Motore1.UI_Old_Capture = ActualIC1BUF;        // 1st interrupt, acquire start time
-//            Motore1.UC_OverFlowCounter = 0;         // reset overflow
-//            Motore1.UC_First_IC_Interrupt_Done = 1; // next interrupt valid acquire
-//            //LED1 = PIN_OFF;  // DEBUG
-//            return;
-//        }
-//
-//        // 2nd interrupt
-//        tmp  = TMR2_VALUE + 1;
-//        tmp *= Motore1.UC_OverFlowCounter;  // overflow offset
-//        tmp += ActualIC1BUF;                // capture
-//        tmp -= Motore1.UI_Old_Capture;      // click period
-//
-//
-//        if(     (Motore1.UC_OverFlowCounter == 0) &&  ( ActualIC1BUF < Motore1.UI_Old_Capture ) )
-//        {
-//            //LED2 = PIN_ON;  // DEBUG
-//            LED1 = PIN_ON;  // DEBUG
-//        }
-//
-//        Motore1.UI_Period = (unsigned int)((long)Motore1.L_RpmConversion/tmp);
-//
-//        Motore1.UI_MediaIC[Motore1.UC_IC_idx] = Motore1.UI_Period;
-//        Motore1.UC_IC_idx++;
-//        if(Motore1.UC_IC_idx > 7) Motore1.UC_IC_idx = 0;
-//
-//        // media mobile
-//        tmp = 0;
-//        for (i=0;i<8;i++)   tmp += Motore1.UI_MediaIC[i]; // Sommatoria degli 8 campioni
-//
-//        Motore1.I_MotorAxelSpeed = __builtin_divud(tmp,8);
-//
-//        // CCW or CW
-//        // Deve essere posizionato dopo il cambio prescaler per evitare di dover gestire il segno.
-//        if (!QEI1CONbits.UPDN)
-//        {   Motore1.I_MotorAxelSpeed *= -1;
-//        }
-//
-//        Motore1.UC_First_IC_Interrupt_Done = 0;
-//
-//        IC1CONbits.ICM = 0; // Disable Input Capture 1 module,
-//                            // re-enabled after PID computation on 1mSec Interrupt Timer
-//
-//        LED1 = PIN_OFF; // DEBUG
-//        LED2 = PIN_OFF; // DEBUG
-//        return;
-//    }
-//
-//    // void _ISR_PSV _IC2Interrupt(void) {
-//    void __attribute__((interrupt, auto_psv, shadow)) _IC2Interrupt(void) {
-//        long int tmp = 0;
-//        unsigned char i;
-//        unsigned int ActualIC2BUF;
-//
-//        IFS0bits.IC2IF = 0;
-//        ActualIC2BUF = IC2BUF;
-//
-//        if (Motore2.UC_First_IC_Interrupt_Done == 0)
-//        {   Motore2.UI_Old_Capture = ActualIC2BUF;        // 1st interrupt, acquire start time
-//            Motore2.UC_OverFlowCounter = 0;         // reset overflow
-//            Motore2.UC_First_IC_Interrupt_Done = 1; // next interrupt valid acquire
-//            return;
-//        }
-//
-//        // 2nd interrupt
-//        tmp  = TMR2_VALUE + 1;
-//        tmp *= Motore2.UC_OverFlowCounter; // overflow offset
-//        tmp += IC2BUF;   // capture
-//        tmp -= Motore2.UI_Old_Capture; // click period
-//
-//        Motore2.UI_Period = (unsigned int)((long)Motore2.L_RpmConversion/tmp);    // Valore istantaneo di periodo.
-//
-//        Motore2.UI_MediaIC[Motore2.UC_IC_idx] = Motore2.UI_Period;
-//        Motore2.UC_IC_idx++;
-//        if(Motore2.UC_IC_idx > 7) Motore2.UC_IC_idx = 0;
-//
-//        // media mobile
-//        tmp = 0;
-//        for (i=0;i<8;i++)   tmp += Motore2.UI_MediaIC[i];   // Sommatoria degli 8 campioni
-//
-//        Motore2.I_MotorAxelSpeed = __builtin_divud(tmp,8);
-//
-//        // CCW or CW
-//        // Deve essere posizionato dopo il cambio prescaler per evitare di dover gestire il segno.
-//        if (!QEI2CONbits.UPDN)
-//        {   Motore2.I_MotorAxelSpeed *= -1;
-//        }
-//
-//        Motore2.UC_First_IC_Interrupt_Done = 0;
-//
-//        IC2CONbits.ICM = 0; // Disable Input Capture 1 module,
-//                            // re-enabled after PID computation on 1mSec Interrupt Timer
-//
-//        return;
-//    }
 
 void AggiornaDatiVelocita(void)
 {   long tmp;
@@ -818,6 +608,7 @@ float Costante_Conversione_Vlin_to_Vang(unsigned int GearBoxRatio_AXE, unsigned 
     K = Numeratore / Denominatore;
     return K;
 }
+
 
 
 
