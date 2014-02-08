@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <QApplication>
 #include <QDesktopWidget>
+#include <math.h>
 
 CQtJoypad::CQtJoypad(QWidget *parent) :
     QWidget(parent)
