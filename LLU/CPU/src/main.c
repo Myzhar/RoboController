@@ -41,10 +41,10 @@ unsigned char  Ver[] = "RoboController Test V1.0 Mauro Soligo 2011"; // 42+1 cha
 #include "macro.h"
 
 
-unsigned int TestBreakpoint;
-float a,b,c,d;
-long int Valori[1000];
-unsigned int IndiceValori = 0;
+//unsigned int TestBreakpoint;
+//float a,b,c,d;
+//long int Valori[1000];
+//unsigned int IndiceValori = 0;
 
 int main(int argc, char** argv)
 {   
@@ -398,27 +398,12 @@ void __attribute__((interrupt, auto_psv, shadow)) _T3Interrupt(void) {
  *  ***************************************************************************
  */
 
-
-//  PIN_CN_IC2_6
-//  PIN_CN_IC2_5
-//  PIN_CN_IC2_4
-
-//    InputCapture1.ErrorCounter;
-//    InputCapture1.OldMeasure;
-// void _ISR_PSV _IC1Interrupt(void) {
 void __attribute__((interrupt, auto_psv, shadow)) _IC1Interrupt(void) {
-    //  PIN_CN_IC2_5 = PIN_ON;      // DEBUG
-    //  PIN_CN_IC2_5 = PIN_OFF;     // DEBUG
-    //  PIN_CN_IC2_6 = PIN_ON;      // DEBUG
-    //  PIN_CN_IC2_6 = PIN_OFF;     // DEBUG
-    //  LED1 = PIN_ON;              // DEBUG
+//    unsigned char i;
+//    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     long int tmp = 0;
-    unsigned char i;
     unsigned int ActualIC1BUF;
-    
-    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     IFS0bits.IC1IF = 0;
-
     ActualIC1BUF = IC1BUF;
     
     if (Motore1.UC_First_IC_Interrupt_Done == 0)
@@ -430,98 +415,94 @@ void __attribute__((interrupt, auto_psv, shadow)) _IC1Interrupt(void) {
     else
     {   // 2nd interrupt
         tmp  = TMR2_VALUE;
-
-//        /* WARNING : pezo di codice da verificare meglio */
-//        if((Motore1.UC_OverFlowCounter <= 0) && IFS0bits.T2IF && (ActualIC1BUF < Motore1.UI_Old_Capture ))
-//        {   IFS0bits.T2IF = 0;
-//            Motore1.UC_OverFlowCounter++;
-//        }
-        /* ********************************************** */
         tmp *= Motore1.UC_OverFlowCounter;  // overflow offset
         tmp += ActualIC1BUF;                // capture
         tmp -= Motore1.UI_Old_Capture;      // click period
+//
+//    /*
+//     * FILTRO MISURE ERRATE : Inizio
+//     */
+//
+//            /* FILTRO MISURE ERRATE PER ERRORI LEGATI A SOVRAPPOSIZIONE DI INTERRUPT
+//             * Nel caso l'evento del timerOverflow avvenga nello stesso istante
+//             * in cui vi è il fronte di salita del segnale da misurare ( ENCODER )
+//             * può essere conteggiato in modo errato il numero di Overflow.
+//             *
+//             * Provvisoriamente introduciamo un filtro che di fatto intercetta
+//             * se la nuova misura discosta dalla precedente per una quantità
+//             * prossima 0xFFFF.
+//             * Non possiamo usare oxFFFF perchè tra due misure consecutive, a causa
+//             * dell'accelerazione o decelerazione del motore, vi sarà comunque una
+//             * certa differenza il cui risultato è sommato al valore errato di Overflow.
+//             *
+//             * Se per 3 misure consecutive il dato misurato discosta dal primo dato
+//             * campionato aggiorno il filtro al nuovo dato.
+//             * Serve nella malaugurata ipotesi che andassimo a campionare come primo
+//             * dato un dato errato :)
+//             * */
+//
+//
+//            /* Mantengo aggiornato uno storico degli ultimi mille campioni per analisi
+//             *  -> TestInputCapture1.Anomalie è l'indice
+//             *  -> TestInputCapture1.LogginArea[x][0] : Valore della misura letta
+//             *  -> TestInputCapture1.LogginArea[x][1] : Valore restituito dal filtro nello stesso istante
+//             */
+//
+//            if(TestInputCapture1.Anomalie > (LOGSIZE - 1) )  TestInputCapture1.Anomalie = 0;
+//            else TestInputCapture1.Anomalie++ ;
+//            TestInputCapture1.LogginArea[TestInputCapture1.Anomalie][0] = tmp; // Registro dato calcolato
+//
+//
+//
+//            /*      FILTRO:
+//             *      se una misura è molto diversa da quella precedente il filtro ritorna quella precedente per
+//             *      un massimo di 3 cicli.
+//             *      Se la nuova misura "Errata" rimane stabile per 3 cicli allora il filtro si aggiorna,
+//             *      restituisce la nuova misura e prende questo valore come riferimento.
+//             */
+//            if( ((tmp > InputCapture1.OldMeasure+60000) || (tmp < InputCapture1.OldMeasure-60000)) &&
+//                (InputCapture1.ErrorCounter < 3) )
+//            {   // Conto quanti errori avvengono consecutivamente
+//                // oltre 3 errori consecutivi significa che la misura è stabile e aggiorno
+//                // il filtro al nuovo valore
+//                InputCapture1.ErrorCounter++;
+//
+//                /* Per il momento tengo buona la misura precedente. */
+//                tmp = InputCapture1.OldMeasure;
+//
+//                //PIN_CN_IC2_5 ^= PIN_ON;      // DEBUG
+//
+//            }
+//            else
+//            {
+//                InputCapture1.OldMeasure = tmp;
+//                InputCapture1.ErrorCounter = 0;
+//            }
+//
+//            /* -> TestInputCapture1.LogginArea[x][1] : Valore restituito dal filtro nello stesso istante */
+//            TestInputCapture1.LogginArea[TestInputCapture1.Anomalie][1] = tmp; // Registro dato restituito dal filtro
+//
+//            /*  In TestInputCapture1.LogginArea mi trovo le ultime lille musure e i relativi valori filtrati restituiti dal
+//             *  filtro in ogni istante.
+//             */
+//    /*
+//     * FILTRO MISURE ERRATE : Fine
+//     */
 
-/*
- * FILTRO MISURE ERRATE : Inizio
- */
-
-        /* FILTRO MISURE ERRATE PER ERRORI LEGATI A SOVRAPPOSIZIONE DI INTERRUPT
-         * Nel caso l'evento del timerOverflow avvenga nello stesso istante
-         * in cui vi è il fronte di salita del segnale da misurare ( ENCODER )
-         * può essere conteggiato in modo errato il numero di Overflow.
-         *
-         * Provvisoriamente introduciamo un filtro che di fatto intercetta
-         * se la nuova misura discosta dalla precedente per una quantità
-         * prossima 0xFFFF.
-         * Non possiamo usare oxFFFF perchè tra due misure consecutive, a causa
-         * dell'accelerazione o decelerazione del motore, vi sarà comunque una
-         * certa differenza il cui risultato è sommato al valore errato di Overflow.
-         *
-         * Se per 3 misure consecutive il dato misurato discosta dal primo dato
-         * campionato aggiorno il filtro al nuovo dato.
-         * Serve nella malaugurata ipotesi che andassimo a campionare come primo
-         * dato un dato errato :)
-         * */
+        Motore1.I_MotorAxelSpeed = (unsigned int)((long)Motore1.L_RpmConversion/tmp);
 
 
-        /* Mantengo aggiornato uno storico degli ultimi mille campioni per analisi
-         *  -> TestInputCapture1.Anomalie è l'indice 
-         *  -> TestInputCapture1.LogginArea[x][0] : Valore della misura letta
-         *  -> TestInputCapture1.LogginArea[x][1] : Valore restituito dal filtro nello stesso istante
-         */
-
-        if(TestInputCapture1.Anomalie > (LOGSIZE - 1) )  TestInputCapture1.Anomalie = 0;
-        else TestInputCapture1.Anomalie++ ;
-        TestInputCapture1.LogginArea[TestInputCapture1.Anomalie][0] = tmp; // Registro dato calcolato
-
-
-
-        /*      FILTRO:
-         *      se una misura è molto diversa da quella precedente il filtro ritorna quella precedente per
-         *      un massimo di 3 cicli.
-         *      Se la nuova misura "Errata" rimane stabile per 3 cicli allora il filtro si aggiorna,
-         *      restituisce la nuova misura e prende questo valore come riferimento.
-         */
-        if( ((tmp > InputCapture1.OldMeasure+60000) || (tmp < InputCapture1.OldMeasure-60000)) &&
-            (InputCapture1.ErrorCounter < 3) )
-        {   // Conto quanti errori avvengono consecutivamente
-            // oltre 3 errori consecutivi significa che la misura è stabile e aggiorno
-            // il filtro al nuovo valore
-            InputCapture1.ErrorCounter++;
-
-            /* Per il momento tengo buona la misura precedente. */
-            tmp = InputCapture1.OldMeasure;
-
-            //PIN_CN_IC2_5 ^= PIN_ON;      // DEBUG
-
-        }
-        else
-        {
-            InputCapture1.OldMeasure = tmp;
-            InputCapture1.ErrorCounter = 0;
-        }
-
-        /* -> TestInputCapture1.LogginArea[x][1] : Valore restituito dal filtro nello stesso istante */
-        TestInputCapture1.LogginArea[TestInputCapture1.Anomalie][1] = tmp; // Registro dato restituito dal filtro
-
-        /*  In TestInputCapture1.LogginArea mi trovo le ultime lille musure e i relativi valori filtrati restituiti dal 
-         *  filtro in ogni istante.
-         */
-/*
- * FILTRO MISURE ERRATE : Fine
- */
-
-        Motore1.UI_Period = (unsigned int)((long)Motore1.L_RpmConversion/tmp);
-
-        Motore1.UI_MediaIC[Motore1.UC_IC_idx] = Motore1.UI_Period;
-        Motore1.UC_IC_idx++;
-        if(Motore1.UC_IC_idx > 7) Motore1.UC_IC_idx = 0;
-
-        // media mobile
-        tmp = 0;
-        for (i=0;i<8;i++)   tmp += Motore1.UI_MediaIC[i]; // Sommatoria degli 8 campioni
-
-        Motore1.I_MotorAxelSpeed = __builtin_divud(tmp,8);
+//        Motore1.UI_Period = (unsigned int)((long)Motore1.L_RpmConversion/tmp);
+//
+//        Motore1.UI_MediaIC[Motore1.UC_IC_idx] = Motore1.UI_Period;
+//        Motore1.UC_IC_idx++;
+//        if(Motore1.UC_IC_idx > 7) Motore1.UC_IC_idx = 0;
+//
+//        // media mobile
+//        tmp = 0;
+//        for (i=0;i<8;i++)   tmp += Motore1.UI_MediaIC[i]; // Sommatoria degli 8 campioni
+//
+//        Motore1.I_MotorAxelSpeed = __builtin_divud(tmp,8);
 
         // CCW or CW
         // Deve essere posizionato dopo il cambio prescaler per evitare di dover gestire il segno.
@@ -535,19 +516,17 @@ void __attribute__((interrupt, auto_psv, shadow)) _IC1Interrupt(void) {
                         // re-enabled after PID computation on 1mSec Interrupt Timer
         
     }
-    DISICNT = 0; //re-enable interrupts
+//    DISICNT = 0; //re-enable interrupts
     Motore1.UC_OverFlowCounter = 0;         // reset overflow
 }
 
 // void _ISR_PSV _IC2Interrupt(void) {
 void __attribute__((interrupt, auto_psv, shadow)) _IC2Interrupt(void) {
+//    unsigned char i;
+//    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     long int tmp = 0;
-    unsigned char i;
     unsigned int ActualIC2BUF;
-
-    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     IFS0bits.IC2IF = 0;
-
     ActualIC2BUF = IC2BUF;
 
     if (Motore2.UC_First_IC_Interrupt_Done == 0)
@@ -559,23 +538,26 @@ void __attribute__((interrupt, auto_psv, shadow)) _IC2Interrupt(void) {
     else
     {
     // 2nd interrupt
-    //tmp  = TMR2_VALUE + 1;
     tmp  = TMR2_VALUE;
     tmp *= Motore2.UC_OverFlowCounter; // overflow offset
-    tmp += IC2BUF;   // capture
+    tmp += ActualIC2BUF;   // capture
     tmp -= Motore2.UI_Old_Capture; // click period
+    
+    Motore2.I_MotorAxelSpeed = (unsigned int)((long)Motore2.L_RpmConversion/tmp);    // Valore istantaneo di periodo.
 
-    Motore2.UI_Period = (unsigned int)((long)Motore2.L_RpmConversion/tmp);    // Valore istantaneo di periodo.
-
-    Motore2.UI_MediaIC[Motore2.UC_IC_idx] = Motore2.UI_Period;
-    Motore2.UC_IC_idx++;
-    if(Motore2.UC_IC_idx > 7) Motore2.UC_IC_idx = 0;
-
-    // media mobile
-    tmp = 0;
-    for (i=0;i<8;i++)   tmp += Motore2.UI_MediaIC[i];   // Sommatoria degli 8 campioni
-
-    Motore2.I_MotorAxelSpeed = __builtin_divud(tmp,8);
+//
+//
+//    Motore2.UI_Period = (unsigned int)((long)Motore2.L_RpmConversion/tmp);    // Valore istantaneo di periodo.
+//
+//    Motore2.UI_MediaIC[Motore2.UC_IC_idx] = Motore2.UI_Period;
+//    Motore2.UC_IC_idx++;
+//    if(Motore2.UC_IC_idx > 7) Motore2.UC_IC_idx = 0;
+//
+//    // media mobile
+//    tmp = 0;
+//    for (i=0;i<8;i++)   tmp += Motore2.UI_MediaIC[i];   // Sommatoria degli 8 campioni
+//
+//    Motore2.I_MotorAxelSpeed = __builtin_divud(tmp,8);
 
     // CCW or CW
     // Deve essere posizionato dopo il cambio prescaler per evitare di dover gestire il segno.
@@ -588,7 +570,7 @@ void __attribute__((interrupt, auto_psv, shadow)) _IC2Interrupt(void) {
     IC2CONbits.ICM = 0; // Disable Input Capture 1 module,
                         // re-enabled after PID computation on 1mSec Interrupt Timer
         }
-    DISICNT = 0; //re-enable interrupts
+//    DISICNT = 0; //re-enable interrupts
     Motore1.UC_OverFlowCounter = 0;         // reset overflow
 //
 //    DISICNT = 0; //re-enable interrupts

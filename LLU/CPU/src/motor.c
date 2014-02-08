@@ -23,8 +23,6 @@
 */
 void InitMotorStructure()
 {
-
-
     Motore1.L_RpmConversion = Motore1.T_FattoreConversioneRPM_1;
     Motore2.L_RpmConversion = Motore2.T_FattoreConversioneRPM_1;
 
