@@ -102,6 +102,7 @@ CMainWindow::CMainWindow(QWidget *parent) :
     connect( ui->widget_joypad, SIGNAL(newJoypadValues(float,float)),
              this, SLOT(onNewJoypadValues(float,float)) );
 
+
     mMaxMotorSpeed = 2.0f; // m/sec
 
 }
@@ -127,6 +128,19 @@ bool CMainWindow::eventFilter(QObject *obj, QEvent *event)
     }
 }
 
+void CMainWindow::timerEvent( QTimerEvent* event )
+{
+    if( event->timerId() == mStatusReqTimer )
+    {
+        // TODO Request battery charge
+    }
+    else if( event->timerId() == mSpeedReqTimer )
+    {
+        mRoboCtrl->getMotorSpeed( 0 );
+        mRoboCtrl->getMotorSpeed( 1 );
+    }
+}
+
 void CMainWindow::resizeEvent(QResizeEvent * ev)
 {
     QMainWindow::resizeEvent( ev );
@@ -139,6 +153,13 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
     QFont font = this->font();
     font.setPixelSize( fontPx );
     this->setFont( font );
+
+    QFont unitFont("Monospace");
+    unitFont.setStyleHint(QFont::TypeWriter);
+    fontPx = COMMON->mScreen.cvtMm2Px( 2 );
+    unitFont.setPixelSize( fontPx );
+    ui->label_fw_speed->setFont( unitFont );
+    ui->label_rot_speed->setFont( unitFont );
 }
 
 void CMainWindow::onConnectButtonClicked()
@@ -162,6 +183,11 @@ void CMainWindow::onConnectButtonClicked()
         return;
     }
 
+    // >>>>> Signals/Slots connections
+    connect( mRoboCtrl, SIGNAL(newMotorSpeedValue(quint16,double)),
+             this, SLOT(onNewMotorSpeed(int,double)) );
+    // <<<<< Signals/Slots connections
+
     // >>>>> Setting last PID state
     BoardStatus status;
 
@@ -175,8 +201,15 @@ void CMainWindow::onConnectButtonClicked()
 
     mStatusLabel->setText( tr("Connected to robot") );
 
-
+    mSpeedReqTimer = this->startTimer( 50, Qt::PreciseTimer);
+    mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
 }
+
+void CMainWindow::onNewMotorSpeed( int mot, double speed )
+{
+    // TODO calculate the forward and rotation speed according to robot parameters
+}
+
 
 void CMainWindow::onNewJoypadValues(float x, float y)
 {
