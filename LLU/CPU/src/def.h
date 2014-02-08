@@ -3,7 +3,7 @@
 #include "modbus_registers.h"
 #include "eeprom.h"
 
-// #define DEBUG 1 // Uso i led per verificare segnali vari...
+ #define DEBUG 1 // Uso i led per verificare segnali vari...
 #define LOGSIZE 300
 
 #define BLOCCO_INTERRUPT_TRA_CICLI_PID 1 // Se attivo abilito il blocco dell'interrupt IC tra due cicli PID

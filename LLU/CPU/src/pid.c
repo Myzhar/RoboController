@@ -53,6 +53,8 @@
 
 void Pid1(void)
 {   //__builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
+
+
     PID1_CALC_FLAG = 0; // Attivato sotto interrupt ogni 1mSec
 
     /*  *************************************************************************** */
@@ -280,4 +282,31 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
 
 //    __builtin_disi(0x0000); /* enable interrupts, vedere pg 181 di MPLAB_XC16_C_Compiler_UG_52081.pdf */
 }
- 
+
+void PidInit(volatile Pid_t *PID, volatile Motor_t *MOTORE)
+{   // _RAMPA
+    _STEP_RAMPA = 0;
+    //_SETPOINT
+    _INTEGRALE = 0;
+
+    //_KP
+    //_KI
+    //_KD
+    _CONTR_INTEGRALE = 0;
+    _CONTR_PROPORZIONALE = 0;
+    _CONTR_DERIVATIVO = 0;
+
+    _ERRORE = 0;
+    _ERRORE_PRECEDENTE = 0;
+    _ERRORE_PRE_PRECEDENTE = 0;
+
+    _SOMMATORIA = 0;
+    _OUT_PREC = 0;
+
+    _COMPONENTE_FEEDFORWARD = 0;
+    _OUT = 0;
+    //_MAX_RPM
+    //_MIN_RPM
+    //_AXELSPEED
+
+}

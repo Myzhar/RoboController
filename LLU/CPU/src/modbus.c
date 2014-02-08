@@ -144,8 +144,12 @@ unsigned char ScriviWord(unsigned int Address,unsigned int Word)
         
 
 
-        case WORD_PWM_CH1               :   VarModbus[INDICE_PWM_CH1] = Word;  break;
-        case WORD_PWM_CH2               :   VarModbus[INDICE_PWM_CH2] = Word;  break;
+        case WORD_PWM_CH1               :
+                                            VarModbus[INDICE_PWM_CH1] = Word;
+                                            break;
+        case WORD_PWM_CH2               :
+                                            VarModbus[INDICE_PWM_CH2] = Word;
+                                            break;
         case WORD_COMWATCHDOG_TIME      :   //VarModbus[INDICE_COMWATCHDOG_TIME] = Word;  break;
                                             ParametriEEPROM[EEPROM_MODBUS_COMWATCHDOG_TIME] = Word;
                                             if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN)

@@ -88,6 +88,10 @@ int main(int argc, char** argv)
     //VarModbus[INDICE_STATUSBIT1] &= ~(FLG_STATUSBI1_JOYMODE);     // Al reset disattivo la modalità JoyStick
     //VarModbus[INDICE_STATUSBIT1] &= ~(FLG_STATUSBI1_PID_EN);      // Al reset disattivo la modalità PID
     VarModbus[INDICE_STATUSBIT1] |= FLG_STATUSBI1_PID_EN;           // Al reset attivo la modalità PID
+
+    OLD_INDICE_STATUSBIT1 = 0;  // Se parto con il PID abilitato deve valere 0.
+    //OLD_INDICE_STATUSBIT1 = 1;  // Se parto con il PWM abilitato deve valere 1.
+    
 //    VarModbus[INDICE_STATUSBIT1] |= FLG_STATUSBI1_COMWATCHDOG;      // Al reset attivo il WatchDog sulla comunicazione
     VarModbus[INDICE_STATUSBIT1] &= ~(FLG_STATUSBI1_COMWATCHDOG); // Al reset disattivo il WatchDog sulla comunicazione
 //    VarModbus[INDICE_STATUSBIT1] |= FLG_STATUSBI1_EEPROM_SAVE_EN;   // Al reset attivo il Salvataggio automatico dei parametri in EEPROM
@@ -187,13 +191,24 @@ int main(int argc, char** argv)
 void GestioneSetpoint(void)
 {   float SetpointRPM_M1, SetpointRPM_M2;
 
+
+
+    if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_PID_EN)
+    {   LED2 = LED_ON;
+    }
+    else
+    {   LED2 = LED_OFF;
+    }
+
+
     if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_PID_EN)
     {   //Funzionamento in modalità PID
         
         if(OLD_INDICE_STATUSBIT1 == 1) // Esco dalla modalità PID e passo a quella PWM
         {   OLD_INDICE_STATUSBIT1 = 0;
-            // Riinizializzo le variabili
-            // ...
+            // Disattivo il PID
+            PidInit(&PID1, &Motore1);
+            PidInit(&PID2, &Motore2);
         }
 
         /* **************************************************************** */
@@ -207,6 +222,13 @@ void GestioneSetpoint(void)
     {   /* **************************************************************** */
         /* ************ SONO IN MODALITA' PWM, ROUTINE "MAIN"  ************ */
         /* **************************************************************** */
+
+        if(OLD_INDICE_STATUSBIT1 == 0) // Esco dalla modalità PID e passo a quella PWM
+        {   OLD_INDICE_STATUSBIT1 = 1;
+            // Disattivo il PID
+            PidInit(&PID1, &Motore1);
+            PidInit(&PID2, &Motore2);
+        }
 
         // In modalità PWM il dato delle word INDICE_PWM_CHx lo mando direttamente 
         // al modulo PWM del micro perchè rappresenta già un PWM.
@@ -228,14 +250,10 @@ void GestioneSetpoint(void)
 /*---------------------------------------------------------------------------*/
 #ifndef TIMER_OFF
 
-    //PIN_CN_IC2_4 = PIN_ON;
-    //PIN_CN_IC2_4 = PIN_OFF;
-
 void _ISR_PSV _T1Interrupt(void)	// Timer 1 [13]
 {   // Timer 1	1ms
     __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     IFS0bits.T1IF = 0;  // interrupt flag reset
-    // cycle 0 actions
 
     /*
      * Gestione del calcolo del PID, due strade percorribili:
@@ -248,7 +266,6 @@ void _ISR_PSV _T1Interrupt(void)	// Timer 1 [13]
     
     PID1_CALC_FLAG = 1;	// PID1 and speed calculation enabled
     PID2_CALC_FLAG = 1;	// PID2 and speed calculation enabled
-
 //    Pid1(); // Ogni 1mSec ricalcola il prescaler, avvia un ciclo
 //    Pid2(); // di lettura dell'IC e esegue il PID sul dato prec.
 
@@ -269,7 +286,7 @@ void _ISR_PSV _T1Interrupt(void)	// Timer 1 [13]
 
 
 void __attribute__((interrupt, auto_psv, shadow)) _T2Interrupt(void) {
-    unsigned char i;
+//    unsigned char i;
     __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     IFS0bits.T2IF = 0;
 
@@ -278,16 +295,16 @@ void __attribute__((interrupt, auto_psv, shadow)) _T2Interrupt(void) {
     if (Motore1.UC_OverFlowCounter > 4) {
         Motore1.UC_OverFlowCounter=4;
         Motore1.I_MotorAxelSpeed=0;
-        for (i=0;i<8;i++)
-        {   Motore1.UI_MediaIC[i] = 0;
-        }
+//        for (i=0;i<8;i++)
+//        {   Motore1.UI_MediaIC[i] = 0;
+//        }
     }
     DISICNT = 0; //re-enable interrupts
     return;
 }
 
 void __attribute__((interrupt, auto_psv, shadow)) _T3Interrupt(void) {
-    unsigned char i;
+//    unsigned char i;
     __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     IFS0bits.T3IF = 0;
     Motore2.UC_OverFlowCounter++;
@@ -296,9 +313,9 @@ void __attribute__((interrupt, auto_psv, shadow)) _T3Interrupt(void) {
     if (Motore2.UC_OverFlowCounter > 4) {
         Motore2.UC_OverFlowCounter=4;
         Motore2.I_MotorAxelSpeed=0;
-        for (i=0;i<8;i++)
-        {   Motore2.UI_MediaIC[i] = 0;
-        }
+//        for (i=0;i<8;i++)
+//        {   Motore2.UI_MediaIC[i] = 0;
+//        }
     }
     DISICNT = 0; //re-enable interrupts
     return;
@@ -313,7 +330,7 @@ void __attribute__((interrupt, auto_psv, shadow)) _T3Interrupt(void) {
  */
 void __attribute__((interrupt, auto_psv, shadow)) _IC1Interrupt(void) {
     long int tmp = 0;
-    unsigned char i;
+//    unsigned char i;
     unsigned int ActualIC1BUF;
     __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     IFS0bits.IC1IF = 0;
@@ -401,18 +418,17 @@ void __attribute__((interrupt, auto_psv, shadow)) _IC1Interrupt(void) {
 //                    /*
 //                     * FILTRO MISURE ERRATE : Fine
 //                     */
-
         Motore1.UI_Period = (unsigned int)((long)Motore1.L_RpmConversion/tmp);
-
-        Motore1.UI_MediaIC[Motore1.UC_IC_idx] = Motore1.UI_Period;
-        Motore1.UC_IC_idx++;
-        if(Motore1.UC_IC_idx > 7) Motore1.UC_IC_idx = 0;
-
-        // media mobile
-        tmp = 0;
-        for (i=0;i<8;i++)   tmp += Motore1.UI_MediaIC[i]; // Sommatoria degli 8 campioni
-
-        Motore1.I_MotorAxelSpeed = __builtin_divud(tmp,8);
+        Motore1.I_MotorAxelSpeed = Motore1.UI_Period;
+//        Motore1.UI_MediaIC[Motore1.UC_IC_idx] = Motore1.UI_Period;
+//        Motore1.UC_IC_idx++;
+//        if(Motore1.UC_IC_idx > 7) Motore1.UC_IC_idx = 0;
+//
+//        // media mobile
+//        tmp = 0;
+//        for (i=0;i<8;i++)   tmp += Motore1.UI_MediaIC[i]; // Sommatoria degli 8 campioni
+//
+//        Motore1.I_MotorAxelSpeed = __builtin_divud(tmp,8);
 
         // CCW or CW
         if (!QEI1CONbits.UPDN)
@@ -430,7 +446,7 @@ void __attribute__((interrupt, auto_psv, shadow)) _IC1Interrupt(void) {
 
 void __attribute__((interrupt, auto_psv, shadow)) _IC2Interrupt(void) {
     long int tmp = 0;
-    unsigned char i;
+//    unsigned char i;
     unsigned int ActualIC2BUF;
 
     __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
@@ -451,16 +467,16 @@ void __attribute__((interrupt, auto_psv, shadow)) _IC2Interrupt(void) {
         tmp -= Motore2.UI_Old_Capture; // click period
 
         Motore2.UI_Period = (unsigned int)((long)Motore2.L_RpmConversion/tmp);    // Valore istantaneo di periodo.
-
-        Motore2.UI_MediaIC[Motore2.UC_IC_idx] = Motore2.UI_Period;
-        Motore2.UC_IC_idx++;
-        if(Motore2.UC_IC_idx > 7) Motore2.UC_IC_idx = 0;
-
-        // media mobile
-        tmp = 0;
-        for (i=0;i<8;i++)   tmp += Motore2.UI_MediaIC[i];   // Sommatoria degli 8 campioni
-
-        Motore2.I_MotorAxelSpeed = __builtin_divud(tmp,8);
+        Motore2.I_MotorAxelSpeed = Motore2.UI_Period;
+//        Motore2.UI_MediaIC[Motore2.UC_IC_idx] = Motore2.UI_Period;
+//        Motore2.UC_IC_idx++;
+//        if(Motore2.UC_IC_idx > 7) Motore2.UC_IC_idx = 0;
+//
+//        // media mobile
+//        tmp = 0;
+//        for (i=0;i<8;i++)   tmp += Motore2.UI_MediaIC[i];   // Sommatoria degli 8 campioni
+//
+//        Motore2.I_MotorAxelSpeed = __builtin_divud(tmp,8);
 
         // CCW or CW
         if (!QEI2CONbits.UPDN)
