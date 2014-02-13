@@ -321,15 +321,27 @@ void _ISR_PSV _DMA6Interrupt(void)	// DMA for UART1 TX [6d]
 //}
 
 void __attribute__ ((interrupt, no_auto_psv)) _U1ErrInterrupt(void)
-{   IFS4bits.U1EIF = 0; // Clear the UART1 Error Interrupt Flag
+{   __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
+    InterruptTest9++;
+    IFS4bits.U1EIF = 0; // Clear the UART1 Error Interrupt Flag
+
+    InterruptTest9--;
+    DISICNT = 0; //re-enable interrupts
 }
 
 void __attribute__ ((interrupt, no_auto_psv)) _U2ErrInterrupt(void)
-{   IFS4bits.U2EIF = 0; // Clear the UART2 Error Interrupt Flag
+{   __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
+    InterruptTest8++;
+    IFS4bits.U2EIF = 0; // Clear the UART2 Error Interrupt Flag
+
+    InterruptTest8--;
+    DISICNT = 0; //re-enable interrupts
 }
 
 void _ISR_PSV _U1RXInterrupt(void)	// UART RX [6b]
-{   _U1RXIF = 0; 	// interrupt flag reset
+{   __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
+    InterruptTest7++;
+    _U1RXIF = 0; 	// interrupt flag reset
     ClrWdt();		// [1]
     unsigned char DatoRx;
     DatoRx = ReadUART1();
@@ -347,10 +359,15 @@ void _ISR_PSV _U1RXInterrupt(void)	// UART RX [6b]
             RxNByte[PORT_COM1] = 0;                 //  e il numero di byte ricevuti
         }
     }
+
+    InterruptTest7--;
+    DISICNT = 0; //re-enable interrupts
 }
 
 void _ISR_PSV _U2RXInterrupt(void)	// UART2 RX [6zb]
-{   _U2RXIF = 0; 	// interrupt flag reset
+{   __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
+    InterruptTest6++;
+    _U2RXIF = 0; 	// interrupt flag reset
     ClrWdt();		// [1]
     unsigned char DatoRx;
     DatoRx = ReadUART2();
@@ -368,6 +385,8 @@ void _ISR_PSV _U2RXInterrupt(void)	// UART2 RX [6zb]
             RxNByte[PORT_COM2] = 0;                 //  e il numero di byte ricevuti
         }
     }
+    InterruptTest6--;
+    DISICNT = 0; //re-enable interrupts
 }
 
 
@@ -377,6 +396,9 @@ void _ISR_PSV _U2TXInterrupt(void)	// UART2 TX
 
     IFS1bits.U2TXIF = 0;
     // clear TX interrupt flag
+
+    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
+    InterruptTest5++;
 
     ClrWdt();                           // [1]
 
@@ -390,6 +412,8 @@ void _ISR_PSV _U2TXInterrupt(void)	// UART2 TX
         TxComplete[PORT_COM2] = TRUE;
         IEC1bits.U2TXIE = 0;            //  Disable Transmit Interrupts
     }
+    InterruptTest5--;
+    DISICNT = 0; //re-enable interrupts
 }
 
 

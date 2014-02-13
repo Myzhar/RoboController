@@ -112,6 +112,17 @@ volatile unsigned char UartRxBuff[MAX_RX_BUFF][2];//serial communication buffer
 //volatile unsigned char IC1_idx=0,IC2_idx=0;
 //volatile unsigned char OVF1 = 1, OVF2 = 1;  // contatori overflow Timer 2, uno per ogni input capture
 
+volatile unsigned int InterruptTest0 = 0;
+volatile unsigned int InterruptTest1 = 0;
+volatile unsigned int InterruptTest2 = 0;
+volatile unsigned int InterruptTest3 = 0;
+volatile unsigned int InterruptTest4 = 0;
+volatile unsigned int InterruptTest5 = 0;
+volatile unsigned int InterruptTest6 = 0;
+volatile unsigned int InterruptTest7 = 0;
+volatile unsigned int InterruptTest8 = 0;
+volatile unsigned int InterruptTest9 = 0;
+
 #else
     // ridefinisco le variabili come extern
 
@@ -199,5 +210,15 @@ extern volatile unsigned char UartRxBuff[MAX_RX_BUFF][2];//serial communication 
 //extern volatile unsigned char IC1_idx,IC2_idx;
 //extern volatile unsigned char OVF1, OVF2;  // contatori overflow Timer 2, uno per ogni input capture
 
+extern volatile unsigned int InterruptTest0;
+extern volatile unsigned int InterruptTest1;
+extern volatile unsigned int InterruptTest2;
+extern volatile unsigned int InterruptTest3;
+extern volatile unsigned int InterruptTest4;
+extern volatile unsigned int InterruptTest5;
+extern volatile unsigned int InterruptTest6;
+extern volatile unsigned int InterruptTest7;
+extern volatile unsigned int InterruptTest8;
+extern volatile unsigned int InterruptTest9;
 #endif
 

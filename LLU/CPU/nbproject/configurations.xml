@@ -178,7 +178,7 @@
         <property key="secure-flash" value="no_flash"/>
         <property key="secure-ram" value="no_ram"/>
         <property key="secure-write-protect" value="no_write_protect"/>
-        <property key="stack-size" value=""/>
+        <property key="stack-size" value="1024"/>
         <property key="symbol-stripping" value="keep-all"/>
         <property key="trace-symbols" value=""/>
         <property key="warn-section-align" value="false"/>
