@@ -5,6 +5,9 @@
 
 #define REF_DPI 196.0f
 
+namespace roboctrl
+{
+
 class QScreenTools: public QObject
 {
     Q_OBJECT
@@ -35,5 +38,7 @@ public:
      */
     int cvtInch2Px( qreal in );
 };
+
+}
 
 #endif // QSCREENTOOLS_H

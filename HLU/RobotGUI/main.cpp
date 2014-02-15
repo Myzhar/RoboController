@@ -20,7 +20,12 @@ int main(int argc, char *argv[])
     }
 
     CMainWindow w;
+
+#ifdef ANDROID
     w.showMaximized();
+#else
+    w.show();
+#endif
 
     return a.exec();
 }

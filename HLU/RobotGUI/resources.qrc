@@ -1,9 +1,5 @@
 <RCC>
-    <qresource prefix="/">
+    <qresource prefix="/icon">
         <file>images/MyzharBot_favicon_64x64.png</file>
-    </qresource>
-    <qresource prefix="/joypad">
-        <file>images/joystick_background.png</file>
-        <file>images/joystick_thumb.png</file>
     </qresource>
 </RCC>

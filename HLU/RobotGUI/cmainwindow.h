@@ -38,6 +38,8 @@ private slots:
     void onNewJoypadValues(float x, float y);
     void onNewMotorSpeed( int mot, double speed );
 
+    void on_actionRobot_Configuration_triggered();
+
 protected:
     virtual void resizeEvent(QResizeEvent * ev) Q_DECL_OVERRIDE;
     virtual bool eventFilter(QObject *obj, QEvent *ev) Q_DECL_OVERRIDE;
@@ -64,8 +66,8 @@ private:
 
     float mMaxMotorSpeed; /*!< Max linear speed for each motor */
 
-    int mSpeedReqTimer = this->startTimer( 50, Qt::PreciseTimer);
-    int mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
+    int mSpeedReqTimer;
+    int mStatusReqTimer;
 };
 
 #endif // CMAINWINDOW_H

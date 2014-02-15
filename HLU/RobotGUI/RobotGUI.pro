@@ -23,13 +23,11 @@ INCLUDEPATH += \
 
 SOURCES += \
     main.cpp\
-    cmainwindow.cpp\
-    qscreentools.cpp \
+    cmainwindow.cpp\    
     qcommon.cpp
 
 HEADERS  += \
     cmainwindow.h \
-    qscreentools.h \
     qcommon.h
 
 FORMS    += \

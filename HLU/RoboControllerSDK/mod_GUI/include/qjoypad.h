@@ -1,16 +1,18 @@
-#ifndef CQTJOYPAD_H
-#define CQTJOYPAD_H
+#ifndef QJoypad_H
+#define QJoypad_H
 
 #include <QWidget>
 #include <QPaintEvent>
 #include <QResizeEvent>
 
+namespace roboctrl
+{
 
-class CQtJoypad : public QWidget
+class QJoypad : public QWidget
 {
     Q_OBJECT
 public:
-    explicit CQtJoypad(QWidget *parent = 0);
+    explicit QJoypad(QWidget *parent = 0);
 
     float getMaxAbsAxisValue(){return mMaxAxis;} ///< @return Max axis absolute value
 
@@ -46,4 +48,6 @@ private:
     int mPadSize; ///< Size of the pad image
 };
 
-#endif // CQTJOYPAD_H
+}
+
+#endif // QJoypad_H

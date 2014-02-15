@@ -20,7 +20,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
-    <normaloff>:/images/MyzharBot_favicon_64x64.png</normaloff>:/images/MyzharBot_favicon_64x64.png</iconset>
+    <normaloff>:/icon/images/MyzharBot_favicon_64x64.png</normaloff>:/icon/images/MyzharBot_favicon_64x64.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -177,7 +177,7 @@
        </spacer>
       </item>
       <item>
-       <widget class="CQtJoypad" name="widget_joypad" native="true">
+       <widget class="QJoypad" name="widget_joypad" native="true">
         <property name="minimumSize">
          <size>
           <width>200</width>
@@ -222,6 +222,7 @@
      <addaction name="actionPidEnabled"/>
     </widget>
     <addaction name="menuPID"/>
+    <addaction name="actionRobot_Configuration"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuOption"/>
@@ -251,13 +252,18 @@
     <string>PID state</string>
    </property>
   </action>
+  <action name="actionRobot_Configuration">
+   <property name="text">
+    <string>Robot Configuration</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>CQtJoypad</class>
+   <class>QJoypad</class>
    <extends>QWidget</extends>
-   <header>cqtjoypad.h</header>
+   <header>qjoypad.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -276,8 +282,8 @@
      <y>-1</y>
     </hint>
     <hint type="destinationlabel">
-     <x>199</x>
-     <y>149</y>
+     <x>392</x>
+     <y>235</y>
     </hint>
    </hints>
   </connection>

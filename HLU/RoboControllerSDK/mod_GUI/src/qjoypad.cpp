@@ -1,4 +1,4 @@
-#include <cqtjoypad.h>
+#include <qjoypad.h>
 #include <QPainter>
 #include <QDebug>
 
@@ -7,8 +7,13 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <math.h>
+#include <QResource>
+#include <QString>
 
-CQtJoypad::CQtJoypad(QWidget *parent) :
+namespace roboctrl
+{
+
+QJoypad::QJoypad(QWidget *parent) :
     QWidget(parent)
 {
     mJoyRelPos.setX( 0.0f );
@@ -26,9 +31,11 @@ CQtJoypad::CQtJoypad(QWidget *parent) :
         sizePolicy.setWidthForHeight(true);
         this->setSizePolicy( sizePolicy );
     }
+    
+
 }
 
-void CQtJoypad::setJoypadValues( float x, float y )
+void QJoypad::setJoypadValues( float x, float y )
 {
 //    if( !isVisible() )
 //        return;
@@ -61,7 +68,7 @@ void CQtJoypad::setJoypadValues( float x, float y )
     //qDebug() << PREFIX << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
 }
 
-void CQtJoypad::resizeEvent( QResizeEvent* event )
+void QJoypad::resizeEvent( QResizeEvent* event )
 {
     QSize newSize = event->size();
 
@@ -100,7 +107,7 @@ void CQtJoypad::resizeEvent( QResizeEvent* event )
     QWidget::resizeEvent(event);
 }
 
-void CQtJoypad::mousePressEvent( QMouseEvent *event )
+void QJoypad::mousePressEvent( QMouseEvent *event )
 {
     QPoint pos = event->pos();
 
@@ -126,7 +133,7 @@ void CQtJoypad::mousePressEvent( QMouseEvent *event )
     //qDebug() << PREFIX << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
 }
 
-void CQtJoypad::mouseMoveEvent( QMouseEvent *event )
+void QJoypad::mouseMoveEvent( QMouseEvent *event )
 {
     QPoint pos = event->pos();
 
@@ -166,7 +173,7 @@ void CQtJoypad::mouseMoveEvent( QMouseEvent *event )
     //qDebug() << PREFIX << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
 }
 
-void CQtJoypad::mouseReleaseEvent( QMouseEvent *event )
+void QJoypad::mouseReleaseEvent( QMouseEvent *event )
 {
     mJoyRelPos.setX( 0.0 );
     mJoyRelPos.setY( 0.0 );
@@ -180,7 +187,7 @@ void CQtJoypad::mouseReleaseEvent( QMouseEvent *event )
     //qDebug() << PREFIX << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
 }
 
-void CQtJoypad::paintEvent(QPaintEvent *event)
+void QJoypad::paintEvent(QPaintEvent *event)
 {
     event->accept();
 
@@ -205,7 +212,10 @@ void CQtJoypad::paintEvent(QPaintEvent *event)
     painter.drawPixmap( padOrigX, padOrigY, mJoypad );
 }
 
-/*int CQtJoypad::heightForWidth( int w )
+/*int QJoypad::heightForWidth( int w )
 {
     return w;
 }*/
+
+}
+

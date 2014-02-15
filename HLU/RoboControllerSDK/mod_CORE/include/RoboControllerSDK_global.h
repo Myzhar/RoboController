@@ -11,6 +11,9 @@
 
 #include "exception.h"
 
+namespace roboctrl
+{
+
 /**
  * @enum MotorCtrlMode
  * @brief Motor control modes.
@@ -107,5 +110,7 @@ typedef struct _RobotConfiguration
     EncoderPos EncoderPosition; /**< Encoder on the shaft of the motor or of the wheel */
     // <<<<< Wheels, Motors and Reduction
 } RobotConfiguration;
+
+}
 
 #endif // ROBOCONTROLLERSDK_GLOBAL_H

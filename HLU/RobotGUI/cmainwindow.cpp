@@ -8,6 +8,7 @@
 #include <Qdir>
 #include <QScreen>
 
+#include "qrobotconfigdialog.h"
 #include "qcommon.h"
 
 #define DEFAULT_IP "localhost"
@@ -101,7 +102,6 @@ CMainWindow::CMainWindow(QWidget *parent) :
 
     connect( ui->widget_joypad, SIGNAL(newJoypadValues(float,float)),
              this, SLOT(onNewJoypadValues(float,float)) );
-
 
     mMaxMotorSpeed = 2.0f; // m/sec
 
@@ -263,4 +263,15 @@ void CMainWindow::on_actionPidEnabled_triggered()
     status.wdEnable = true;
 
     mRoboCtrl->setBoardStatus( status );
+}
+
+void CMainWindow::on_actionRobot_Configuration_triggered()
+{
+    QRobotConfigDialog dlg(this);
+
+#ifdef ANDROID
+    dlg.setWindowState(dlg.windowState() | Qt::WindowMaximized);
+#endif
+
+    int res = dlg.exec();
 }
