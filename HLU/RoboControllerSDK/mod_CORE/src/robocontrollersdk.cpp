@@ -456,11 +456,12 @@ void RoboControllerSDK::sendCommand(quint16 msgCode, QVector<quint16> &data )
     }
     mConnMutex.unlock();
 
-    if( !mCurrSocket->waitForReadyRead( 500 ) )
+    if( !mCurrSocket->waitForReadyRead( SERVER_REPLY_TIMEOUT_MSEC ) )
     {
         qDebug() << tr("The server does not reply. Communication lost");
 
-        throw RcException( excCommunicationLost, tr("The server does not reply to requests. Last error: ")
+        throw RcException( excCommunicationLost, tr("The server does not reply to requests (Timeout: %1 msec). Last error: %2")
+                           .arg(SERVER_REPLY_TIMEOUT_MSEC)
                            .arg(mCurrSocket->errorString() ).toLocal8Bit() );
     }
 }

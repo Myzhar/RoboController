@@ -12,6 +12,8 @@
 
 #define ROBOT_CONFIG_INI_FILE "./robotConfig.ini"
 
+#define SERVER_REPLY_TIMEOUT_MSEC 1000
+
 namespace roboctrl
 {
 

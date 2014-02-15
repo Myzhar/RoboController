@@ -6,9 +6,38 @@
 
 using namespace roboctrl;
 
+class MyApplication : public QCoreApplication
+{
+public:
+    MyApplication(int& argc, char** argv) :
+        QCoreApplication(argc, argv) {}
+
+    virtual ~MyApplication() { }
+
+    virtual bool notify(QObject* receiver, QEvent* event)
+    {
+        bool done = true;
+        try
+        {
+            done = QCoreApplication::notify(receiver, event);
+        }
+        catch(roboctrl::RcException &e)
+        {
+            qCritical() << QObject::tr("RoboController Exception: %1").arg(e.getExcMessage());
+            exit( EXIT_FAILURE );
+        }
+        catch(...)
+        {
+            qCritical() << tr("Unhandled exception!");
+            exit( EXIT_FAILURE );
+        }
+        return done;
+    }
+};
+
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);    
+    MyApplication a(argc, argv);
 
     QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, ".");
 
@@ -21,6 +50,6 @@ int main(int argc, char *argv[])
         qCritical() << QObject::tr("Server Exception: %1").arg(e.getExcMessage());
         exit( EXIT_FAILURE );
     }
-    
+
     return a.exec();
 }

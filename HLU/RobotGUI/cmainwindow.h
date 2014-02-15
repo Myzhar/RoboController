@@ -36,10 +36,13 @@ private slots:
     void on_actionPidEnabled_triggered();
     void onConnectButtonClicked();
     void onNewJoypadValues(float x, float y);
+    void onNewMotorSpeed( int mot, double speed );
 
 protected:
     virtual void resizeEvent(QResizeEvent * ev) Q_DECL_OVERRIDE;
-    bool eventFilter(QObject *obj, QEvent *ev) Q_DECL_OVERRIDE;
+    virtual bool eventFilter(QObject *obj, QEvent *ev) Q_DECL_OVERRIDE;
+
+    virtual void timerEvent( QTimerEvent* event ) Q_DECL_OVERRIDE;
 
 private:
     Ui::CMainWindow *ui;
@@ -60,6 +63,9 @@ private:
     RoboControllerSDK* mRoboCtrl; /*!< Pointer to RoboControllerSDK object */
 
     float mMaxMotorSpeed; /*!< Max linear speed for each motor */
+
+    int mSpeedReqTimer = this->startTimer( 50, Qt::PreciseTimer);
+    int mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
 };
 
 #endif // CMAINWINDOW_H
