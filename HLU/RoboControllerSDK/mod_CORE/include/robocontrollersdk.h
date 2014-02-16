@@ -124,9 +124,15 @@ public:
     void saveRobotConfigurationToIni( QString iniFile = ROBOT_CONFIG_INI_FILE );
 
     /** @brief Save the Robot Configuration to Robot EEPROM
-     *         The Robot configuration is saved on the Robot     *
+     *         The Robot configuration is saved on the Robot
      */
     void saveRobotConfigurationToEeprom( );
+
+    /** @brief Set a new Robot Configuration without saving to EEPROM
+     */
+    void setRobotConfiguration( RobotConfiguration& roboConfig );
+
+
 
     //TODO: Implementare getWatchDogTime e setWatchDogTime
 

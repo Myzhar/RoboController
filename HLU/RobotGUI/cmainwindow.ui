@@ -253,6 +253,9 @@
    </property>
   </action>
   <action name="actionRobot_Configuration">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Robot Configuration</string>
    </property>

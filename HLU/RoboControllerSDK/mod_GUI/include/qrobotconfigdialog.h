@@ -7,13 +7,7 @@
 
 #include <qscreentools.h>
 
-
-
-typedef unsigned short uint16_t;
-typedef QVector<int> IntVector;
-
-
-
+#include <robocontrollersdk.h>
 
 namespace Ui {
 class CRobotConfigDialog;
@@ -27,14 +21,20 @@ class QRobotConfigDialog : public QDialog
     Q_OBJECT
     
 public:
-    explicit QRobotConfigDialog(QWidget *parent = 0);
+    explicit QRobotConfigDialog( RobotConfiguration& robotConfig, QWidget *parent = 0 );
     ~QRobotConfigDialog();
+
+    void getRobotConfiguration( RobotConfiguration& robotConfig );
 
 signals:
     
 private slots:
+    void on_buttonBox_accepted();
+
 private:
     Ui::CRobotConfigDialog *ui;
+
+    RobotConfiguration mRobotConfig;
 };
 
 }

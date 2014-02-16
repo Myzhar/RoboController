@@ -11,6 +11,9 @@
 
 #include "exception.h"
 
+#define RAD2DEG 57.29577951308233
+#define DEG2RAD 0.0174532925199433
+
 namespace roboctrl
 {
 

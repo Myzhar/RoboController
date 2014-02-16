@@ -37,6 +37,7 @@ private slots:
     void onConnectButtonClicked();
     void onNewJoypadValues(float x, float y);
     void onNewMotorSpeed( int mot, double speed );
+    void onNewRobotConfiguration( RobotConfiguration& robConf );
 
     void on_actionRobot_Configuration_triggered();
 
@@ -61,8 +62,16 @@ private:
     // <<<< GUI Objects
 
     bool mPidEnabled;
+    bool mOpenRobotConfig; /*!< Indicates that Robot Configuration dlg must be opened when receiving a new configuration message */
+    bool mRobotConfigValid; /*!< Indicates that a new valid Robot Configuration has been received */
+
+    bool mMotorSpeedLeftValid;
+    bool mMotorSpeedRightValid;
+    double mMotorSpeedRight;
+    double mMotorSpeedLeft;
 
     RoboControllerSDK* mRoboCtrl; /*!< Pointer to RoboControllerSDK object */
+    RobotConfiguration mRoboConf; /*!< Robot Configuration */
 
     float mMaxMotorSpeed; /*!< Max linear speed for each motor */
 

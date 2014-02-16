@@ -104,7 +104,8 @@ CMainWindow::CMainWindow(QWidget *parent) :
              this, SLOT(onNewJoypadValues(float,float)) );
 
     mMaxMotorSpeed = 2.0f; // m/sec
-
+    mOpenRobotConfig = false;
+    mRobotConfigValid = false;
 }
 
 CMainWindow::~CMainWindow()
@@ -156,7 +157,7 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
 
     QFont unitFont("Monospace");
     unitFont.setStyleHint(QFont::TypeWriter);
-    fontPx = COMMON->mScreen.cvtMm2Px( 2 );
+    fontPx = COMMON->mScreen.cvtMm2Px( 3 );
     unitFont.setPixelSize( fontPx );
     ui->label_fw_speed->setFont( unitFont );
     ui->label_rot_speed->setFont( unitFont );
@@ -186,6 +187,8 @@ void CMainWindow::onConnectButtonClicked()
     // >>>>> Signals/Slots connections
     connect( mRoboCtrl, SIGNAL(newMotorSpeedValue(quint16,double)),
              this, SLOT(onNewMotorSpeed(int,double)) );
+    connect( mRoboCtrl, SIGNAL(newRobotConfiguration(RobotConfiguration&)) ,
+             this, SLOT(onNewRobotConfiguration(RobotConfiguration&)) );
     // <<<<< Signals/Slots connections
 
     // >>>>> Setting last PID state
@@ -196,9 +199,19 @@ void CMainWindow::onConnectButtonClicked()
     status.saveToEeprom = true;
     status.wdEnable = true;
 
+    mMotorSpeedLeftValid=false;
+    mMotorSpeedRightValid=false;
+    mMotorSpeedRight=0;
+    mMotorSpeedLeft=0;
+
     mRoboCtrl->setBoardStatus( status );
     // <<<<< Setting last PID state
 
+    // >>>>> Requesting Robot Configuration
+    mRoboCtrl->getRobotConfigurationFromEeprom();
+    // <<<<< Requesting Robot Configuration
+
+    ui->actionRobot_Configuration->setEnabled(true);
     mStatusLabel->setText( tr("Connected to robot") );
 
     mSpeedReqTimer = this->startTimer( 50, Qt::PreciseTimer);
@@ -207,9 +220,34 @@ void CMainWindow::onConnectButtonClicked()
 
 void CMainWindow::onNewMotorSpeed( int mot, double speed )
 {
-    // TODO calculate the forward and rotation speed according to robot parameters
-}
+    if(mRobotConfigValid)
+    {
+        if( mot==0 )
+        {
+            mMotorSpeedLeft = speed;
+            mMotorSpeedLeftValid = true;
+        }
+        else
+        {
+            mMotorSpeedRight = speed;
+            mMotorSpeedRightValid = true;
+        }
 
+        if(mMotorSpeedLeftValid&&mMotorSpeedRightValid)
+        {
+            double fwSpeed = mMotorSpeedLeft+mMotorSpeedRight/2.0;
+            ui->lcdNumber_fw_speed->display( fwSpeed ); // m/sec
+
+            double rotSpeed = (mMotorSpeedLeft-mMotorSpeedRight)/(mRoboConf.WheelBase/1000.0); // Wheelbase is in mm
+            ui->lcdNumber_rot_speed->display( rotSpeed*RAD2DEG ); // deg/sec
+        }
+    }
+    else
+    {
+        ui->lcdNumber_fw_speed->display("------");
+        ui->lcdNumber_rot_speed->display("------");
+    }
+}
 
 void CMainWindow::onNewJoypadValues(float x, float y)
 {
@@ -267,11 +305,37 @@ void CMainWindow::on_actionPidEnabled_triggered()
 
 void CMainWindow::on_actionRobot_Configuration_triggered()
 {
-    QRobotConfigDialog dlg(this);
+    if(!mRoboCtrl)
+        return;
+
+    mOpenRobotConfig = true;
+
+    mRoboCtrl->getRobotConfigurationFromEeprom();
+}
+
+void CMainWindow::onNewRobotConfiguration( RobotConfiguration& robConf )
+{
+    memcpy( &mRoboConf, &robConf, sizeof(RobotConfiguration) );
+
+    mRobotConfigValid = true;
+
+    if( mOpenRobotConfig )
+    {
+        mOpenRobotConfig = false;
+
+        QRobotConfigDialog dlg(mRoboConf,this);
 
 #ifdef ANDROID
-    dlg.setWindowState(dlg.windowState() | Qt::WindowMaximized);
+        dlg.setWindowState(dlg.windowState() | Qt::WindowMaximized);
 #endif
 
-    int res = dlg.exec();
+        int res = dlg.exec();
+
+        if( res==QDialog::Accepted )
+        {
+            dlg.getRobotConfiguration( mRoboConf );
+            mRoboCtrl->setRobotConfiguration( mRoboConf );
+            mRoboCtrl->saveRobotConfigurationToEeprom();
+        }
+    }
 }

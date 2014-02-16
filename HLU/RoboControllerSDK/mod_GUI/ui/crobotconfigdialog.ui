@@ -167,7 +167,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Ratio Axe Left</string>
+                  <string>Ratio Shaft Left</string>
                  </property>
                 </widget>
                </item>
@@ -188,7 +188,7 @@
                 </spacer>
                </item>
                <item>
-                <widget class="QLineEdit" name="lineEdit_robot_ratio_axe_left_2">
+                <widget class="QLineEdit" name="lineEdit_robot_ratio_shaft_left">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
@@ -246,7 +246,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Ratio Axe Right </string>
+                  <string>Ratio Shaft Right </string>
                  </property>
                 </widget>
                </item>
@@ -267,7 +267,7 @@
                 </spacer>
                </item>
                <item>
-                <widget class="QLineEdit" name="lineEdit_robot_ratio_axe_right_2">
+                <widget class="QLineEdit" name="lineEdit_robot_ratio_shaft_right">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
@@ -346,7 +346,7 @@
                 </spacer>
                </item>
                <item>
-                <widget class="QLineEdit" name="lineEdit_robot_ratio_motor_right_2">
+                <widget class="QLineEdit" name="lineEdit_robot_ratio_motor_right">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
@@ -425,7 +425,7 @@
                 </spacer>
                </item>
                <item>
-                <widget class="QLineEdit" name="lineEdit_robot_ratio_motor_left_2">
+                <widget class="QLineEdit" name="lineEdit_robot_ratio_motor_left">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
@@ -514,28 +514,31 @@
                  <number>5</number>
                 </property>
                 <item>
-                 <widget class="QRadioButton" name="radioButton_motor_enable_low_2">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
+                 <widget class="QPushButton" name="pushButton_check_en_low">
                   <property name="text">
                    <string>Low (0)</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <property name="autoExclusive">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QRadioButton" name="radioButton_motor_enable_high_2">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
+                 <widget class="QPushButton" name="pushButton_check_en_high">
                   <property name="text">
                    <string>High (1)</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                  <property name="autoExclusive">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
@@ -592,7 +595,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_max_rpm_left_2">
+             <widget class="QLineEdit" name="lineEdit_robot_max_rpm_left">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -615,7 +618,7 @@
                </size>
               </property>
               <property name="text">
-               <string/>
+               <string>400</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -671,7 +674,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_max_rpm_right_2">
+             <widget class="QLineEdit" name="lineEdit_robot_max_rpm_right">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -694,7 +697,7 @@
                </size>
               </property>
               <property name="text">
-               <string/>
+               <string>400</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -750,7 +753,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_max_i_left_2">
+             <widget class="QLineEdit" name="lineEdit_robot_max_i_left">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -773,7 +776,7 @@
                </size>
               </property>
               <property name="text">
-               <string/>
+               <string>2000</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -829,7 +832,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_max_i_right_2">
+             <widget class="QLineEdit" name="lineEdit_robot_max_i_right">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -852,7 +855,7 @@
                </size>
               </property>
               <property name="text">
-               <string/>
+               <string>2000</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -908,7 +911,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_max_torque_left_2">
+             <widget class="QLineEdit" name="lineEdit_robot_max_torque_left">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -987,7 +990,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_max_torque_right_2">
+             <widget class="QLineEdit" name="lineEdit_robot_max_torque_right">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -1096,7 +1099,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_rad_left_2">
+             <widget class="QLineEdit" name="lineEdit_robot_rad_left">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -1175,7 +1178,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_rad_right_2">
+             <widget class="QLineEdit" name="lineEdit_robot_rad_right">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -1259,34 +1262,31 @@
               <number>3</number>
              </property>
              <item row="0" column="0">
-              <widget class="QRadioButton" name="radioButton_encoder_shaft_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
+              <widget class="QPushButton" name="pushButton_check_wheel">
                <property name="text">
-                <string>Shaft</string>
+                <string>Wheel</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
                </property>
                <property name="checked">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
                 <bool>true</bool>
                </property>
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QRadioButton" name="radioButton_encoder_motor_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
+              <widget class="QPushButton" name="pushButton_check_motor">
                <property name="text">
                 <string>Motor</string>
                </property>
-               <property name="checked">
-                <bool>false</bool>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -1340,7 +1340,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_cpr_left_2">
+             <widget class="QLineEdit" name="lineEdit_robot_cpr_left">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -1419,7 +1419,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_cpr_right_2">
+             <widget class="QLineEdit" name="lineEdit_robot_cpr_right">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -1528,7 +1528,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_height_2">
+             <widget class="QLineEdit" name="lineEdit_robot_height">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -1607,7 +1607,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_width_2">
+             <widget class="QLineEdit" name="lineEdit_robot_width">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -1686,7 +1686,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_wheelbase_2">
+             <widget class="QLineEdit" name="lineEdit_robot_wheelbase">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -1765,7 +1765,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_lenght_2">
+             <widget class="QLineEdit" name="lineEdit_robot_lenght">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -1844,7 +1844,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_robot_weight_2">
+             <widget class="QLineEdit" name="lineEdit_robot_weight">
               <property name="enabled">
                <bool>true</bool>
               </property>

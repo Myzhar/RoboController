@@ -922,6 +922,11 @@ void RoboControllerSDK::saveRobotConfigurationToIni( QString iniFile )
     ini.sync();
 }
 
+void RoboControllerSDK::setRobotConfiguration( RobotConfiguration& roboConfig )
+{
+    memcpy( &mRobotConfig, &roboConfig, sizeof(RobotConfiguration) );
+}
+
 void RoboControllerSDK::saveRobotConfigurationToEeprom( )
 {
     // >>>>> Robot Configuration Data (19 consequtive registers)
