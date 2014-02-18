@@ -9,8 +9,8 @@
 #define     MSG_READ_REPLY      (MESSAGES + 4)
 #define     MSG_RC_NOT_FOUND    (MESSAGES + 5) // RoboController Board not found
 #define     MSG_WRITE_OK        (MESSAGES + 6)
-#define     MSG_SERVER_PING_REQ (MESSAGES + 7)
-#define     MSG_SERVER_PING_OK  (MESSAGES + 8)
+#define     MSG_SERVER_PING_REQ (MESSAGES + 7) // Only over TCP
+#define     MSG_SERVER_PING_OK  (MESSAGES + 8) // Only over TCP
 
 #define     COMMANDS            200
 #define     CMD_CONNECT         (COMMANDS + 1)

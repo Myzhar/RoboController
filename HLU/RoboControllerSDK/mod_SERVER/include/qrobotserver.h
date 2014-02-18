@@ -11,6 +11,7 @@
 #include <modbus.h>
 #include <QTimer>
 #include <QMutex>
+#include <QAbstractSocket>
 
 #define WORD_TEST_BOARD 0
 #define TEST_TIMER_INTERVAL 1000
@@ -38,13 +39,19 @@ signals:
 public slots:
 
 private slots:
-    void openTcpSession(); ///< Called when a new session is opened
-    void onNewTcpConnection(); ///< Called for each incoming connection
+    void openTcpSession(); ///< Called when a new Tcp session is opened
+    void openUdpStatusSession(); ///< Called when a new Udp Status session is opened
+    void openUdpCommandSession(); ///< Called when a new Udp Command session is opened
+    void onNewTcpConnection(); ///< Called for each incoming TCP connection
+    void onNewUdpStatusConnection(); ///< Called for each incoming UDP Status connection
+    void onNewUdpCommandConnection(); ///< Called for each incoming UDP Command  connection
     void onTcpReadyRead(); ///< Called when a new data from TCP socket is available
+    void onUdpStatusReadyRead(); ///< Called when a new data from UDP Status socket is available
+    void onUdpCommandReadyRead(); ///< Called when a new data from UDP Command socket is available
     void onClientDisconnected(); ///< Called when a client disconnects
 
 private:
-    void sendBlock( quint16 msgCode, QVector<quint16>& data ); ///< Send data block to TCP
+    void sendBlock( QAbstractSocket* socket, quint16 msgCode, QVector<quint16>& data ); ///< Send data block to socket
 
     modbus_t* initializeSerialModbus( const char *device,
                                       int baud, char parity, int data_bit,
@@ -91,6 +98,8 @@ private:
     quint16         mMsgCounter; /// Counts the message sent
 
     quint16         mNextTcpBlockSize;      ///< Used to recover incomplete TCP block
+    quint16         mNextUdpCmdBlockSize;      ///< Used to recover incomplete UDP Command block
+    quint16         mNextUdpStatBlockSize;      ///< Used to recover incomplete UDP Status block
 };
 
 }

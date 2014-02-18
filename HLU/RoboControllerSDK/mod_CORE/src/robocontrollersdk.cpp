@@ -14,11 +14,13 @@ namespace roboctrl
 
 RoboControllerSDK::RoboControllerSDK(int udpListenPort,
                                      int udpSendPort,
-                                     QString tcpAddr,
+                                     QString serverAddr,
                                      int tcpPort ) :
     mTcpSocket(NULL),
-    mUdpSocket(NULL),
-    mCurrSocket(NULL)
+    mUdpStatusSocket(NULL),
+    mUdpControlSocket(NULL),
+    mCurrStatusSocket(NULL),
+    mCurrControlSocket(NULL)
 {
     mStopped = true;
     mWatchDogTimeMsec = 1000;
@@ -30,7 +32,7 @@ RoboControllerSDK::RoboControllerSDK(int udpListenPort,
     // >>>>> TCP Socket
     mTcpSocket = new QTcpSocket(this);
 
-    mTcpAddr = tcpAddr;
+    mServerAddr = serverAddr;
     mTcpPort = tcpPort;
 
     connect(mTcpSocket, SIGNAL(readyRead()), this, SLOT(onTcpReadyRead()));
@@ -47,7 +49,8 @@ RoboControllerSDK::RoboControllerSDK(int udpListenPort,
     // <<<<< UDP Socket
 
     mCommMode = cmConfiguration; // TODO Change to normal when UDP is ready
-    mCurrSocket = mTcpSocket;
+    mCurrStatusSocket = mTcpSocket;
+    mCurrControlSocket = mTcpSocket;
 
     mMotorCtrlMode = mcPID; // RoboController is in PID mode by default
 
@@ -62,13 +65,13 @@ RoboControllerSDK::~RoboControllerSDK()
 
     while(this->isRunning());
     disconnectTcpServer();
-    disconnectUdpServer();
+    disconnectUdpServers();
 }
 
 void RoboControllerSDK::connectToTcpServer()
 {
     mTcpConnected = false;
-    mTcpSocket->connectToHost( QHostAddress(mTcpAddr), mTcpPort );
+    mTcpSocket->connectToHost( QHostAddress(mServerAddr), mTcpPort );
     if( !mTcpSocket->waitForConnected( 5000 ) )
     {
         throw RcException( excTcpNotConnected, tr("It is not possible to connect to TCP server: %1")
@@ -94,20 +97,75 @@ void RoboControllerSDK::connectToTcpServer()
 
 void RoboControllerSDK::disconnectTcpServer()
 {
+    if(!mTcpSocket)
+        return;
+
     mTcpSocket->disconnectFromHost();
     if( mTcpSocket->state() == QAbstractSocket::UnconnectedState ||
             mTcpSocket->waitForDisconnected(1000) )
         qDebug() << tr("TCP Socket Disconnected");
 }
 
-void RoboControllerSDK::connectToUdpServer()
+void RoboControllerSDK::connectToUdpServers()
 {
-    //TODO implementare
+    mUdpConnected = false;
+    mUdpControlSocket->connectToHost( QHostAddress(mServerAddr), mUdpControlPort );
+    if( !mUdpControlSocket->waitForConnected( 5000 ) )
+    {
+        throw RcException( excUdpNotConnected, tr("It is not possible to connect to UDP server: %1")
+                           .arg(mUdpControlSocket->errorString() ).toLocal8Bit() );
+    }
+
+    int count=0;
+    while( count < 5 && !mUdpConnected )
+    {
+        sleep(1);
+        QCoreApplication::processEvents();
+        count ++;
+    }
+
+    if( !mUdpConnected )
+        throw RcException( excUdpNotConnected, tr("It is not possible to find a valid TCP server: %1")
+                           .arg(mUdpControlSocket->errorString() ).toLocal8Bit() );
+
+    mUdpConnected = false;
+    mUdpStatusSocket->connectToHost( QHostAddress(mServerAddr), mUdpStatusPort );
+    if( !mUdpStatusSocket->waitForConnected( 5000 ) )
+    {
+        throw RcException( excUdpNotConnected, tr("It is not possible to connect to UDP server: %1")
+                           .arg(mUdpStatusSocket->errorString() ).toLocal8Bit() );
+    }
+
+    count=0;
+    while( count < 5 && !mUdpConnected )
+    {
+        sleep(1);
+        QCoreApplication::processEvents();
+        count ++;
+    }
+
+    if( !mUdpConnected )
+        throw RcException( excUdpNotConnected, tr("It is not possible to find a valid TCP server: %1")
+                           .arg(mUdpControlSocket->errorString() ).toLocal8Bit() );
 }
 
-void RoboControllerSDK::disconnectUdpServer()
+void RoboControllerSDK::disconnectUdpServers()
 {
-    //TODO implementare
+    if(mUdpControlSocket)
+    {
+        mUdpControlSocket->disconnectFromHost();
+        if( mUdpControlSocket->state() == QAbstractSocket::UnconnectedState ||
+                mUdpControlSocket->waitForDisconnected(1000) )
+            qDebug() << tr("UDP Control Socket Disconnected");
+    }
+
+    if(mUdpStatusSocket)
+    {
+        mUdpStatusSocket->disconnectFromHost();
+        if( mUdpStatusSocket->state() == QAbstractSocket::UnconnectedState ||
+                mUdpStatusSocket->waitForDisconnected(1000) )
+            qDebug() << tr("UDP Status Socket Disconnected");
+    }
 }
 
 void RoboControllerSDK::onTcpReadyRead()
@@ -555,7 +613,8 @@ void RoboControllerSDK::setCommMode( CommMode mode )
         }
         else
         {
-            mCurrSocket = mUdpSocket;
+            mCurrControlSocket = mUdpControlSocket;
+            mCurrStatusSocket = mUdpStatusSocket;
             // TODO enableWatchdog();
         }
         mConnMutex.unlock();
@@ -571,7 +630,8 @@ void RoboControllerSDK::setCommMode( CommMode mode )
         }
         else
         {
-            mCurrSocket = mTcpSocket;
+            mCurrControlSocket = mTcpSocket;
+            mCurrStatusSocket = mTcpSocket;
             // TODO disableWatchdog();
         }
         mConnMutex.unlock();
@@ -666,8 +726,6 @@ void RoboControllerSDK::setBoardStatus( BoardStatus &status )
         statusVal |= FLG_STATUSBI1_EEPROM_SAVE_EN;
     if(status.wdEnable)
         statusVal |= FLG_STATUSBI1_COMWATCHDOG;
-
-
 
     QVector<quint16> data;
     data << (quint16)WORD_STATUSBIT1;

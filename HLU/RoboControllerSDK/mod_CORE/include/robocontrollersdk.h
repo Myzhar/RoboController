@@ -24,7 +24,7 @@ class ROBOCONTROLLERSDKSHARED_EXPORT RoboControllerSDK : public QThread
 public:
     explicit RoboControllerSDK(int udpListenPort=4550,
                                int udpSendPort=4560,
-                               QString tcpAddr=QString("localhost"),
+                               QString serverAddr=QString("localhost"),
                                int tcpPort=4500  );
 
     virtual ~RoboControllerSDK();
@@ -164,9 +164,9 @@ private:
     void disconnectTcpServer();
 
     /// UDP Connection
-    void connectToUdpServer();
+    void connectToUdpServers();
     /// UDP Disconnection
-    void disconnectUdpServer();
+    void disconnectUdpServers();
 
     /// Processes a reply message
     void processReplyMsg( QDataStream *inStream );
@@ -211,16 +211,19 @@ signals:
 private:
     qint64 mLastServerReqTime; /**< Information about last connection time */
 
-    int mUdpListenPort; /**< Socket UDP Listen Port */
-    int mUdpSendPort;   /**< Socket UDP Send Port */
+    int mUdpStatusPort; /**< Socket UDP Status Port */
+    int mUdpControlPort;   /**< Socket UDP Control Port */
     int mTcpPort;       /**< Socket TCP Port */
-    QString mTcpAddr;   /**< TCP Server address */
+
+    QString mServerAddr;   /**< Server address */
 
     QMutex mConnMutex;  /**< Mutex to share connection between functions safely */
 
     QTcpSocket* mTcpSocket;         /**< TCP Socket for secure communications */
-    QUdpSocket* mUdpSocket;         /**< UDP Socket for unsecure communications */
-    QAbstractSocket* mCurrSocket;   /**< Socket active */
+    QUdpSocket* mUdpStatusSocket;   /**< UDP Socket for status communications */
+    QUdpSocket* mUdpControlSocket;   /**< UDP Socket for control communications */
+    QAbstractSocket* mCurrStatusSocket;   /**< Status Socket active */
+    QAbstractSocket* mCurrControlSocket;  /**< Control Socket active */
 
     quint16 mNextTcpBlockSize;      /**< Used to recover incomplete TCP block */
 
