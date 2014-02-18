@@ -12,15 +12,13 @@
 namespace roboctrl
 {
 
-RoboControllerSDK::RoboControllerSDK(int udpListenPort,
-                                     int udpSendPort,
+RoboControllerSDK::RoboControllerSDK(int udpStatusPort,
+                                     int udpControlPort,
                                      QString serverAddr,
                                      int tcpPort ) :
     mTcpSocket(NULL),
     mUdpStatusSocket(NULL),
-    mUdpControlSocket(NULL),
-    mCurrStatusSocket(NULL),
-    mCurrControlSocket(NULL)
+    mUdpControlSocket(NULL)
 {
     mStopped = true;
     mWatchDogTimeMsec = 1000;
@@ -43,15 +41,12 @@ RoboControllerSDK::RoboControllerSDK(int udpListenPort,
     connectToTcpServer();
     // <<<<< TCP Socket
 
-    // >>>>> UDP Socket
+    // >>>>> UDP Sockets
     // TODO UDP Socket Connection
+    mUdpControlSocket = new QUdpSocket();
+    mUdpStatusSocket = new QUdpSocket();
 
-    // <<<<< UDP Socket
-
-    mCommMode = cmConfiguration; // TODO Change to normal when UDP is ready
-    mCurrStatusSocket = mTcpSocket;
-    mCurrControlSocket = mTcpSocket;
-
+    // <<<<< UDP Sockets
     mMotorCtrlMode = mcPID; // RoboController is in PID mode by default
 
     // Start thread
@@ -153,7 +148,7 @@ void RoboControllerSDK::disconnectUdpServers()
 {
     if(mUdpControlSocket)
     {
-        mUdpControlSocket->disconnectFromHost();
+        mUdpControlSocket->close();
         if( mUdpControlSocket->state() == QAbstractSocket::UnconnectedState ||
                 mUdpControlSocket->waitForDisconnected(1000) )
             qDebug() << tr("UDP Control Socket Disconnected");
@@ -161,7 +156,7 @@ void RoboControllerSDK::disconnectUdpServers()
 
     if(mUdpStatusSocket)
     {
-        mUdpStatusSocket->disconnectFromHost();
+        mUdpStatusSocket->close();
         if( mUdpStatusSocket->state() == QAbstractSocket::UnconnectedState ||
                 mUdpStatusSocket->waitForDisconnected(1000) )
             qDebug() << tr("UDP Status Socket Disconnected");
@@ -473,9 +468,9 @@ void RoboControllerSDK::onTcpHostFound()
     qDebug() << tr( "TCP Host found. Trying to communicate with server.");
 }
 
-void RoboControllerSDK::sendCommand(quint16 msgCode, QVector<quint16> &data )
+void RoboControllerSDK::sendCommand( QAbstractSocket* socket, quint16 msgCode, QVector<quint16> &data )
 {
-    if(!mCurrSocket)
+    if(!socket)
         return;
 
     mPingTimer.start( mWatchDogTimeMsec ); // Restart timer to avoid unuseful Ping
@@ -503,8 +498,8 @@ void RoboControllerSDK::sendCommand(quint16 msgCode, QVector<quint16> &data )
     //QMutexLocker locker( &mConnMutex );
     mConnMutex.lock();
     {
-        mCurrSocket->write( block );
-        mCurrSocket->flush();
+        socket->write( block );
+        socket->flush();
 
         qint64 time = QDateTime::currentDateTime().toMSecsSinceEpoch();
         mLastServerReqTime = time;
@@ -514,13 +509,13 @@ void RoboControllerSDK::sendCommand(quint16 msgCode, QVector<quint16> &data )
     }
     mConnMutex.unlock();
 
-    if( !mCurrSocket->waitForReadyRead( SERVER_REPLY_TIMEOUT_MSEC ) )
+    if( !socket->waitForReadyRead( SERVER_REPLY_TIMEOUT_MSEC ) )
     {
         qDebug() << tr("The server does not reply. Communication lost");
 
         throw RcException( excCommunicationLost, tr("The server does not reply to requests (Timeout: %1 msec). Last error: %2")
                            .arg(SERVER_REPLY_TIMEOUT_MSEC)
-                           .arg(mCurrSocket->errorString() ).toLocal8Bit() );
+                           .arg(socket->errorString() ).toLocal8Bit() );
     }
 }
 
@@ -596,49 +591,6 @@ void RoboControllerSDK::sendCommand(quint16 msgCode, QVector<quint16> &data )
     // <<<<< WatchDog disable
 }*/
 
-void RoboControllerSDK::setCommMode( CommMode mode )
-{
-    if( mode==mCommMode )
-        return;
-
-    //QMutexLocker locker( &mConnMutex );
-
-    mConnMutex.lock();
-    if( mode==cmNormal )
-    {
-        if(!mUdpConnected)
-        {
-            mConnMutex.unlock();
-            throw RcException( excUdpNotConnected, tr("Critical error: UDP Socket not connected" ).toLocal8Bit() );
-        }
-        else
-        {
-            mCurrControlSocket = mUdpControlSocket;
-            mCurrStatusSocket = mUdpStatusSocket;
-            // TODO enableWatchdog();
-        }
-        mConnMutex.unlock();
-        return;
-    }
-
-    if( mode==cmConfiguration )
-    {
-        if(!mTcpConnected)
-        {
-            mConnMutex.unlock();
-            throw RcException( excTcpNotConnected, tr("Critical error: TCP Socket not connected" ).toLocal8Bit() );
-        }
-        else
-        {
-            mCurrControlSocket = mTcpSocket;
-            mCurrStatusSocket = mTcpSocket;
-            // TODO disableWatchdog();
-        }
-        mConnMutex.unlock();
-        return;
-    }
-}
-
 void RoboControllerSDK::run()
 {
     qDebug() << tr("RoboControllerSDK thread started");
@@ -686,7 +638,7 @@ void RoboControllerSDK::getMotorPWM( quint16 motorIdx )
         data << (quint16)WORD_RD_PWM_CH2;
     data << 1; // Only one register
 
-    sendCommand( CMD_RD_MULTI_REG, data );
+    sendCommand( mUdpStatusSocket, CMD_RD_MULTI_REG, data );
 }
 
 void RoboControllerSDK::getMotorSpeed( quint16 motorIdx )
@@ -698,7 +650,7 @@ void RoboControllerSDK::getMotorSpeed( quint16 motorIdx )
         data << (quint16)WORD_ENC2_SPEED;
     data << 1; // Only one register
 
-    sendCommand( CMD_RD_MULTI_REG, data );
+    sendCommand( mUdpStatusSocket, CMD_RD_MULTI_REG, data );
 }
 
 void RoboControllerSDK::getBoardStatus()
@@ -707,7 +659,7 @@ void RoboControllerSDK::getBoardStatus()
     data << (quint16)WORD_STATUSBIT1;
     data << 1;
 
-    sendCommand( CMD_RD_MULTI_REG, data );
+    sendCommand( mTcpSocket, CMD_RD_MULTI_REG, data );
 }
 
 void RoboControllerSDK::setBoardStatus( BoardStatus &status )
@@ -731,7 +683,7 @@ void RoboControllerSDK::setBoardStatus( BoardStatus &status )
     data << (quint16)WORD_STATUSBIT1;
     data << statusVal;
 
-    sendCommand( CMD_WR_MULTI_REG, data );
+    sendCommand( mTcpSocket, CMD_WR_MULTI_REG, data );
 }
 
 void RoboControllerSDK::getMotorPidGains( quint16 motorIdx )
@@ -743,7 +695,7 @@ void RoboControllerSDK::getMotorPidGains( quint16 motorIdx )
         data << (quint16)WORD_PID_P_RIGHT;
     data << 3; // 3 consecutive registers!
 
-    sendCommand( CMD_RD_MULTI_REG, data );
+    sendCommand( mTcpSocket, CMD_RD_MULTI_REG, data );
 }
 
 void RoboControllerSDK::setMotorPWM(quint16 motorIdx, int pwm )
@@ -774,7 +726,7 @@ void RoboControllerSDK::setMotorPWM(quint16 motorIdx, int pwm )
 
     data << pwm;
 
-    sendCommand( CMD_WR_MULTI_REG, data );
+    sendCommand( mUdpControlSocket, CMD_WR_MULTI_REG, data );
     // <<<<< New PWM to RoboController
 }
 
@@ -813,17 +765,12 @@ void RoboControllerSDK::setMotorSpeed( quint16 motorIdx, double speed )
     //quint16 sp = (quint16)(speed*1000.0+32767.5);
     data << sp;
 
-    sendCommand( CMD_WR_MULTI_REG, data );
+    sendCommand( mUdpControlSocket, CMD_WR_MULTI_REG, data );
     // <<<<< New SetPoint to RoboController
 }
 
 void RoboControllerSDK::setMotorPidGains( quint16 motorIdx, quint16 Kp, quint16 Ki, quint16 Kd )
 {
-    if( mCommMode != cmConfiguration )
-    {
-        qWarning() << Q_FUNC_INFO << tr("Function available only in cmConfiguration mode");
-    }
-
     // >>>>> New SetPoint to RoboController
     quint16 address;
     if(motorIdx == 0)
@@ -839,7 +786,7 @@ void RoboControllerSDK::setMotorPidGains( quint16 motorIdx, quint16 Kp, quint16 
     data << Ki;
     data << Kd;
 
-    sendCommand( CMD_WR_MULTI_REG, data );
+    sendCommand( mTcpSocket, CMD_WR_MULTI_REG, data );
     // <<<<< New SetPoint to RoboController
 }
 
@@ -853,7 +800,7 @@ void RoboControllerSDK::onPingTimerTimeout()
 
     qDebug() << tr(" Ping WatchDog - Elapsed: %1").arg(elapsed);
 
-    sendCommand( CMD_RD_MULTI_REG, pingData );
+    sendCommand( mTcpSocket, CMD_RD_MULTI_REG, pingData );
 }
 
 bool RoboControllerSDK::getRobotConfigurationFromIni( QString iniFile )
@@ -923,7 +870,7 @@ void RoboControllerSDK::getRobotConfigurationFromEeprom( )
     data << (quint16)WORD_ROBOT_DIMENSION_WEIGHT;
     data << 19; // Only one register
 
-    sendCommand( CMD_RD_MULTI_REG, data );
+    sendCommand( mTcpSocket, CMD_RD_MULTI_REG, data );
     // <<<<< Robot Configuration Data
 
     // >>>>> Robot Configuration Bits
@@ -931,7 +878,7 @@ void RoboControllerSDK::getRobotConfigurationFromEeprom( )
     data << (quint16)WORD_STATUSBIT2;
     data << 1;
 
-    sendCommand( CMD_RD_MULTI_REG, data );
+    sendCommand( mTcpSocket, CMD_RD_MULTI_REG, data );
     // <<<<< Robot Configuration Bits
 }
 
@@ -1013,7 +960,7 @@ void RoboControllerSDK::saveRobotConfigurationToEeprom( )
     data << mRobotConfig.RatioMotorLeft;
     data << mRobotConfig.RatioMotorRight;
 
-    sendCommand( CMD_WR_MULTI_REG, data );
+    sendCommand( mTcpSocket, CMD_WR_MULTI_REG, data );
     // <<<<< Robot Configuration Data (19 consequtive registers)
 
     // >>>>> Status Register 2
@@ -1028,7 +975,7 @@ void RoboControllerSDK::saveRobotConfigurationToEeprom( )
 
     data << statusVal;
 
-    sendCommand( CMD_WR_MULTI_REG, data );
+    sendCommand( mTcpSocket, CMD_WR_MULTI_REG, data );
     // <<<<< Status Register 2
 }
 

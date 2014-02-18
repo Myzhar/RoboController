@@ -22,20 +22,12 @@ class ROBOCONTROLLERSDKSHARED_EXPORT RoboControllerSDK : public QThread
     Q_OBJECT
 
 public:
-    explicit RoboControllerSDK(int udpListenPort=4550,
-                               int udpSendPort=4560,
+    explicit RoboControllerSDK(int udpStatusPort=4550,
+                               int udpControlPort=4560,
                                QString serverAddr=QString("localhost"),
                                int tcpPort=4500  );
 
     virtual ~RoboControllerSDK();
-
-    /** @brief Sets the current motor control mode
-     *
-     * @param mode The mode to be set. See @ref CommMode
-     *
-     * @throw RcException
-     */
-    void setCommMode( CommMode mode );
 
     /** @brief Send a request for motor speed.
      *         The reply is received with /ref newMotorSpeedValue
@@ -146,6 +138,14 @@ public:
      */
     //void enableWatchdog();
 
+    /** @brief Takes the control over the movements of the robot
+     */
+    void getRobotControl(); //TODO
+
+    /** @brief Releases the control over the movements of the robot
+     */
+    void releaseRobotControl(); //TODO
+
 
 
 protected:
@@ -175,7 +175,7 @@ private:
     void updateRobotConfigurationFromDataStream( QDataStream* inStream );
 
     /// Sends a command to current server
-    void sendCommand(quint16 msgCode, QVector<quint16> &data );       
+    void sendCommand(QAbstractSocket *socket, quint16 msgCode, QVector<quint16> &data );
 
 protected slots:
     void onTcpReadyRead();
@@ -222,15 +222,12 @@ private:
     QTcpSocket* mTcpSocket;         /**< TCP Socket for secure communications */
     QUdpSocket* mUdpStatusSocket;   /**< UDP Socket for status communications */
     QUdpSocket* mUdpControlSocket;   /**< UDP Socket for control communications */
-    QAbstractSocket* mCurrStatusSocket;   /**< Status Socket active */
-    QAbstractSocket* mCurrControlSocket;  /**< Control Socket active */
 
     quint16 mNextTcpBlockSize;      /**< Used to recover incomplete TCP block */
 
     bool mTcpConnected;     /**< Indicates if TCP Socket is connected */
     bool mUdpConnected;     /**< Indicates if UDP Socket is connected */
 
-    CommMode mCommMode;     /**< Current communication mode */
     MotorCtrlMode mMotorCtrlMode; /**< Current motor control mode */
     BoardStatus mBoardStatus; /**< Current board status */
 

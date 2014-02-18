@@ -310,8 +310,6 @@ void QRobotServer::openUdpStatusSession()
         return;
     }
 
-    connect (mUdpStatusSocket, SIGNAL(hostFound())
-
     connect( mUdpStatusSocket, SIGNAL(readyRead()),
              this, SLOT(onUdpStatusReadyRead()) );
 }
@@ -487,6 +485,8 @@ void QRobotServer::onTcpReadyRead()
             if( !commOk )
             {
                 QVector<quint16> vec;
+                vec << CMD_RD_MULTI_REG;
+                vec << startAddr;
                 sendBlock( mTcpSocket, MSG_FAILED, vec );
             }
             else
@@ -530,11 +530,15 @@ void QRobotServer::onTcpReadyRead()
             if( !commOk )
             {
                 QVector<quint16> vec;
+                vec << CMD_WR_MULTI_REG;
+                vec << startAddr;
                 sendBlock( mTcpSocket, MSG_FAILED, vec );
             }
             else
             {
                 QVector<quint16> vec;
+                vec << startAddr;
+                vec << nReg;
                 sendBlock( mTcpSocket, MSG_WRITE_OK, vec );
             }
             break;
@@ -629,6 +633,8 @@ void QRobotServer::onUdpStatusReadyRead()
             if( !commOk )
             {
                 QVector<quint16> vec;
+                vec << CMD_RD_MULTI_REG;
+                vec << startAddr;
                 sendBlock( mUdpStatusSocket, MSG_FAILED, vec );
             }
             else
@@ -672,11 +678,15 @@ void QRobotServer::onUdpStatusReadyRead()
             if( !commOk )
             {
                 QVector<quint16> vec;
+                vec << CMD_WR_MULTI_REG;
+                vec << startAddr;
                 sendBlock( mUdpStatusSocket, MSG_FAILED, vec );
             }
             else
             {
                 QVector<quint16> vec;
+                vec << startAddr;
+                vec << nReg;
                 sendBlock( mUdpStatusSocket, MSG_WRITE_OK, vec );
             }
             break;
@@ -771,6 +781,8 @@ void QRobotServer::onUdpCommandReadyRead()
             if( !commOk )
             {
                 QVector<quint16> vec;
+                vec << CMD_RD_MULTI_REG;
+                vec << startAddr;
                 sendBlock( mUdpCommandSocket, MSG_FAILED, vec );
             }
             else
@@ -814,11 +826,15 @@ void QRobotServer::onUdpCommandReadyRead()
             if( !commOk )
             {
                 QVector<quint16> vec;
+                vec << CMD_WR_MULTI_REG;
+                vec << startAddr;
                 sendBlock( mUdpCommandSocket, MSG_FAILED, vec );
             }
             else
             {
                 QVector<quint16> vec;
+                vec << startAddr;
+                vec << nReg;
                 sendBlock( mUdpCommandSocket, MSG_WRITE_OK, vec );
             }
             break;

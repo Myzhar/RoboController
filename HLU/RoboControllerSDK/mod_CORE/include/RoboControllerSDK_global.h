@@ -58,16 +58,6 @@ typedef enum
 } EncoderPos;
 
 /**
- * @enum CommMode
- * @brief Communication modes.
- */
-typedef enum
-{
-    cmNormal = 0, /**< Normal communication over unsecure UDP protocol */
-    cmConfiguration = 1 /**< Secure communication mode over TCP used to send configuration parameters */
-} CommMode;
-
-/**
   * @struct _BoardStatus
   * @brief Used to mantain the state of the
   *        configuration of the board
