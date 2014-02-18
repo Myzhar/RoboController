@@ -24,29 +24,11 @@ include($$ROBOCONTROLLERSDKPATH/mod_SERVER/RoboControllerSDK_SERVER.pri) # SERVE
 INCLUDEPATH += \
                include \
                ../common/include\
-               ../common/3rdparty/libmodbus-3.0.1 \
-               ../common/3rdparty/libmodbus-3.0.1/src
 
 SOURCES +=  \
             main.cpp \
-            ../common/3rdparty/libmodbus-3.0.1/src/modbus.c \
-            ../common/3rdparty/libmodbus-3.0.1/src/modbus-tcp.c \
-            ../common/3rdparty/libmodbus-3.0.1/src/modbus-rtu.c \
-            ../common/3rdparty/libmodbus-3.0.1/src/modbus-data.c \
             ../common/src/loghandler.cpp \
 
 HEADERS +=  \
-            ../common/3rdparty/libmodbus-3.0.1/src/modbus.h \
-            ../common/include/loghandler.h \
-            ../common/include/network_msg.h \
+            ../common/include/loghandler.h
 
-unix {
-    DEFINES += _TTY_POSIX_
-}
-
-win32 {
-    DEFINES += _TTY_WIN_  WINVER=0x0501 __WIN32__ _WIN32_WINNT=0x0501
-    LIBS += -lsetupapi \
-            -lwsock32 \
-            -lws2_32
-}

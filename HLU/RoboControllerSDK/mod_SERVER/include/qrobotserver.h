@@ -6,11 +6,11 @@
 #include <QThread>
 #include <QSettings>
 #include <QDebug>
-#include <QtTest/QTest>
 #include <QVector>
 #include <network_msg.h>
 #include <modbus.h>
 #include <QTimer>
+#include <QMutex>
 
 #define WORD_TEST_BOARD 0
 #define TEST_TIMER_INTERVAL 1000
@@ -20,26 +20,27 @@
 class QTcpServer;
 class QNetworkSession;
 class QTcpSocket;
+class QUdpSocket;
 
 namespace roboctrl
 {
 
-class ROBOCONTROLLERSDKSHARED_EXPORT QRobotTcpServer : public QThread
+class ROBOCONTROLLERSDKSHARED_EXPORT QRobotServer : public QThread
 {
     Q_OBJECT
 
 public:
-    explicit QRobotTcpServer(int serverPort=4500, QObject *parent=0); ///< Default constructor
-    virtual ~QRobotTcpServer(); ///< Destructor
-    
+    explicit QRobotServer(int serverUdpCommand=4550,int serverUdpStatus=4560,int serverTcpPort=4500, QObject *parent=0); ///< Default constructor
+    virtual ~QRobotServer(); ///< Destructor
+
 signals:
     
 public slots:
 
 private slots:
-    void onSessionOpened(); ///< Called when a new session is opened
-    void onNewConnection(); ///< Called for each incoming connection
-    void onReadyRead(); ///< Called when a new data from network is available
+    void openTcpSession(); ///< Called when a new session is opened
+    void onNewTcpConnection(); ///< Called for each incoming connection
+    void onTcpReadyRead(); ///< Called when a new data from TCP socket is available
     void onClientDisconnected(); ///< Called when a client disconnects
 
 private:
@@ -52,22 +53,29 @@ private:
     bool connectModbus( int retryCount=-1); /*< retryCount=-1 puts the server in an infinite loop trying reconnection */
     bool testBoardConnection(); ///< Tests if the board has not been disconnected
 
-    bool readMultiReg( quint16 startAddr, quint16 nReg ); ///< Called to read a registers from RoboController
+    bool readMultiReg( quint16 startAddr, quint16 nReg ); ///< Called to read registers from RoboController
 
     // QVector used instead of QList to provide direct data access using "Data()" function
-    bool writeMultiReg( quint16 startAddr, quint16 nReg, QVector<quint16> vals );
+    bool writeMultiReg( quint16 startAddr, quint16 nReg, QVector<quint16> vals ); ///< Called to write registers to RoboController
 
 protected:
     virtual void run() Q_DECL_OVERRIDE;
     virtual void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
 
 private:
+    QMutex  	    mBoardMutex; ///< Mutex on Robocontroller board
+
     QTcpServer*     mTcpServer; ///< TCP Server Object
-    QTcpSocket*     mClientSocket; ///< TCP Socket
+    QTcpSocket*     mTcpSocket; ///< TCP Socket
+    
+    QUdpSocket*     mUdpStatusSocket; ///< UDP Status Socket
+    QUdpSocket*     mUdpCommandSocket; ///< UDP Command Socket
 
     QSettings*      mSettings; ///< Settings in file INI
 
-    unsigned int    mServerPort;
+    unsigned int    mServerTcpPort; ///< Port of the TCP Server
+    unsigned int    mServerUdpStatusPort; ///< Port of the UDP Status Server
+    unsigned int    mServerUdpCommandPort; ///< Port of the UDP Command Server
 
     modbus_t*       mModbus;  ///< ModBus protocol implementation
     quint16         mBoardIdx;      /// Id of the connected board
@@ -79,8 +87,6 @@ private:
 
     int             mTestTimerId; ///< Id of the test timer.
     int             mClientCount; /// Number of connected Client
-
-    bool            mTestServerMode; /// Server test without board connection
 
     quint16         mMsgCounter; /// Counts the message sent
 
