@@ -31,7 +31,7 @@ class ROBOCONTROLLERSDKSHARED_EXPORT QRobotServer : public QThread
     Q_OBJECT
 
 public:
-    explicit QRobotServer(int serverUdpCommand=4550,int serverUdpStatus=4560,int serverTcpPort=4500, QObject *parent=0); ///< Default constructor
+    explicit QRobotServer(int serverUdpControl=4550,int serverUdpStatus=4560,int serverTcpPort=4500, QObject *parent=0); ///< Default constructor
     virtual ~QRobotServer(); ///< Destructor
 
 signals:
@@ -41,13 +41,13 @@ public slots:
 private slots:
     void openTcpSession(); ///< Called when a new Tcp session is opened
     void openUdpStatusSession(); ///< Called when a new Udp Status session is opened
-    void openUdpCommandSession(); ///< Called when a new Udp Command session is opened
+    void openUdpControlSession(); ///< Called when a new Udp Control session is opened
     void onNewTcpConnection(); ///< Called for each incoming TCP connection
     void onNewUdpStatusConnection(); ///< Called for each incoming UDP Status connection
-    void onNewUdpCommandConnection(); ///< Called for each incoming UDP Command  connection
+    void onNewUdpControlConnection(); ///< Called for each incoming UDP Control  connection
     void onTcpReadyRead(); ///< Called when a new data from TCP socket is available
     void onUdpStatusReadyRead(); ///< Called when a new data from UDP Status socket is available
-    void onUdpCommandReadyRead(); ///< Called when a new data from UDP Command socket is available
+    void onUdpControlReadyRead(); ///< Called when a new data from UDP Control socket is available
     void onClientDisconnected(); ///< Called when a client disconnects
 
 private:
@@ -76,13 +76,13 @@ private:
     QTcpSocket*     mTcpSocket; ///< TCP Socket
     
     QUdpSocket*     mUdpStatusSocket; ///< UDP Status Socket
-    QUdpSocket*     mUdpCommandSocket; ///< UDP Command Socket
+    QUdpSocket*     mUdpControlSocket; ///< UDP Control Socket
 
     QSettings*      mSettings; ///< Settings in file INI
 
     unsigned int    mServerTcpPort; ///< Port of the TCP Server
     unsigned int    mServerUdpStatusPort; ///< Port of the UDP Status Server
-    unsigned int    mServerUdpCommandPort; ///< Port of the UDP Command Server
+    unsigned int    mServerUdpControlPort; ///< Port of the UDP Control Server
 
     modbus_t*       mModbus;  ///< ModBus protocol implementation
     quint16         mBoardIdx;      /// Id of the connected board
@@ -98,7 +98,7 @@ private:
     quint16         mMsgCounter; /// Counts the message sent
 
     quint16         mNextTcpBlockSize;      ///< Used to recover incomplete TCP block
-    quint16         mNextUdpCmdBlockSize;      ///< Used to recover incomplete UDP Command block
+    quint16         mNextUdpCmdBlockSize;      ///< Used to recover incomplete UDP Control block
     quint16         mNextUdpStatBlockSize;      ///< Used to recover incomplete UDP Status block
 };
 

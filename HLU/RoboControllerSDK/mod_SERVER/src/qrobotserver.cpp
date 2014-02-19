@@ -14,15 +14,15 @@
 namespace roboctrl
 {
 
-QRobotServer::QRobotServer(int serverUdpCommand/*=4550*/,int serverUdpStatus/*=4560*/,int serverTcpPort/*=4500*/, QObject *parent/*=0*/) :
+QRobotServer::QRobotServer(int serverUdpControl/*=4550*/,int serverUdpStatus/*=4560*/,int serverTcpPort/*=4500*/, QObject *parent/*=0*/) :
     QThread(parent),
     mTcpServer(NULL),
     mTcpSocket(NULL),
     mUdpStatusSocket(NULL),
-    mUdpCommandSocket(NULL),
+    mUdpControlSocket(NULL),
     mSettings(NULL),
     mServerTcpPort(serverTcpPort),
-    mServerUdpCommandPort(serverUdpCommand),
+    mServerUdpControlPort(serverUdpControl),
     mServerUdpStatusPort(serverUdpStatus),
     mModbus(NULL),
     mReplyBuffer(NULL),
@@ -220,17 +220,17 @@ QRobotServer::QRobotServer(int serverUdpCommand/*=4550*/,int serverUdpStatus/*=4
     openUdpStatusSession();
     // <<<<< UDP Status configuration
     
-    // >>>>> UDP Command configuration
-    mServerUdpCommandPort = mSettings->value( "UDP_command_server_port", "0" ).toUInt();
-    if( mServerUdpCommandPort==0 )
+    // >>>>> UDP Control configuration
+    mServerUdpControlPort = mSettings->value( "UDP_Control_server_port", "0" ).toUInt();
+    if( mServerUdpControlPort==0 )
     {
-        mServerUdpCommandPort = 4550;
-        mSettings->setValue( "UDP_command_server_port", QString("%1").arg(mServerUdpCommandPort) );
+        mServerUdpControlPort = 4550;
+        mSettings->setValue( "UDP_Control_server_port", QString("%1").arg(mServerUdpControlPort) );
         mSettings->sync();
     }
 
-    openUdpCommandSession();
-    // <<<<< UDP Command configuration
+    openUdpControlSession();
+    // <<<<< UDP Control configuration
 
     mSettings->sync();
 
@@ -314,23 +314,23 @@ void QRobotServer::openUdpStatusSession()
              this, SLOT(onUdpStatusReadyRead()) );
 }
 
-void QRobotServer::openUdpCommandSession()
+void QRobotServer::openUdpControlSession()
 {
-    if( mUdpCommandSocket )
+    if( mUdpControlSocket )
         delete mUdpStatusSocket;
 
-    mUdpCommandSocket = new QUdpSocket();
+    mUdpControlSocket = new QUdpSocket();
 
-    if( !mUdpCommandSocket->bind( mServerUdpCommandPort, QAbstractSocket::ShareAddress ) )
+    if( !mUdpControlSocket->bind( mServerUdpControlPort, QAbstractSocket::ShareAddress ) )
     {
-        qCritical() << tr("Unable to bind the UDP Command server on %1 port. Error: %2")
-                       .arg(mServerUdpCommandPort).arg(mUdpCommandSocket->errorString());
+        qCritical() << tr("Unable to bind the UDP Control server on %1 port. Error: %2")
+                       .arg(mServerUdpControlPort).arg(mUdpControlSocket->errorString());
 
         return;
     }
 
-    connect( mUdpCommandSocket, SIGNAL(readyRead()),
-             this, SLOT(onUdpCommandReadyRead()) );
+    connect( mUdpControlSocket, SIGNAL(readyRead()),
+             this, SLOT(onUdpControlReadyRead()) );
 }
 
 void QRobotServer::onNewTcpConnection()
@@ -367,7 +367,7 @@ void QRobotServer::onNewUdpStatusConnection()
     // TODO SEND MESSAGE MSG_CONNECTED
 }
 
-void QRobotServer::onNewUdpCommandConnection()
+void QRobotServer::onNewUdpControlConnection()
 {
     // TODO SEND MESSAGE MSG_CONNECTED
 }
@@ -717,9 +717,9 @@ void QRobotServer::onUdpStatusReadyRead()
     }
 }
 
-void QRobotServer::onUdpCommandReadyRead()
+void QRobotServer::onUdpControlReadyRead()
 {
-    QDataStream in(mUdpCommandSocket);
+    QDataStream in(mUdpControlSocket);
     in.setVersion(QDataStream::Qt_4_0);
 
     int headerSize = 3; // [blockSize][msgIdx][msgCode]
@@ -731,7 +731,7 @@ void QRobotServer::onUdpCommandReadyRead()
     {
         if( mNextUdpCmdBlockSize==0) // No incomplete blocks received before
         {
-            if (mUdpCommandSocket->bytesAvailable() < (qint64)sizeof(quint16))
+            if (mUdpControlSocket->bytesAvailable() < (qint64)sizeof(quint16))
             {
                 qDebug() << Q_FUNC_INFO << tr("No more TCP Data available");
                 break;
@@ -741,7 +741,7 @@ void QRobotServer::onUdpCommandReadyRead()
             in >> mNextUdpCmdBlockSize; // Updated only if we are parsing a new block
         }
 
-        if (mUdpCommandSocket->bytesAvailable() < mNextUdpCmdBlockSize)
+        if (mUdpControlSocket->bytesAvailable() < mNextUdpCmdBlockSize)
         {
             qDebug() << Q_FUNC_INFO << tr("Received incomplete TCP Block... waiting for the missing data");
             break;
@@ -776,7 +776,7 @@ void QRobotServer::onUdpCommandReadyRead()
             if( !mBoardConnected )
             {
                 QVector<quint16> vec;
-                sendBlock( mUdpCommandSocket, MSG_RC_NOT_FOUND, vec);
+                sendBlock( mUdpControlSocket, MSG_RC_NOT_FOUND, vec);
 
                 qCritical() << Q_FUNC_INFO << "CMD_RD_MULTI_REG - Board not connected!";
                 break;
@@ -803,10 +803,10 @@ void QRobotServer::onUdpCommandReadyRead()
                 QVector<quint16> vec;
                 vec << CMD_RD_MULTI_REG;
                 vec << startAddr;
-                sendBlock( mUdpCommandSocket, MSG_FAILED, vec );
+                sendBlock( mUdpControlSocket, MSG_FAILED, vec );
             }
             else
-                sendBlock( mUdpCommandSocket, MSG_READ_REPLY, readRegReply );
+                sendBlock( mUdpControlSocket, MSG_READ_REPLY, readRegReply );
 
             break;
         }
@@ -818,7 +818,7 @@ void QRobotServer::onUdpCommandReadyRead()
             if( !mBoardConnected )
             {
                 QVector<quint16> vec;
-                sendBlock( mUdpCommandSocket, MSG_RC_NOT_FOUND, vec );
+                sendBlock( mUdpControlSocket, MSG_RC_NOT_FOUND, vec );
                 break;
             }
 
@@ -848,14 +848,14 @@ void QRobotServer::onUdpCommandReadyRead()
                 QVector<quint16> vec;
                 vec << CMD_WR_MULTI_REG;
                 vec << startAddr;
-                sendBlock( mUdpCommandSocket, MSG_FAILED, vec );
+                sendBlock( mUdpControlSocket, MSG_FAILED, vec );
             }
             else
             {
                 QVector<quint16> vec;
                 vec << startAddr;
                 vec << nReg;
-                sendBlock( mUdpCommandSocket, MSG_WRITE_OK, vec );
+                sendBlock( mUdpControlSocket, MSG_WRITE_OK, vec );
             }
             break;
         }
@@ -865,7 +865,7 @@ void QRobotServer::onUdpCommandReadyRead()
             qDebug() << tr("Received wrong message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
 
             QVector<quint16> vec;
-            sendBlock( mUdpCommandSocket, MSG_FAILED, vec );
+            sendBlock( mUdpControlSocket, MSG_FAILED, vec );
 
             break;
         }

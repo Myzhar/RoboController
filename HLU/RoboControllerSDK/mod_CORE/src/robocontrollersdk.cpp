@@ -33,8 +33,10 @@ RoboControllerSDK::RoboControllerSDK(int udpStatusPort,
     mServerAddr = serverAddr;
     mTcpPort = tcpPort;
 
-    connect(mTcpSocket, SIGNAL(readyRead()), this, SLOT(onTcpReadyRead()));
-    connect(mTcpSocket, SIGNAL(hostFound()), this, SLOT(onTcpHostFound()));
+    connect(mTcpSocket, SIGNAL(readyRead()),
+            this, SLOT(onTcpReadyRead()));
+    connect(mTcpSocket, SIGNAL(hostFound()),
+            this, SLOT(onTcpHostFound()));
     connect(mTcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
             this, SLOT(onTcpError(QAbstractSocket::SocketError)));
 
@@ -44,6 +46,14 @@ RoboControllerSDK::RoboControllerSDK(int udpStatusPort,
     // >>>>> UDP Sockets
     mUdpControlSocket = new QUdpSocket();
     mUdpStatusSocket = new QUdpSocket();
+
+    mUdpControlPort = udpControlPort;
+    mUdpStatusPort = udpStatusPort;
+
+    connect( mUdpControlSocket, SIGNAL(readyRead()),
+             this, SLOT(onUdpControlReadyRead()) );
+    connect( mUdpStatusSocket, SIGNAL(readyRead()),
+             this, SLOT(onUdpStatusReadyRead()) );
 
     connectToUdpServers();
 
@@ -89,6 +99,8 @@ void RoboControllerSDK::connectToTcpServer()
     if( !mTcpConnected )
         throw RcException( excTcpNotConnected, tr("It is not possible to find a valid TCP server: %1")
                            .arg(mTcpSocket->errorString() ).toLocal8Bit() );
+
+    emit tcpConnected();
 }
 
 void RoboControllerSDK::disconnectTcpServer()
@@ -145,6 +157,8 @@ void RoboControllerSDK::connectToUdpServers()
     if( !mUdpConnected )
         throw RcException( excUdpNotConnected, tr("It is not possible to find a valid TCP server: %1")
                            .arg(mUdpControlSocket->errorString() ).toLocal8Bit() );
+
+    emit udpConnected();
 }
 
 void RoboControllerSDK::disconnectUdpServers()
@@ -215,8 +229,6 @@ void RoboControllerSDK::onTcpReadyRead()
                 qDebug() << tr( "Server ready: %1").arg(mTcpSocket->localAddress().toString() );
 
                 in >> mBoardIdx;
-
-                emit tcpConnected();
             }
             else
             {
@@ -262,6 +274,200 @@ void RoboControllerSDK::onTcpReadyRead()
         }
 
         mNextTcpBlockSize = 0;
+    }
+}
+
+void RoboControllerSDK::onUdpStatusReadyRead()
+{
+    QDataStream in(mUdpStatusSocket);
+    in.setVersion(QDataStream::Qt_4_0);
+
+    mNextUdpStBlockSize=0;
+    quint16 msgCode;
+
+    forever // Receiving data while there is data available
+    {
+        if( mNextUdpStBlockSize==0) // No incomplete blocks received before
+        {
+            if (mUdpStatusSocket->bytesAvailable() < (qint64)sizeof(quint16))
+            {
+                qDebug() << Q_FUNC_INFO << tr("No more TCP Data available");
+                break;
+            }
+
+            // Datagram dimension
+            in >> mNextUdpStBlockSize; // Updated only if we are parsing a new block
+        }
+
+        if (mUdpStatusSocket->bytesAvailable() < mNextUdpStBlockSize)
+        {
+            qDebug() << Q_FUNC_INFO << tr("Received incomplete TCP Block... waiting for the missing data");
+            break;
+        }
+
+        // Datagram IDX
+        quint16 msgIdx;
+        in >> msgIdx;
+
+        QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
+        qDebug() << tr("%1 - Received msg #%2").arg(timeStr).arg(msgIdx);
+
+        // Datagram Code
+        in >> msgCode;
+
+        switch(msgCode)
+        {
+        case MSG_CONNECTED:
+        {
+            if( !mUdpConnected )
+            {
+                mUdpConnected = true;
+                qDebug() << tr("Received msg #%1: MSG_CONNECTED").arg(msgIdx);
+                qDebug() << tr( "Server UDP Status ready: %1").arg(mUdpStatusSocket->localAddress().toString() );
+
+                in >> mBoardIdx;
+            }
+            else
+            {
+                qDebug() << tr( "Protocol error - received a bad confirmation: %1")
+                            .arg(msgCode);
+
+                throw RcException( excProtocolBadConfirmation, tr( "Protocol error - received a bad confirmation: %1")
+                                   .arg(msgCode).toLocal8Bit() );
+            }
+            break;
+        }
+
+        case MSG_OK:
+        {
+            qDebug() << tr("Received msg #%1: MSG_OK").arg(msgIdx);
+            break;
+        }
+
+        case MSG_FAILED:
+        {
+            qDebug() << tr("Received msg #%1: MSG_FAILED").arg(msgIdx);
+            break;
+        }
+
+        case MSG_WRITE_OK:
+        {
+            qDebug() << tr("Received msg #%1: MSG_WRITE_OK").arg(msgIdx);
+            break;
+        }
+
+        case MSG_READ_REPLY:
+        {
+            qDebug() << tr("Received msg #%1: MSG_READ_REPLY").arg(msgIdx);
+            processReplyMsg( &in );
+            break;
+        }
+
+        default:
+            qDebug() << tr("Received unknown message (%1) with msg #%2").arg(msgCode).arg(msgIdx);
+
+            in.readRawData( NULL, mNextUdpStBlockSize );
+            break;
+        }
+
+        mNextUdpStBlockSize = 0;
+    }
+}
+
+void RoboControllerSDK::onUdpControlReadyRead()
+{
+    QDataStream in(mUdpControlSocket);
+    in.setVersion(QDataStream::Qt_4_0);
+
+    mNextUdpCtrlBlockSize=0;
+    quint16 msgCode;
+
+    forever // Receiving data while there is data available
+    {
+        if( mNextUdpCtrlBlockSize==0) // No incomplete blocks received before
+        {
+            if (mUdpControlSocket->bytesAvailable() < (qint64)sizeof(quint16))
+            {
+                qDebug() << Q_FUNC_INFO << tr("No more TCP Data available");
+                break;
+            }
+
+            // Datagram dimension
+            in >> mNextUdpCtrlBlockSize; // Updated only if we are parsing a new block
+        }
+
+        if (mUdpControlSocket->bytesAvailable() < mNextUdpCtrlBlockSize)
+        {
+            qDebug() << Q_FUNC_INFO << tr("Received incomplete TCP Block... waiting for the missing data");
+            break;
+        }
+
+        // Datagram IDX
+        quint16 msgIdx;
+        in >> msgIdx;
+
+        QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
+        qDebug() << tr("%1 - Received msg #%2").arg(timeStr).arg(msgIdx);
+
+        // Datagram Code
+        in >> msgCode;
+
+        switch(msgCode)
+        {
+        case MSG_CONNECTED:
+        {
+            if( !mUdpConnected )
+            {
+                mUdpConnected = true;
+                qDebug() << tr("Received msg #%1: MSG_CONNECTED").arg(msgIdx);
+                qDebug() << tr("Server UDP Control ready: %1").arg(mUdpControlSocket->localAddress().toString() );
+
+                in >> mBoardIdx;
+            }
+            else
+            {
+                qDebug() << tr( "Protocol error - received a bad confirmation: %1")
+                            .arg(msgCode);
+
+                throw RcException( excProtocolBadConfirmation, tr( "Protocol error - received a bad confirmation: %1")
+                                   .arg(msgCode).toLocal8Bit() );
+            }
+            break;
+        }
+
+        case MSG_OK:
+        {
+            qDebug() << tr("Received msg #%1: MSG_OK").arg(msgIdx);
+            break;
+        }
+
+        case MSG_FAILED:
+        {
+            qDebug() << tr("Received msg #%1: MSG_FAILED").arg(msgIdx);
+            break;
+        }
+
+        case MSG_WRITE_OK:
+        {
+            qDebug() << tr("Received msg #%1: MSG_WRITE_OK").arg(msgIdx);
+            break;
+        }
+
+        case MSG_READ_REPLY:
+        {
+            qDebug() << tr("Received msg #%1: MSG_READ_REPLY").arg(msgIdx);
+            processReplyMsg( &in );
+            break;
+        }
+
+        default:
+            qDebug() << tr("Received unknown message (%1) with msg #%2").arg(msgCode).arg(msgIdx);
+
+            in.readRawData( NULL, mNextUdpCtrlBlockSize );
+            break;
+        }
+
+        mNextUdpCtrlBlockSize = 0;
     }
 }
 

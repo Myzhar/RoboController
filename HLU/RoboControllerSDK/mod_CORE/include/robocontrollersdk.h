@@ -169,7 +169,7 @@ private:
     void disconnectUdpServers();
 
     /// Processes a reply message
-    void processReplyMsg( QDataStream *inStream );
+    void processReplyMsg(QDataStream *inStream );
 
     /// Updates Robot Configuration from data stream
     void updateRobotConfigurationFromDataStream( QDataStream* inStream );
@@ -178,9 +178,21 @@ private:
     void sendCommand(QAbstractSocket *socket, quint16 msgCode, QVector<quint16> &data );
 
 protected slots:
+    /// Processes data from TCP Socket
     void onTcpReadyRead();
+    /// Handles errors on TCP socket
     void onTcpError(QAbstractSocket::SocketError err);
+    /// Handles the "Host Found" status
     void onTcpHostFound();
+
+    /// Processes data from UDP Status Socket
+    void onUdpStatusReadyRead();
+    /// Processes data from UDP Control Socket
+    void onUdpControlReadyRead();
+
+    // TODO to handles errors on UDP sockets!!!
+
+
 
     /// Ping Timer handler
     void onPingTimerTimeout();
@@ -224,6 +236,8 @@ private:
     QUdpSocket* mUdpControlSocket;   /**< UDP Socket for control communications */
 
     quint16 mNextTcpBlockSize;      /**< Used to recover incomplete TCP block */
+    quint16 mNextUdpStBlockSize;    /**< Used to recover incomplete UDP Status block */
+    quint16 mNextUdpCtrlBlockSize;  /**< Used to recover incomplete UDP Control block */
 
     bool mTcpConnected;     /**< Indicates if TCP Socket is connected */
     bool mUdpConnected;     /**< Indicates if UDP Socket is connected */
