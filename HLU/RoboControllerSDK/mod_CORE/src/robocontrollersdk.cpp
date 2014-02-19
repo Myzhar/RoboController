@@ -42,9 +42,10 @@ RoboControllerSDK::RoboControllerSDK(int udpStatusPort,
     // <<<<< TCP Socket
 
     // >>>>> UDP Sockets
-    // TODO UDP Socket Connection
     mUdpControlSocket = new QUdpSocket();
     mUdpStatusSocket = new QUdpSocket();
+
+    connectToUdpServers();
 
     // <<<<< UDP Sockets
     mMotorCtrlMode = mcPID; // RoboController is in PID mode by default
@@ -104,12 +105,13 @@ void RoboControllerSDK::disconnectTcpServer()
 void RoboControllerSDK::connectToUdpServers()
 {
     mUdpConnected = false;
-    mUdpControlSocket->connectToHost( QHostAddress(mServerAddr), mUdpControlPort );
-    if( !mUdpControlSocket->waitForConnected( 5000 ) )
+    //mUdpControlSocket->connectToHost( QHostAddress(mServerAddr), mUdpControlPort );
+    mUdpControlSocket->bind( QHostAddress(mServerAddr), mUdpControlPort, QAbstractSocket::ShareAddress );
+    /*if( !mUdpControlSocket->waitForConnected( 5000 ) )
     {
         throw RcException( excUdpNotConnected, tr("It is not possible to connect to UDP server: %1")
                            .arg(mUdpControlSocket->errorString() ).toLocal8Bit() );
-    }
+    }*/
 
     int count=0;
     while( count < 5 && !mUdpConnected )
@@ -124,12 +126,13 @@ void RoboControllerSDK::connectToUdpServers()
                            .arg(mUdpControlSocket->errorString() ).toLocal8Bit() );
 
     mUdpConnected = false;
-    mUdpStatusSocket->connectToHost( QHostAddress(mServerAddr), mUdpStatusPort );
-    if( !mUdpStatusSocket->waitForConnected( 5000 ) )
+    //mUdpStatusSocket->connectToHost( QHostAddress(mServerAddr), mUdpStatusPort );
+    mUdpStatusSocket->bind( QHostAddress(mServerAddr), mUdpStatusPort, QAbstractSocket::ShareAddress );
+    /*if( !mUdpStatusSocket->waitForConnected( 5000 ) )
     {
         throw RcException( excUdpNotConnected, tr("It is not possible to connect to UDP server: %1")
                            .arg(mUdpStatusSocket->errorString() ).toLocal8Bit() );
-    }
+    }*/
 
     count=0;
     while( count < 5 && !mUdpConnected )

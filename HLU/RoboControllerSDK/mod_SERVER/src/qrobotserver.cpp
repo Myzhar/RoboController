@@ -443,7 +443,7 @@ void QRobotServer::onTcpReadyRead()
 
         switch(msgCode)
         {
-        case MSG_SERVER_PING_REQ: // Sent by client to verify that Server is running
+        case CMD_SERVER_PING_REQ: // Sent by client to verify that Server is running
         {
             qDebug() << tr("Received msg #%1: MSG_SERVER_PING_REQ").arg(msgIdx);
 
@@ -601,6 +601,16 @@ void QRobotServer::onUdpStatusReadyRead()
 
         switch(msgCode)
         {
+        case CMD_SERVER_PING_REQ: // Sent by client to verify that Server is running
+        {
+            qDebug() << tr("Received msg #%1: MSG_SERVER_PING_REQ").arg(msgIdx);
+
+            QVector<quint16> vec;
+            sendBlock( mTcpSocket, MSG_SERVER_PING_OK, vec );
+
+            break;
+        }
+
         case CMD_RD_MULTI_REG:
         {
             qDebug() << tr("Received msg #%1: CMD_RD_MULTI_REG").arg(msgIdx);
@@ -749,6 +759,16 @@ void QRobotServer::onUdpCommandReadyRead()
 
         switch(msgCode)
         {
+        case CMD_SERVER_PING_REQ: // Sent by client to verify that Server is running
+        {
+            qDebug() << tr("Received msg #%1: MSG_SERVER_PING_REQ").arg(msgIdx);
+
+            QVector<quint16> vec;
+            sendBlock( mTcpSocket, MSG_SERVER_PING_OK, vec );
+
+            break;
+        }
+
         case CMD_RD_MULTI_REG:
         {
             qDebug() << tr("Received msg #%1: CMD_RD_MULTI_REG").arg(msgIdx);

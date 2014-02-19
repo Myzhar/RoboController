@@ -447,7 +447,7 @@ static int _modbus_rtu_connect(modbus_t *ctx)
     /* Don't want errors to be blocking */
     dcb.fAbortOnError = FALSE;
 
-    /* TODO: any other flags!? */
+    /* : any other flags!? */
 
     /* Setup port */
     if (!SetCommState(ctx_rtu->w_ser.fd, &dcb)) {
