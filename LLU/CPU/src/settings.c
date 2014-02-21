@@ -68,6 +68,9 @@ void Settings(void)
 
     // Disable Watch Dog Timer
     RCONbits.SWDTEN=0;
+    RCONbits.BOR = 0;
+    RCONbits.POR = 0;
+    RCONbits.EXTR = 0;
 
     // Clock switching to incorporate PLL
     __builtin_write_OSCCONH(0x03);		// Initiate Clock Switch to Primary

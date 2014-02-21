@@ -122,6 +122,9 @@ volatile unsigned int InterruptTest6 = 0;
 volatile unsigned int InterruptTest7 = 0;
 volatile unsigned int InterruptTest8 = 0;
 volatile unsigned int InterruptTest9 = 0;
+volatile unsigned int InterruptTest10 = 0;
+volatile unsigned int InterruptTest11 = 0;
+volatile unsigned int InterruptTest12 = 0;
 
 #else
     // ridefinisco le variabili come extern
@@ -220,5 +223,8 @@ extern volatile unsigned int InterruptTest6;
 extern volatile unsigned int InterruptTest7;
 extern volatile unsigned int InterruptTest8;
 extern volatile unsigned int InterruptTest9;
+extern volatile unsigned int InterruptTest10;
+extern volatile unsigned int InterruptTest11;
+extern volatile unsigned int InterruptTest12;
 #endif
 

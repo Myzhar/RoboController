@@ -53,6 +53,9 @@ int main(int argc, char** argv)
 {   unsigned int test;
 //    float SetpointRPM_M1, SetpointRPM_M2;
     Settings();
+    
+
+
 
     /* ******************************************************************************************************** */
     /* ******************************************************************************************************** */
@@ -75,7 +78,7 @@ int main(int argc, char** argv)
 
     MotorControlEnable(MOTORE1,MOTOR_DEACTIVE);
     MotorControlEnable(MOTORE2,MOTOR_DEACTIVE);
-    
+
     DmaBuffer = 0;
    
     VarModbus[INDICE_ENC1_TICK] = 0;
@@ -95,10 +98,10 @@ int main(int argc, char** argv)
     OLD_INDICE_STATUSBIT1 = 0;  // Se parto con il PID abilitato deve valere 0.
     //OLD_INDICE_STATUSBIT1 = 1;  // Se parto con il PWM abilitato deve valere 1.
     
-//    VarModbus[INDICE_STATUSBIT1] |= FLG_STATUSBI1_COMWATCHDOG;      // Al reset attivo il WatchDog sulla comunicazione
-    VarModbus[INDICE_STATUSBIT1] &= ~(FLG_STATUSBI1_COMWATCHDOG); // Al reset disattivo il WatchDog sulla comunicazione
-//    VarModbus[INDICE_STATUSBIT1] |= FLG_STATUSBI1_EEPROM_SAVE_EN;   // Al reset attivo il Salvataggio automatico dei parametri in EEPROM
-    VarModbus[INDICE_STATUSBIT1] &= ~(FLG_STATUSBI1_EEPROM_SAVE_EN);   // Al reset disattivo il Salvataggio automatico dei parametri in EEPROM
+    VarModbus[INDICE_STATUSBIT1] |= FLG_STATUSBI1_COMWATCHDOG;      // Al reset attivo il WatchDog sulla comunicazione
+    //VarModbus[INDICE_STATUSBIT1] &= ~(FLG_STATUSBI1_COMWATCHDOG); // Al reset disattivo il WatchDog sulla comunicazione
+    VarModbus[INDICE_STATUSBIT1] |= FLG_STATUSBI1_EEPROM_SAVE_EN;   // Al reset attivo il Salvataggio automatico dei parametri in EEPROM
+    //VarModbus[INDICE_STATUSBIT1] &= ~(FLG_STATUSBI1_EEPROM_SAVE_EN);   // Al reset disattivo il Salvataggio automatico dei parametri in EEPROM
     VarModbus[INDICE_FLAG_TARATURA] = 0;
     //VarModbus[INDICE_PWM_CH1] = MOTORE_STOP;                      // Motori fermi all'accensione
     //VarModbus[INDICE_PWM_CH2] = MOTORE_STOP;                      // Motori fermi all'accensione
@@ -255,10 +258,10 @@ void GestioneSetpoint(void)
 /*---------------------------------------------------------------------------*/
 #ifndef TIMER_OFF
 
-void _ISR_PSV _T1Interrupt(void)	// Timer 1 [13]
-{   // Timer 1	1ms
-    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
+void _ISR_PSV _T1Interrupt(void) {
     InterruptTest4++;
+    // Timer 1	1ms
+    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     IFS0bits.T1IF = 0;  // interrupt flag reset
 
     /*
@@ -286,15 +289,17 @@ void _ISR_PSV _T1Interrupt(void)	// Timer 1 [13]
     if(TimerRitardoModbus[1])  TimerRitardoModbus[1]--;
     if(TimerOutRxModbus[1])    TimerOutRxModbus[1]--;     //time-out dei dati in ricezione
     /* ************************************************************************* */
-    InterruptTest4--;
+    
     DISICNT = 0; //re-enable interrupts
+    InterruptTest4--;
 }
 
 
 void __attribute__((interrupt, auto_psv, shadow)) _T2Interrupt(void) {
-//    unsigned char i;
-    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
     InterruptTest3++;
+    //    unsigned char i;
+    __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
+    
     IFS0bits.T2IF = 0;
 
     Motore1.UC_OverFlowCounter++;
@@ -325,9 +330,10 @@ void __attribute__((interrupt, auto_psv, shadow)) _T3Interrupt(void) {
 //        {   Motore2.UI_MediaIC[i] = 0;
 //        }
     }
-    InterruptTest2--;
     DISICNT = 0; //re-enable interrupts
-    return;
+    //return;
+
+    InterruptTest2--;
 }
 
 
@@ -338,10 +344,11 @@ void __attribute__((interrupt, auto_psv, shadow)) _T3Interrupt(void) {
  *  ***************************************************************************
  */
 void __attribute__((interrupt, auto_psv, shadow)) _IC1Interrupt(void) {
+
+    InterruptTest1++;
     long int tmp = 0;
     unsigned int ActualIC1BUF;
     __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
-    InterruptTest1++;
     IFS0bits.IC1IF = 0;
 
     ActualIC1BUF = IC1BUF;
@@ -449,18 +456,19 @@ void __attribute__((interrupt, auto_psv, shadow)) _IC1Interrupt(void) {
         IC1CONbits.ICM = 0; // Disable Input Capture 1 module,
                         // re-enabled after PID computation on 1mSec Interrupt Timer
     }
-    InterruptTest1--;
+    
     DISICNT = 0; //re-enable interrupts
     Motore1.UC_OverFlowCounter = 0;         // reset overflow
+    InterruptTest1--;
 }
 
 
 
 void __attribute__((interrupt, auto_psv, shadow)) _IC2Interrupt(void) {
+    InterruptTest0++;
     long int tmp = 0;
     unsigned int ActualIC2BUF;
     __builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
-    InterruptTest0++;
     IFS0bits.IC2IF = 0;
 
     ActualIC2BUF = IC2BUF;
@@ -498,9 +506,10 @@ void __attribute__((interrupt, auto_psv, shadow)) _IC2Interrupt(void) {
         IC2CONbits.ICM = 0; // Disable Input Capture 1 module,
                             // re-enabled after PID computation on 1mSec Interrupt Timer
     }
-    InterruptTest0--;
     DISICNT = 0; //re-enable interrupts
     Motore1.UC_OverFlowCounter = 0;         // reset overflow
+
+    InterruptTest0--;
 }
 
 void AggiornaDatiVelocita(void)
@@ -638,6 +647,13 @@ float Costante_Conversione_Vlin_to_Vang(unsigned int GearBoxRatio_AXE, unsigned 
 
 
 void __attribute__((interrupt, auto_psv, shadow)) _StackError(void) {
+    /* Sicurezza , fermo i motori!*/
+    LED1 = LED_ON;
+    LED2 = LED_ON;
+
+    MotorControlEnable(MOTORE1,MOTOR_DEACTIVE);
+    MotorControlEnable(MOTORE2,MOTOR_DEACTIVE);
+
     while(1);
     InterruptTest0 = 0;
     InterruptTest1 = 0;
@@ -649,6 +665,9 @@ void __attribute__((interrupt, auto_psv, shadow)) _StackError(void) {
     InterruptTest7 = 0;
     InterruptTest8 = 0;
     InterruptTest9 = 0;
+    InterruptTest10 = 0;
+    InterruptTest11 = 0;
+    InterruptTest12 = 0;
 }
 
 void __attribute__((interrupt, auto_psv, shadow)) _OscillatorFail(void) {
