@@ -31,7 +31,9 @@ class ROBOCONTROLLERSDKSHARED_EXPORT QRobotServer : public QThread
     Q_OBJECT
 
 public:
-    explicit QRobotServer(int serverUdpControl=4550,int serverUdpStatus=4560,int serverTcpPort=4500, QObject *parent=0); ///< Default constructor
+    explicit QRobotServer(quint16 serverUdpControl=14560,
+                          quint16 serverUdpStatusListener=14550, quint16 serverUdpStatusSender=14555,
+                          quint16 serverTcpPort=14500, QObject *parent=0); ///< Default constructor
     virtual ~QRobotServer(); ///< Destructor
 
 signals:
@@ -43,15 +45,14 @@ private slots:
     void openUdpStatusSession(); ///< Called when a new Udp Status session is opened
     void openUdpControlSession(); ///< Called when a new Udp Control session is opened
     void onNewTcpConnection(); ///< Called for each incoming TCP connection
-    void onNewUdpStatusConnection(); ///< Called for each incoming UDP Status connection
-    void onNewUdpControlConnection(); ///< Called for each incoming UDP Control  connection
     void onTcpReadyRead(); ///< Called when a new data from TCP socket is available
     void onUdpStatusReadyRead(); ///< Called when a new data from UDP Status socket is available
     void onUdpControlReadyRead(); ///< Called when a new data from UDP Control socket is available
     void onClientDisconnected(); ///< Called when a client disconnects
 
 private:
-    void sendBlock( QAbstractSocket* socket, quint16 msgCode, QVector<quint16>& data ); ///< Send data block to socket
+    void sendBlockTCP( quint16 msgCode, QVector<quint16>& data ); ///< Send data block to TCP socket
+    void sendStatusBlockUDP(QHostAddress addr, quint16 msgCode, QVector<quint16>& data );///< Send data block to UDP socket
 
     modbus_t* initializeSerialModbus( const char *device,
                                       int baud, char parity, int data_bit,
@@ -75,14 +76,17 @@ private:
     QTcpServer*     mTcpServer; ///< TCP Server Object
     QTcpSocket*     mTcpSocket; ///< TCP Socket
     
-    QUdpSocket*     mUdpStatusSocket; ///< UDP Status Socket
-    QUdpSocket*     mUdpControlSocket; ///< UDP Control Socket
+    QUdpSocket*     mUdpStatusSocketListener; ///< UDP Status Socket Listener
+    QUdpSocket*     mUdpStatusSocketSender; ///< UDP Status Socket Sender
+
+    QUdpSocket*     mUdpControlSocketListener; ///< UDP Control Socket Listener
 
     QSettings*      mSettings; ///< Settings in file INI
 
     unsigned int    mServerTcpPort; ///< Port of the TCP Server
-    unsigned int    mServerUdpStatusPort; ///< Port of the UDP Status Server
-    unsigned int    mServerUdpControlPort; ///< Port of the UDP Control Server
+    unsigned int    mServerUdpStatusPortListener; ///< Port of the UDP Status Listen Server
+    unsigned int    mServerUdpStatusPortSender; ///< Port of the UDP Status Listen Server
+    unsigned int    mServerUdpControlPortListener; ///< Port of the UDP Control Server
 
     modbus_t*       mModbus;  ///< ModBus protocol implementation
     quint16         mBoardIdx;      /// Id of the connected board

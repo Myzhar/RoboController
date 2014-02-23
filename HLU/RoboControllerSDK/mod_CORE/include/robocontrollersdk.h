@@ -22,12 +22,19 @@ class ROBOCONTROLLERSDKSHARED_EXPORT RoboControllerSDK : public QThread
     Q_OBJECT
 
 public:
-    explicit RoboControllerSDK(int udpStatusPort=4550,
-                               int udpControlPort=4560,
+    explicit RoboControllerSDK(quint16 udpStatusPort=14550,
+                               quint16 udpControlPort=14560,
                                QString serverAddr=QString("localhost"),
-                               int tcpPort=4500  );
+                               quint16 tcpPort=14500  );
 
     virtual ~RoboControllerSDK();
+
+    /** @brief Searches for the server on the local network
+     *
+     *
+     * @returns IP of the server or an empty QString
+     */
+    static QString findServer(quint16 udpStatusPort=14550 );
 
     /** @brief Send a request for motor speed.
      *         The reply is received with /ref newMotorSpeedValue
@@ -146,13 +153,9 @@ public:
      */
     void releaseRobotControl(); //TODO
 
-
-
 protected:
-
     /// Thread function
     virtual void run();
-
 
 private:
     /// Operations performed during communication
@@ -189,8 +192,15 @@ protected slots:
     void onUdpStatusReadyRead();
     /// Processes data from UDP Control Socket
     void onUdpControlReadyRead();
+    /// Handles errors on UDP Status Socket
+    void onUdpStatusError( QAbstractSocket::SocketError err );
+    /// Handles errors on UDP Control Socket
+    void onUdpControlError( QAbstractSocket::SocketError err );
 
-    // TODO to handles errors on UDP sockets!!!
+    /// Send Test ping to UDP Servers
+    void onUdpTestTimerTimeout();
+
+
 
 
 
@@ -271,6 +281,7 @@ private:
                                   If both @ref mReceivedStatus2 and @ref mReceivedRobConfig
                                   are true a @ref newRobotConfiguration signal can be emitted. */
 
+    QTimer mUdpPingTimer; /**< Timer of Udp Servers testing */
 };
 
 }

@@ -17,6 +17,7 @@ DEFINES += ROBOCONTROLLERSDK_LIBRARY
 
 include($$ROBOCONTROLLERSDKPATH/mod_CORE/RoboControllerSDK_CORE.pri) # Core module
 include($$ROBOCONTROLLERSDKPATH/mod_GUI/RoboControllerSDK_GUI.pri) # GUI module
+#include($$ROBOCONTROLLERSDKPATH/mod_SERVER/RoboControllerSDK_SERVER.pri) # SERVER module
 
 INCLUDEPATH += \
     ../common/include\

@@ -9,6 +9,5 @@ INCLUDEPATH += \
         $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/
 
 HEADERS += \
-        $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/qrobotserver.h \
-        $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/network_msg.h
+        $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/qrobotserver.h
 

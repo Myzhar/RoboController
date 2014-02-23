@@ -14,6 +14,8 @@
 #endif
 #define ROB_IP "robot_ip"
 #define ROB_TCP_PORT "robot_tcp_port"
+#define ROB_UDP_CTRL_PORT "robot_udp_control_port"
+#define ROB_UDP_STAT_PORT "robot_udp_status_port"
 #define PID_ENABLED "pid_enabled"
 // <<<<< INI names
 
@@ -35,8 +37,9 @@ public:
 private slots:
     void on_actionPidEnabled_triggered();
     void onConnectButtonClicked();
+    void onFindServerButtonClicked();
     void onNewJoypadValues(float x, float y);
-    void onNewMotorSpeed( int mot, double speed );
+    void onNewMotorSpeed( quint16 mot, double speed );
     void onNewRobotConfiguration( RobotConfiguration& robConf );
 
     void on_actionRobot_Configuration_triggered();
@@ -55,8 +58,10 @@ private:
     QString mRobIpAddress;
     QLineEdit* mRobIpLineEdit;
     int mRobTcpPort;
-    QLineEdit* mRobTcpPortLineEdit;
+    int mRobUdpControlPort;
+    int mRobUdpStatusPort;
     QPushButton* mConnectButton;
+    QPushButton* mFindServerButton;
 
     QLabel* mStatusLabel;
     // <<<< GUI Objects

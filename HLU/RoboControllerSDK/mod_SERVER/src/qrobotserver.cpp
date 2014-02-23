@@ -14,16 +14,19 @@
 namespace roboctrl
 {
 
-QRobotServer::QRobotServer(int serverUdpControl/*=4550*/,int serverUdpStatus/*=4560*/,int serverTcpPort/*=4500*/, QObject *parent/*=0*/) :
+QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/,
+                           quint16 serverUdpStatusListener/*=14550*/, quint16 serverUdpStatusSender/*=14555*/,
+                           quint16 serverTcpPort/*=14500*/, QObject *parent/*=0*/) :
     QThread(parent),
     mTcpServer(NULL),
     mTcpSocket(NULL),
-    mUdpStatusSocket(NULL),
-    mUdpControlSocket(NULL),
+    mUdpStatusSocketListener(NULL),
+    mUdpControlSocketListener(NULL),
     mSettings(NULL),
-    mServerTcpPort(serverTcpPort),
-    mServerUdpControlPort(serverUdpControl),
-    mServerUdpStatusPort(serverUdpStatus),
+    mServerTcpPort(serverTcpPort),    
+    mServerUdpStatusPortListener(serverUdpStatusListener),
+    mServerUdpStatusPortSender(serverUdpStatusSender),
+    mServerUdpControlPortListener(serverUdpControl),
     mModbus(NULL),
     mReplyBuffer(NULL),
     mBoardConnected(false),
@@ -60,7 +63,7 @@ QRobotServer::QRobotServer(int serverUdpControl/*=4550*/,int serverUdpStatus/*=4
        serialdatabits=8
        serialstopbits=1 */
 
-    mSettings->beginGroup( "SERIAL_CONNECTION" );
+    /*mSettings->beginGroup( "SERIAL_CONNECTION" );
 
     QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
     if( ports.isEmpty() )
@@ -190,7 +193,7 @@ QRobotServer::QRobotServer(int serverUdpControl/*=4550*/,int serverUdpStatus/*=4
     }
 
     qDebug() << tr("RoboController connected");
-    // <<<<< Board connection
+    // <<<<< Board connection */
 
     // <<<<< MOD_BUS serial communication settings
 
@@ -198,7 +201,7 @@ QRobotServer::QRobotServer(int serverUdpControl/*=4550*/,int serverUdpStatus/*=4
     mServerTcpPort = mSettings->value( "TCP_server_port", "0" ).toUInt();
     if( mServerTcpPort==0 )
     {
-        mServerTcpPort = 4500;
+        mServerTcpPort = 14500;
         mSettings->setValue( "TCP_server_port", QString("%1").arg(mServerTcpPort) );
         mSettings->sync();
     }
@@ -209,11 +212,19 @@ QRobotServer::QRobotServer(int serverUdpControl/*=4550*/,int serverUdpStatus/*=4
     // <<<<< TCP configuration
     
     // >>>>> UDP Status configuration
-    mServerUdpStatusPort = mSettings->value( "UDP_status_server_port", "0" ).toUInt();
-    if( mServerUdpStatusPort==0 )
+    mServerUdpStatusPortListener = mSettings->value( "UDP_status_server_port_listener", "0" ).toUInt();
+    if( mServerUdpStatusPortListener==0 )
     {
-        mServerUdpStatusPort = 4560;
-        mSettings->setValue( "UDP_status_server_port", QString("%1").arg(mServerUdpStatusPort) );
+        mServerUdpStatusPortListener = 14550;
+        mSettings->setValue( "UDP_status_server_port_listener", QString("%1").arg(mServerUdpStatusPortListener) );
+        mSettings->sync();
+    }
+
+    mServerUdpStatusPortSender = mSettings->value( "UDP_status_server_port_senderlistener", "0" ).toUInt();
+    if( mServerUdpStatusPortSender==0 )
+    {
+        mServerUdpStatusPortSender = 14555;
+        mSettings->setValue( "UDP_status_server_port_senderlistener", QString("%1").arg(mServerUdpStatusPortSender) );
         mSettings->sync();
     }
 
@@ -221,11 +232,11 @@ QRobotServer::QRobotServer(int serverUdpControl/*=4550*/,int serverUdpStatus/*=4
     // <<<<< UDP Status configuration
     
     // >>>>> UDP Control configuration
-    mServerUdpControlPort = mSettings->value( "UDP_Control_server_port", "0" ).toUInt();
-    if( mServerUdpControlPort==0 )
+    mServerUdpControlPortListener = mSettings->value( "UDP_Control_server_port_listener", "0" ).toUInt();
+    if( mServerUdpControlPortListener==0 )
     {
-        mServerUdpControlPort = 4550;
-        mSettings->setValue( "UDP_Control_server_port", QString("%1").arg(mServerUdpControlPort) );
+        mServerUdpControlPortListener = 14560;
+        mSettings->setValue( "UDP_Control_server_port_listener", QString("%1").arg(mServerUdpControlPortListener) );
         mSettings->sync();
     }
 
@@ -240,7 +251,7 @@ QRobotServer::QRobotServer(int serverUdpControl/*=4550*/,int serverUdpStatus/*=4
     this->start();
 
     // Start Ping Timer
-    startTimer( TEST_TIMER_INTERVAL, Qt::PreciseTimer );
+    mTestTimerId = startTimer( TEST_TIMER_INTERVAL, Qt::PreciseTimer );
 }
 
 QRobotServer::~QRobotServer()
@@ -290,7 +301,7 @@ void QRobotServer::openTcpSession()
                 ipAddressesList.at(i).toIPv4Address())
         {
             ipAddress = ipAddressesList.at(i).toString();
-            qDebug() << tr("Server running on IP: %1 Port: %2" )
+            qDebug() << tr("TCP Server running on IP: %1 Port: %2" )
                         .arg(ipAddress).arg(mTcpServer->serverPort());
         }
     }
@@ -298,39 +309,50 @@ void QRobotServer::openTcpSession()
 
 void QRobotServer::openUdpStatusSession()
 {
-    if( mUdpStatusSocket )
-        delete mUdpStatusSocket;
+    if( mUdpStatusSocketListener )
+        delete mUdpStatusSocketListener;
 
-    mUdpStatusSocket = new QUdpSocket();
+    mUdpStatusSocketListener = new QUdpSocket(this);
 
-    if( !mUdpStatusSocket->bind( mServerUdpStatusPort, QAbstractSocket::ShareAddress ) )
+    if( !mUdpStatusSocketListener->bind( mServerUdpStatusPortListener, QAbstractSocket::ReuseAddressHint|QAbstractSocket::ShareAddress ) )
     {
-        qCritical() << tr("Unable to bind the UDP Status server on %1 port. Error: %2")
-                       .arg(mServerUdpStatusPort).arg(mUdpStatusSocket->errorString());
+        qCritical() << tr("Unable to bind the UDP Status server on %1:%2. Error: %3")
+                       .arg(mUdpStatusSocketListener->localAddress().toString())
+                       .arg(mUdpStatusSocketListener->localPort() )
+                       .arg(mUdpStatusSocketListener->errorString());
         return;
     }
 
-    connect( mUdpStatusSocket, SIGNAL(readyRead()),
+    connect( mUdpStatusSocketListener, SIGNAL(readyRead()),
              this, SLOT(onUdpStatusReadyRead()) );
+
+    qDebug() << tr("UDP Status Server listening on port %1" )
+                .arg(mUdpStatusSocketListener->localPort() );
+
 }
 
 void QRobotServer::openUdpControlSession()
 {
-    if( mUdpControlSocket )
-        delete mUdpStatusSocket;
+    if( mUdpControlSocketListener )
+        delete mUdpStatusSocketListener;
 
-    mUdpControlSocket = new QUdpSocket();
+    mUdpControlSocketListener = new QUdpSocket(this);
 
-    if( !mUdpControlSocket->bind( mServerUdpControlPort, QAbstractSocket::ShareAddress ) )
+    if( !mUdpControlSocketListener->bind( mServerUdpControlPortListener, QAbstractSocket::ReuseAddressHint|QAbstractSocket::ShareAddress  ) )
     {
-        qCritical() << tr("Unable to bind the UDP Control server on %1 port. Error: %2")
-                       .arg(mServerUdpControlPort).arg(mUdpControlSocket->errorString());
+        qCritical() << tr("Unable to bind the UDP Control server on %1:%2. Error: %3")
+                       .arg(mUdpControlSocketListener->localAddress().toString())
+                       .arg(mUdpControlSocketListener->localPort() )
+                       .arg(mUdpStatusSocketListener->errorString()) ;
 
         return;
     }
 
-    connect( mUdpControlSocket, SIGNAL(readyRead()),
+    connect( mUdpControlSocketListener, SIGNAL(readyRead()),
              this, SLOT(onUdpControlReadyRead()) );
+
+    qDebug() << tr("UDP Control Server listening on port %1" )
+                .arg(mUdpControlSocketListener->localPort() );
 }
 
 void QRobotServer::onNewTcpConnection()
@@ -357,26 +379,16 @@ void QRobotServer::onNewTcpConnection()
 
     QVector<quint16> data;
     data << (quint16)mBoardIdx;
-    sendBlock( mTcpSocket, MSG_CONNECTED, data );
+    sendBlockTCP( MSG_CONNECTED, data );
 
     mClientCount++;
 }
 
-void QRobotServer::onNewUdpStatusConnection()
-{
-    // TODO SEND MESSAGE MSG_CONNECTED
-}
-
-void QRobotServer::onNewUdpControlConnection()
-{
-    // TODO SEND MESSAGE MSG_CONNECTED
-}
-
-void QRobotServer::sendBlock( QAbstractSocket* socket, quint16 msgCode, QVector<quint16>& data )
+void QRobotServer::sendBlockTCP(quint16 msgCode, QVector<quint16>& data )
 {
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_4_0);
+    out.setVersion(QDataStream::Qt_5_2);
     out << (quint16)0;      // Block size
     out << mMsgCounter;     // Message counter
     out << msgCode;         // Message Code
@@ -393,18 +405,46 @@ void QRobotServer::sendBlock( QAbstractSocket* socket, quint16 msgCode, QVector<
     int blockSize = (block.size() - sizeof(quint16));
     out << (quint16)blockSize;
 
-    socket->write( block );
-    socket->flush();
+    mTcpSocket->write( block );
+    mTcpSocket->flush();
 
     QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
     qDebug() << tr("%1 - Sent msg #%2").arg(timeStr).arg(mMsgCounter);
+}
 
+void QRobotServer::sendStatusBlockUDP( QHostAddress addr, quint16 msgCode, QVector<quint16>& data )
+{
+    QByteArray block;
+    QDataStream out(&block, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_2);
+    out << (quint16)0;      // Block size
+    out << mMsgCounter;     // Message counter
+    out << msgCode;         // Message Code
+
+    ++mMsgCounter;
+
+    // >>>>> Data
+    QVector<quint16>::iterator it;
+    for(it = data.begin(); it != data.end(); ++it)
+        out << (quint16)(*it);
+    // <<<<< Data
+
+    out.device()->seek(0);          // Back to the beginning to set block size
+    int blockSize = (block.size() - sizeof(quint16));
+    out << (quint16)blockSize;
+
+    //socket->write( block );
+    mUdpStatusSocketSender->writeDatagram( block, addr, mServerUdpStatusPortSender );
+    mUdpStatusSocketSender->flush();
+
+    QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
+    qDebug() << tr("%1 - Sent msg #%2 -> %3").arg(timeStr).arg(mMsgCounter).arg(msgCode);
 }
 
 void QRobotServer::onTcpReadyRead()
 {
     QDataStream in(mTcpSocket);
-    in.setVersion(QDataStream::Qt_4_0);
+    in.setVersion(QDataStream::Qt_5_2);
 
     int headerSize = 3; // [blockSize][msgIdx][msgCode]
 
@@ -436,7 +476,7 @@ void QRobotServer::onTcpReadyRead()
         in >> msgIdx;
 
         QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-        qDebug() << tr("%1 - Received msg #%2").arg(timeStr).arg(msgIdx);
+        qDebug() << tr("%1 - TCP Received msg #%2").arg(timeStr).arg(msgIdx);
 
         // Datagram Code
         in >> msgCode;
@@ -445,22 +485,22 @@ void QRobotServer::onTcpReadyRead()
         {
         case CMD_SERVER_PING_REQ: // Sent by client to verify that Server is running
         {
-            qDebug() << tr("Received msg #%1: MSG_SERVER_PING_REQ").arg(msgIdx);
+            qDebug() << tr("TCP Received msg #%1: MSG_SERVER_PING_REQ").arg(msgIdx);
 
             QVector<quint16> vec;
-            sendBlock( mTcpSocket, MSG_SERVER_PING_OK, vec );
+            sendBlockTCP( MSG_SERVER_PING_OK, vec );
 
             break;
         }
 
         case CMD_RD_MULTI_REG:
         {
-            qDebug() << tr("Received msg #%1: CMD_RD_MULTI_REG").arg(msgIdx);
+            qDebug() << tr("TCP Received msg #%1: CMD_RD_MULTI_REG").arg(msgIdx);
 
             if( !mBoardConnected )
             {
                 QVector<quint16> vec;
-                sendBlock( mTcpSocket, MSG_RC_NOT_FOUND, vec);
+                sendBlockTCP( MSG_RC_NOT_FOUND, vec);
 
                 qCritical() << Q_FUNC_INFO << "CMD_RD_MULTI_REG - Board not connected!";
                 break;
@@ -487,22 +527,22 @@ void QRobotServer::onTcpReadyRead()
                 QVector<quint16> vec;
                 vec << CMD_RD_MULTI_REG;
                 vec << startAddr;
-                sendBlock( mTcpSocket, MSG_FAILED, vec );
+                sendBlockTCP( MSG_FAILED, vec );
             }
             else
-                sendBlock(mTcpSocket, MSG_READ_REPLY, readRegReply );
+                sendBlockTCP( MSG_READ_REPLY, readRegReply );
 
             break;
         }
 
         case CMD_WR_MULTI_REG:
         {
-            qDebug() << tr("Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
+            qDebug() << tr("TCP Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
 
             if( !mBoardConnected )
             {
                 QVector<quint16> vec;
-                sendBlock( mTcpSocket, MSG_RC_NOT_FOUND, vec );
+                sendBlockTCP( MSG_RC_NOT_FOUND, vec );
                 break;
             }
 
@@ -532,14 +572,14 @@ void QRobotServer::onTcpReadyRead()
                 QVector<quint16> vec;
                 vec << CMD_WR_MULTI_REG;
                 vec << startAddr;
-                sendBlock( mTcpSocket, MSG_FAILED, vec );
+                sendBlockTCP( MSG_FAILED, vec );
             }
             else
             {
                 QVector<quint16> vec;
                 vec << startAddr;
                 vec << nReg;
-                sendBlock( mTcpSocket, MSG_WRITE_OK, vec );
+                sendBlockTCP( MSG_WRITE_OK, vec );
             }
             break;
         }
@@ -548,8 +588,11 @@ void QRobotServer::onTcpReadyRead()
         {
             qDebug() << tr("Received wrong message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
 
+            char buf[256];
+            in.readRawData( buf, mNextTcpBlockSize );
+
             QVector<quint16> vec;
-            sendBlock( mTcpSocket, MSG_FAILED, vec );
+            sendBlockTCP(  MSG_FAILED, vec );
 
             break;
         }
@@ -561,166 +604,202 @@ void QRobotServer::onTcpReadyRead()
 
 void QRobotServer::onUdpStatusReadyRead()
 {
-    QDataStream in(mUdpStatusSocket);
-    in.setVersion(QDataStream::Qt_4_0);
-
     int headerSize = 3; // [blockSize][msgIdx][msgCode]
 
     mNextUdpStatBlockSize=0;
     quint16 msgCode;
 
-    forever // Receiving data while there is data available
+    while( mUdpStatusSocketListener->hasPendingDatagrams() ) // Receiving data while there is data available
     {
-        if( mNextUdpStatBlockSize==0) // No incomplete blocks received before
+        QByteArray buffer( mUdpStatusSocketListener->pendingDatagramSize(), 0 );
+        qint64 datagramSize = mUdpStatusSocketListener->pendingDatagramSize();
+
+        if( buffer.size()< datagramSize )
+            buffer.resize( datagramSize );
+
+        QHostAddress addr;
+        quint16 port;
+
+        mUdpStatusSocketListener->readDatagram( buffer.data(), buffer.size(), &addr, &port );
+
+        QDataStream in( buffer );
+        in.setVersion(QDataStream::Qt_5_2);
+
+        while( !in.atEnd() )
         {
-            if (mUdpStatusSocket->bytesAvailable() < (qint64)sizeof(quint16))
+
+            if( mNextUdpStatBlockSize==0) // No incomplete blocks received before
             {
-                qDebug() << Q_FUNC_INFO << tr("No more TCP Data available");
+                if (datagramSize < (qint64)sizeof(quint16))
+                {
+                    //qDebug() << Q_FUNC_INFO << tr("No more TCP Data available");
+                    break;
+                }
+
+                int count = 0;
+                while( mNextUdpStatBlockSize == 0 )
+                {
+                    // Datagram dimension
+                    in >> mNextUdpStatBlockSize; // Updated only if we are parsing a new block
+
+                    count++;
+                    if(count == datagramSize)
+                    {
+                        QDataStream::Status st = in.status();
+
+                        qCritical() << Q_FUNC_INFO << tr("Read %1 bytes equal to ZERO. Stream status: %2")
+                                       .arg(datagramSize).arg(st);
+                        return;
+                    }
+                }
+            }
+
+            if( datagramSize < mNextUdpStatBlockSize )
+            {
+                qDebug() << Q_FUNC_INFO << tr("Received incomplete UDP Status Block... waiting for the missing data");
                 break;
             }
 
-            // Datagram dimension
-            in >> mNextUdpStatBlockSize; // Updated only if we are parsing a new block
-        }
+            // Datagram IDX
+            quint16 msgIdx;
+            in >> msgIdx;
 
-        if (mUdpStatusSocket->bytesAvailable() < mNextUdpStatBlockSize)
-        {
-            qDebug() << Q_FUNC_INFO << tr("Received incomplete TCP Block... waiting for the missing data");
-            break;
-        }
+            QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
+            qDebug() << tr("%1 - UDP Status Received msg #%2").arg(timeStr).arg(msgIdx);
 
-        // Datagram IDX
-        quint16 msgIdx;
-        in >> msgIdx;
+            // Datagram Code
+            in >> msgCode;
 
-        QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-        qDebug() << tr("%1 - Received msg #%2").arg(timeStr).arg(msgIdx);
-
-        // Datagram Code
-        in >> msgCode;
-
-        switch(msgCode)
-        {
-        case CMD_SERVER_PING_REQ: // Sent by client to verify that Server is running
-        {
-            qDebug() << tr("Received msg #%1: MSG_SERVER_PING_REQ").arg(msgIdx);
-
-            QVector<quint16> vec;
-            sendBlock( mTcpSocket, MSG_SERVER_PING_OK, vec );
-
-            break;
-        }
-
-        case CMD_RD_MULTI_REG:
-        {
-            qDebug() << tr("Received msg #%1: CMD_RD_MULTI_REG").arg(msgIdx);
-
-            if( !mBoardConnected )
+            switch(msgCode)
             {
-                QVector<quint16> vec;
-                sendBlock( mUdpStatusSocket, MSG_RC_NOT_FOUND, vec);
+            case CMD_SERVER_PING_REQ: // Sent by client to verify that Server is running
+            {
+                qDebug() << tr("UDP Status Received msg #%1: MSG_SERVER_PING_REQ").arg(msgIdx);
 
-                qCritical() << Q_FUNC_INFO << "CMD_RD_MULTI_REG - Board not connected!";
+                QVector<quint16> vec;
+                //sendBlockTCP( mUdpStatusSocket, MSG_SERVER_PING_OK, vec );
+                sendStatusBlockUDP( addr, MSG_SERVER_PING_OK, vec );
+
                 break;
             }
 
-            quint16 startAddr;
-            in >> startAddr; // First word to be read
-            quint16 nReg;
-            in >> nReg;
-            qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
-
-            bool commOk = readMultiReg( startAddr, nReg );
-
-            QVector<quint16> readRegReply;
-
-            readRegReply.resize( nReg+2 );
-
-            readRegReply[0] = (quint16)startAddr;
-            readRegReply[1] = (quint16)nReg;
-            memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) ); // TODO Verificare!!!
-
-            if( !commOk )
+            case CMD_RD_MULTI_REG:
             {
-                QVector<quint16> vec;
-                vec << CMD_RD_MULTI_REG;
-                vec << startAddr;
-                sendBlock( mUdpStatusSocket, MSG_FAILED, vec );
-            }
-            else
-                sendBlock( mUdpStatusSocket, MSG_READ_REPLY, readRegReply );
+                qDebug() << tr("UDP Status Received msg #%1: CMD_RD_MULTI_REG").arg(msgIdx);
 
-            break;
-        }
+                if( !mBoardConnected )
+                {
+                    QVector<quint16> vec;
+                    //sendBlockTCP( mUdpStatusSocket, MSG_RC_NOT_FOUND, vec);
+                    sendStatusBlockUDP( addr, MSG_RC_NOT_FOUND, vec );
 
-        case CMD_WR_MULTI_REG:
-        {
-            qDebug() << tr("Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
+                    qCritical() << Q_FUNC_INFO << "CMD_RD_MULTI_REG - Board not connected!";
+                    break;
+                }
 
-            if( !mBoardConnected )
-            {
-                QVector<quint16> vec;
-                sendBlock( mUdpStatusSocket, MSG_RC_NOT_FOUND, vec );
+                quint16 startAddr;
+                in >> startAddr; // First word to be read
+                quint16 nReg;
+                in >> nReg;
+                qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
+
+                bool commOk = readMultiReg( startAddr, nReg );
+
+                QVector<quint16> readRegReply;
+
+                readRegReply.resize( nReg+2 );
+
+                readRegReply[0] = (quint16)startAddr;
+                readRegReply[1] = (quint16)nReg;
+                memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) ); // TODO Verificare!!!
+
+                if( !commOk )
+                {
+                    QVector<quint16> vec;
+                    vec << CMD_RD_MULTI_REG;
+                    vec << startAddr;
+                    //sendBlockTCP( mUdpStatusSocket, MSG_FAILED, vec );
+                    sendStatusBlockUDP( addr, MSG_FAILED, vec );
+                }
+                else
+                    //sendBlockTCP( mUdpStatusSocket, MSG_READ_REPLY, readRegReply );
+                    sendStatusBlockUDP( addr, MSG_READ_REPLY, readRegReply );
+
                 break;
             }
 
-            quint16 startAddr;
-            in >> startAddr;  // First word to be read
-
-            // We can extract data size (nReg!) from message without asking it to client in the protocol
-            int nReg = (mNextUdpStatBlockSize/sizeof(quint16)) - headerSize;
-
-            qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
-
-            QVector<quint16> vals;
-            vals.reserve(nReg);
-
-            for( int i=0; i<nReg; i++ )
+            case CMD_WR_MULTI_REG:
             {
-                quint16 data;
-                in >> data;
+                qDebug() << tr("UDP Status Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
 
-                vals << data;
+                if( !mBoardConnected )
+                {
+                    QVector<quint16> vec;
+                    //sendBlockTCP( mUdpStatusSocket, MSG_RC_NOT_FOUND, vec );
+                    sendStatusBlockUDP( addr, MSG_RC_NOT_FOUND, vec );
+                    break;
+                }
+
+                quint16 startAddr;
+                in >> startAddr;  // First word to be read
+
+                // We can extract data size (nReg!) from message without asking it to client in the protocol
+                int nReg = (mNextUdpStatBlockSize/sizeof(quint16)) - headerSize;
+
+                qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
+
+                QVector<quint16> vals;
+                vals.reserve(nReg);
+
+                for( int i=0; i<nReg; i++ )
+                {
+                    quint16 data;
+                    in >> data;
+
+                    vals << data;
+                }
+
+                bool commOk = writeMultiReg( startAddr, nReg, vals );
+
+                if( !commOk )
+                {
+                    QVector<quint16> vec;
+                    vec << CMD_WR_MULTI_REG;
+                    vec << startAddr;
+                    //sendBlockTCP( mUdpStatusSocket, MSG_FAILED, vec );
+                    sendStatusBlockUDP( addr, MSG_FAILED, vec );
+                }
+                else
+                {
+                    QVector<quint16> vec;
+                    vec << startAddr;
+                    vec << nReg;
+                    //sendBlockTCP( mUdpStatusSocket, MSG_WRITE_OK, vec );
+                    sendStatusBlockUDP( addr, MSG_WRITE_OK, vec );
+                }
+                break;
             }
 
-            bool commOk = writeMultiReg( startAddr, nReg, vals );
-
-            if( !commOk )
+            default:
             {
-                QVector<quint16> vec;
-                vec << CMD_WR_MULTI_REG;
-                vec << startAddr;
-                sendBlock( mUdpStatusSocket, MSG_FAILED, vec );
+                qDebug() << tr("Received wrong message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
+
+                char buf[256];
+                in.readRawData( buf, mNextTcpBlockSize );
+
+                break;
             }
-            else
-            {
-                QVector<quint16> vec;
-                vec << startAddr;
-                vec << nReg;
-                sendBlock( mUdpStatusSocket, MSG_WRITE_OK, vec );
             }
-            break;
+
+            mNextUdpStatBlockSize = 0;
         }
-
-        default:
-        {
-            qDebug() << tr("Received wrong message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
-
-            QVector<quint16> vec;
-            sendBlock( mUdpStatusSocket, MSG_FAILED, vec );
-
-            break;
-        }
-        }
-
-        mNextUdpStatBlockSize = 0;
     }
 }
 
 void QRobotServer::onUdpControlReadyRead()
 {
-    QDataStream in(mUdpControlSocket);
-    in.setVersion(QDataStream::Qt_4_0);
+    QDataStream in(mUdpControlSocketListener);
+    in.setVersion(QDataStream::Qt_5_2);
 
     int headerSize = 3; // [blockSize][msgIdx][msgCode]
 
@@ -731,7 +810,7 @@ void QRobotServer::onUdpControlReadyRead()
     {
         if( mNextUdpCmdBlockSize==0) // No incomplete blocks received before
         {
-            if (mUdpControlSocket->bytesAvailable() < (qint64)sizeof(quint16))
+            if (mUdpControlSocketListener->bytesAvailable() < (qint64)sizeof(quint16))
             {
                 qDebug() << Q_FUNC_INFO << tr("No more TCP Data available");
                 break;
@@ -739,9 +818,15 @@ void QRobotServer::onUdpControlReadyRead()
 
             // Datagram dimension
             in >> mNextUdpCmdBlockSize; // Updated only if we are parsing a new block
+
+            if( mNextUdpCmdBlockSize == 0 )
+            {
+                qCritical() << tr("Impossible to read data from UDP Control Socket");
+                return;
+            }
         }
 
-        if (mUdpControlSocket->bytesAvailable() < mNextUdpCmdBlockSize)
+        if (mUdpControlSocketListener->bytesAvailable() < mNextUdpCmdBlockSize)
         {
             qDebug() << Q_FUNC_INFO << tr("Received incomplete TCP Block... waiting for the missing data");
             break;
@@ -752,73 +837,21 @@ void QRobotServer::onUdpControlReadyRead()
         in >> msgIdx;
 
         QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-        qDebug() << tr("%1 - Received msg #%2").arg(timeStr).arg(msgIdx);
+        qDebug() << tr("%1 - UDP Control Received msg #%2").arg(timeStr).arg(msgIdx);
 
         // Datagram Code
         in >> msgCode;
 
         switch(msgCode)
         {
-        case CMD_SERVER_PING_REQ: // Sent by client to verify that Server is running
-        {
-            qDebug() << tr("Received msg #%1: MSG_SERVER_PING_REQ").arg(msgIdx);
-
-            QVector<quint16> vec;
-            sendBlock( mTcpSocket, MSG_SERVER_PING_OK, vec );
-
-            break;
-        }
-
-        case CMD_RD_MULTI_REG:
-        {
-            qDebug() << tr("Received msg #%1: CMD_RD_MULTI_REG").arg(msgIdx);
-
-            if( !mBoardConnected )
-            {
-                QVector<quint16> vec;
-                sendBlock( mUdpControlSocket, MSG_RC_NOT_FOUND, vec);
-
-                qCritical() << Q_FUNC_INFO << "CMD_RD_MULTI_REG - Board not connected!";
-                break;
-            }
-
-            quint16 startAddr;
-            in >> startAddr; // First word to be read
-            quint16 nReg;
-            in >> nReg;
-            qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
-
-            bool commOk = readMultiReg( startAddr, nReg );
-
-            QVector<quint16> readRegReply;
-
-            readRegReply.resize( nReg+2 );
-
-            readRegReply[0] = (quint16)startAddr;
-            readRegReply[1] = (quint16)nReg;
-            memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) ); // TODO Verificare!!!
-
-            if( !commOk )
-            {
-                QVector<quint16> vec;
-                vec << CMD_RD_MULTI_REG;
-                vec << startAddr;
-                sendBlock( mUdpControlSocket, MSG_FAILED, vec );
-            }
-            else
-                sendBlock( mUdpControlSocket, MSG_READ_REPLY, readRegReply );
-
-            break;
-        }
-
         case CMD_WR_MULTI_REG:
         {
-            qDebug() << tr("Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
+            qDebug() << tr("UDP Control Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
 
             if( !mBoardConnected )
             {
                 QVector<quint16> vec;
-                sendBlock( mUdpControlSocket, MSG_RC_NOT_FOUND, vec );
+                //sendBlockTCP( mUdpControlSocket, MSG_RC_NOT_FOUND, vec );
                 break;
             }
 
@@ -845,27 +878,21 @@ void QRobotServer::onUdpControlReadyRead()
 
             if( !commOk )
             {
-                QVector<quint16> vec;
-                vec << CMD_WR_MULTI_REG;
-                vec << startAddr;
-                sendBlock( mUdpControlSocket, MSG_FAILED, vec );
+                qDebug() << tr("Error writing %1 registers, starting from %2").arg(nReg).arg(startAddr);
             }
-            else
-            {
-                QVector<quint16> vec;
-                vec << startAddr;
-                vec << nReg;
-                sendBlock( mUdpControlSocket, MSG_WRITE_OK, vec );
-            }
+
             break;
         }
 
         default:
         {
-            qDebug() << tr("Received wrong message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
+            qDebug() << tr("UDP Control Received wrong message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
 
-            QVector<quint16> vec;
-            sendBlock( mUdpControlSocket, MSG_FAILED, vec );
+            //QVector<quint16> vec;
+            //sendBlock( mUdpControlSocket, MSG_FAILED, vec );
+
+            char buf[256];
+            in.readRawData( buf, mNextTcpBlockSize );
 
             break;
         }

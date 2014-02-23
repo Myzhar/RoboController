@@ -12,7 +12,9 @@
 #include "qcommon.h"
 
 #define DEFAULT_IP "localhost"
-#define DEFAULT_TCP_PORT 4500
+#define DEFAULT_TCP_PORT 14500
+#define DEFAULT_UDP_CTRL_PORT 14560
+#define DEFAULT_UDP_STAT_PORT 14550
 
 CMainWindow::CMainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -20,6 +22,7 @@ CMainWindow::CMainWindow(QWidget *parent) :
     mIniSettings(NULL),
     mRobIpLineEdit(NULL),
     mConnectButton(NULL),
+    mFindServerButton(NULL),
     mRoboCtrl(NULL)
 {
     ui->setupUi(this);
@@ -62,6 +65,22 @@ CMainWindow::CMainWindow(QWidget *parent) :
         mIniSettings->setValue( ROB_TCP_PORT, mRobTcpPort );
         mIniSettings->sync();
     }
+
+    mRobUdpControlPort = mIniSettings->value( ROB_UDP_CTRL_PORT, "-1" ).toInt();
+    if(mRobUdpControlPort == -1 )
+    {
+        mRobUdpControlPort = DEFAULT_UDP_CTRL_PORT;
+        mIniSettings->setValue( ROB_UDP_CTRL_PORT, mRobUdpControlPort );
+        mIniSettings->sync();
+    }
+
+    mRobUdpStatusPort = mIniSettings->value( ROB_UDP_STAT_PORT, "-1" ).toInt();
+    if(mRobUdpStatusPort == -1 )
+    {
+        mRobUdpStatusPort = DEFAULT_UDP_STAT_PORT;
+        mIniSettings->setValue( ROB_UDP_STAT_PORT, mRobUdpStatusPort );
+        mIniSettings->sync();
+    }
     // <<<<< Robot IP Address from INI File
 
     // >>>>> PID State from INI File
@@ -76,20 +95,17 @@ CMainWindow::CMainWindow(QWidget *parent) :
     mRobIpLineEdit = new QLineEdit( mRobIpAddress, ui->mainToolBar );
     ui->mainToolBar->addWidget( mRobIpLineEdit );
 
-    ui->mainToolBar->addWidget( new QLabel(tr("Port:")));
-    mRobTcpPortLineEdit = new QLineEdit( tr("%1").arg(mRobTcpPort), ui->mainToolBar );
-    ui->mainToolBar->addWidget( mRobTcpPortLineEdit );
-
     mRobIpLineEdit->installEventFilter(this);
-    mRobTcpPortLineEdit->installEventFilter(this);
 
     mRobIpLineEdit->setInputMethodHints(Qt::ImhUrlCharactersOnly);
-    mRobTcpPortLineEdit->setInputMethodHints(Qt::ImhDigitsOnly);
 
     mConnectButton = new QPushButton( tr("Connect"), ui->mainToolBar );
     ui->mainToolBar->addWidget( mConnectButton );
-    mConnectButton->setDefault(true);
-    mConnectButton->setFocus();
+
+    mFindServerButton = new QPushButton( tr("Find Server"), ui->mainToolBar );
+    ui->mainToolBar->addWidget( mFindServerButton );
+    mFindServerButton->setDefault(true);
+    mFindServerButton->setFocus();
     // <<<<< Main Toolbar
 
     // >>>>> Status Bar
@@ -99,6 +115,8 @@ CMainWindow::CMainWindow(QWidget *parent) :
 
     connect( mConnectButton, SIGNAL(clicked()),
              this, SLOT(onConnectButtonClicked()) );
+    connect( mFindServerButton, SIGNAL(clicked()),
+             this, SLOT(onFindServerButtonClicked()) );
 
     connect( ui->widget_joypad, SIGNAL(newJoypadValues(float,float)),
              this, SLOT(onNewJoypadValues(float,float)) );
@@ -163,6 +181,16 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
     ui->label_rot_speed->setFont( unitFont );
 }
 
+void CMainWindow::onFindServerButtonClicked()
+{
+    QString serverIp = RoboControllerSDK::findServer( DEFAULT_UDP_STAT_PORT );
+
+    if( serverIp.isEmpty() )
+        mRobIpLineEdit->setText( tr("No Robot Server found. Enter IP manually.") );
+    else
+        mRobIpLineEdit->setText( serverIp );
+}
+
 void CMainWindow::onConnectButtonClicked()
 {
     try
@@ -171,11 +199,12 @@ void CMainWindow::onConnectButtonClicked()
             delete mRoboCtrl;
 
         mRobIpAddress = mRobIpLineEdit->text();
-        mRobTcpPort = mRobTcpPortLineEdit->text().toInt();
-        mRoboCtrl = new RoboControllerSDK( 4550, 4560, mRobIpAddress, mRobTcpPort );
+        mRoboCtrl = new RoboControllerSDK( mRobUdpStatusPort, mRobUdpControlPort, mRobIpAddress, mRobTcpPort );
 
         mIniSettings->setValue( ROB_IP, mRobIpAddress );
         mIniSettings->setValue( ROB_TCP_PORT, mRobTcpPort );
+        mIniSettings->setValue( ROB_UDP_STAT_PORT, mRobUdpStatusPort );
+        mIniSettings->setValue( ROB_UDP_CTRL_PORT, mRobUdpControlPort );
         mIniSettings->sync();
     }
     catch( RcException &e)
@@ -186,7 +215,7 @@ void CMainWindow::onConnectButtonClicked()
 
     // >>>>> Signals/Slots connections
     connect( mRoboCtrl, SIGNAL(newMotorSpeedValue(quint16,double)),
-             this, SLOT(onNewMotorSpeed(int,double)) );
+             this, SLOT(onNewMotorSpeed(quint16,double)) );
     connect( mRoboCtrl, SIGNAL(newRobotConfiguration(RobotConfiguration&)) ,
              this, SLOT(onNewRobotConfiguration(RobotConfiguration&)) );
     // <<<<< Signals/Slots connections
@@ -218,7 +247,7 @@ void CMainWindow::onConnectButtonClicked()
     mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
 }
 
-void CMainWindow::onNewMotorSpeed( int mot, double speed )
+void CMainWindow::onNewMotorSpeed( quint16 mot, double speed )
 {
     if(mRobotConfigValid)
     {
