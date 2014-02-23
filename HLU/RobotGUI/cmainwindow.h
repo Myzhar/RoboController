@@ -15,7 +15,8 @@
 #define ROB_IP "robot_ip"
 #define ROB_TCP_PORT "robot_tcp_port"
 #define ROB_UDP_CTRL_PORT "robot_udp_control_port"
-#define ROB_UDP_STAT_PORT "robot_udp_status_port"
+#define ROB_UDP_STAT_PORT_SEND "robot_udp_status_port_send"
+#define ROB_UDP_STAT_PORT_LISTEN "robot_udp_status_port_listen"
 #define PID_ENABLED "pid_enabled"
 // <<<<< INI names
 
@@ -59,9 +60,10 @@ private:
     QLineEdit* mRobIpLineEdit;
     int mRobTcpPort;
     int mRobUdpControlPort;
-    int mRobUdpStatusPort;
-    QPushButton* mConnectButton;
-    QPushButton* mFindServerButton;
+    int mRobUdpStatusPortSend;
+    int mRobUdpStatusPortListen;
+    QPushButton* mPushButtonConnect;
+    QPushButton* mPushButtonFindServer;
 
     QLabel* mStatusLabel;
     // <<<< GUI Objects

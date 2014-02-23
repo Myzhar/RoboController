@@ -22,10 +22,11 @@ class ROBOCONTROLLERSDKSHARED_EXPORT RoboControllerSDK : public QThread
     Q_OBJECT
 
 public:
-    explicit RoboControllerSDK(quint16 udpStatusPort=14550,
+    explicit RoboControllerSDK(QString serverAddr=QString("127.0.0.1"),
+                               quint16 udpStatusPortSend=14550,
+                               quint16 udpStatusPortListen=14555,
                                quint16 udpControlPort=14560,
-                               QString serverAddr=QString("localhost"),
-                               quint16 tcpPort=14500  );
+                               quint16 tcpPort=14500);
 
     virtual ~RoboControllerSDK();
 
@@ -34,7 +35,7 @@ public:
      *
      * @returns IP of the server or an empty QString
      */
-    static QString findServer(quint16 udpStatusPort=14550 );
+    static QString findServer(quint16 udpSendPort=14550, quint64 udpListenPort=14555 );
 
     /** @brief Send a request for motor speed.
      *         The reply is received with /ref newMotorSpeedValue
@@ -177,8 +178,11 @@ private:
     /// Updates Robot Configuration from data stream
     void updateRobotConfigurationFromDataStream( QDataStream* inStream );
 
-    /// Sends a command to current server
-    void sendCommand(QAbstractSocket *socket, quint16 msgCode, QVector<quint16> &data );
+    /// Sends a command to TCP server
+    void sendBlockTCP( quint16 msgCode, QVector<quint16> &data );
+
+    /// Sends a command to UDP server
+    void sendBlockUDP( QUdpSocket *socket, QHostAddress addr, quint16 port, quint16 msgCode, QVector<quint16> &data, bool waitReply=false );
 
 protected slots:
     /// Processes data from TCP Socket
@@ -191,7 +195,7 @@ protected slots:
     /// Processes data from UDP Status Socket
     void onUdpStatusReadyRead();
     /// Processes data from UDP Control Socket
-    void onUdpControlReadyRead();
+    //void onUdpControlReadyRead();
     /// Handles errors on UDP Status Socket
     void onUdpStatusError( QAbstractSocket::SocketError err );
     /// Handles errors on UDP Control Socket
@@ -233,9 +237,10 @@ signals:
 private:
     qint64 mLastServerReqTime; /**< Information about last connection time */
 
-    int mUdpStatusPort; /**< Socket UDP Status Port */
-    int mUdpControlPort;   /**< Socket UDP Control Port */
-    int mTcpPort;       /**< Socket TCP Port */
+    int mUdpStatusPortSend;      /**< Socket UDP Status Port to send datagrams*/
+    int mUdpStatusPortListen;    /**< Socket UDP Status Port to bind to receive datagrams*/
+    int mUdpControlPortSend;     /**< Socket UDP Control Port */
+    int mTcpPort;          /**< Socket TCP Port */
 
     QString mServerAddr;   /**< Server address */
 

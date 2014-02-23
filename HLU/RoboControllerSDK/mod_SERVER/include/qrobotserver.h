@@ -76,17 +76,15 @@ private:
     QTcpServer*     mTcpServer; ///< TCP Server Object
     QTcpSocket*     mTcpSocket; ///< TCP Socket
     
-    QUdpSocket*     mUdpStatusSocketListener; ///< UDP Status Socket Listener
-    QUdpSocket*     mUdpStatusSocketSender; ///< UDP Status Socket Sender
-
-    QUdpSocket*     mUdpControlSocketListener; ///< UDP Control Socket Listener
+    QUdpSocket*     mUdpStatusSocket; ///< UDP Status Socket Listener
+    QUdpSocket*     mUdpControlSocket; ///< UDP Control Socket Listener
 
     QSettings*      mSettings; ///< Settings in file INI
 
     unsigned int    mServerTcpPort; ///< Port of the TCP Server
-    unsigned int    mServerUdpStatusPortListener; ///< Port of the UDP Status Listen Server
-    unsigned int    mServerUdpStatusPortSender; ///< Port of the UDP Status Listen Server
-    unsigned int    mServerUdpControlPortListener; ///< Port of the UDP Control Server
+    unsigned int    mServerUdpStatusPortListen; ///< Port of the UDP Status Listen Server
+    unsigned int    mServerUdpStatusPortSend; ///< Port of the UDP Status Listen Server
+    unsigned int    mServerUdpControlPortListen; ///< Port of the UDP Control Server @note The control server receives without reply, the feedback is received with the Robot Status
 
     modbus_t*       mModbus;  ///< ModBus protocol implementation
     quint16         mBoardIdx;      /// Id of the connected board

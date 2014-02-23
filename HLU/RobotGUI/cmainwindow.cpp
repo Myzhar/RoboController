@@ -11,18 +11,19 @@
 #include "qrobotconfigdialog.h"
 #include "qcommon.h"
 
-#define DEFAULT_IP "localhost"
+#define DEFAULT_IP "127.0.0.1"
 #define DEFAULT_TCP_PORT 14500
 #define DEFAULT_UDP_CTRL_PORT 14560
-#define DEFAULT_UDP_STAT_PORT 14550
+#define DEFAULT_UDP_STAT_PORT_SEND 14550
+#define DEFAULT_UDP_STAT_PORT_LISTEN 14555
 
 CMainWindow::CMainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::CMainWindow),
     mIniSettings(NULL),
     mRobIpLineEdit(NULL),
-    mConnectButton(NULL),
-    mFindServerButton(NULL),
+    mPushButtonConnect(NULL),
+    mPushButtonFindServer(NULL),
     mRoboCtrl(NULL)
 {
     ui->setupUi(this);
@@ -74,11 +75,19 @@ CMainWindow::CMainWindow(QWidget *parent) :
         mIniSettings->sync();
     }
 
-    mRobUdpStatusPort = mIniSettings->value( ROB_UDP_STAT_PORT, "-1" ).toInt();
-    if(mRobUdpStatusPort == -1 )
+    mRobUdpStatusPortSend = mIniSettings->value( ROB_UDP_STAT_PORT_SEND, "-1" ).toInt();
+    if(mRobUdpStatusPortSend == -1 )
     {
-        mRobUdpStatusPort = DEFAULT_UDP_STAT_PORT;
-        mIniSettings->setValue( ROB_UDP_STAT_PORT, mRobUdpStatusPort );
+        mRobUdpStatusPortSend = DEFAULT_UDP_STAT_PORT_SEND;
+        mIniSettings->setValue( ROB_UDP_STAT_PORT_SEND, mRobUdpStatusPortSend );
+        mIniSettings->sync();
+    }
+
+    mRobUdpStatusPortListen = mIniSettings->value( ROB_UDP_STAT_PORT_LISTEN, "-1" ).toInt();
+    if(mRobUdpStatusPortListen == -1 )
+    {
+        mRobUdpStatusPortListen = DEFAULT_UDP_STAT_PORT_LISTEN;
+        mIniSettings->setValue( ROB_UDP_STAT_PORT_LISTEN, mRobUdpStatusPortListen );
         mIniSettings->sync();
     }
     // <<<<< Robot IP Address from INI File
@@ -99,13 +108,13 @@ CMainWindow::CMainWindow(QWidget *parent) :
 
     mRobIpLineEdit->setInputMethodHints(Qt::ImhUrlCharactersOnly);
 
-    mConnectButton = new QPushButton( tr("Connect"), ui->mainToolBar );
-    ui->mainToolBar->addWidget( mConnectButton );
+    mPushButtonConnect = new QPushButton( tr("Connect"), ui->mainToolBar );
+    ui->mainToolBar->addWidget( mPushButtonConnect );
 
-    mFindServerButton = new QPushButton( tr("Find Server"), ui->mainToolBar );
-    ui->mainToolBar->addWidget( mFindServerButton );
-    mFindServerButton->setDefault(true);
-    mFindServerButton->setFocus();
+    mPushButtonFindServer = new QPushButton( tr("Find Server"), ui->mainToolBar );
+    ui->mainToolBar->addWidget( mPushButtonFindServer );
+    mPushButtonFindServer->setDefault(true);
+    mPushButtonFindServer->setFocus();
     // <<<<< Main Toolbar
 
     // >>>>> Status Bar
@@ -113,9 +122,9 @@ CMainWindow::CMainWindow(QWidget *parent) :
     ui->statusBar->addPermanentWidget( mStatusLabel );
     // <<<<< Status Bar
 
-    connect( mConnectButton, SIGNAL(clicked()),
+    connect( mPushButtonConnect, SIGNAL(clicked()),
              this, SLOT(onConnectButtonClicked()) );
-    connect( mFindServerButton, SIGNAL(clicked()),
+    connect( mPushButtonFindServer, SIGNAL(clicked()),
              this, SLOT(onFindServerButtonClicked()) );
 
     connect( ui->widget_joypad, SIGNAL(newJoypadValues(float,float)),
@@ -155,8 +164,15 @@ void CMainWindow::timerEvent( QTimerEvent* event )
     }
     else if( event->timerId() == mSpeedReqTimer )
     {
-        mRoboCtrl->getMotorSpeed( 0 );
-        mRoboCtrl->getMotorSpeed( 1 );
+        try
+        {
+            mRoboCtrl->getMotorSpeed( 0 );
+            mRoboCtrl->getMotorSpeed( 1 );
+        }
+        catch( RcException &e)
+        {
+            qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+        }
     }
 }
 
@@ -183,12 +199,21 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
 
 void CMainWindow::onFindServerButtonClicked()
 {
-    QString serverIp = RoboControllerSDK::findServer( DEFAULT_UDP_STAT_PORT );
+    QString serverIp = RoboControllerSDK::findServer( DEFAULT_UDP_STAT_PORT_SEND );
 
     if( serverIp.isEmpty() )
+    {
         mRobIpLineEdit->setText( tr("No Robot Server found. Enter IP manually.") );
-    else
-        mRobIpLineEdit->setText( serverIp );
+        return;
+    }
+
+    mRobIpLineEdit->setText( serverIp );
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question( this, tr("Robot Server found"),
+                                   tr("Do you want to estabilish\na connection?") );
+
+    if( reply==QMessageBox::Yes )
+        onConnectButtonClicked();
 }
 
 void CMainWindow::onConnectButtonClicked()
@@ -199,11 +224,13 @@ void CMainWindow::onConnectButtonClicked()
             delete mRoboCtrl;
 
         mRobIpAddress = mRobIpLineEdit->text();
-        mRoboCtrl = new RoboControllerSDK( mRobUdpStatusPort, mRobUdpControlPort, mRobIpAddress, mRobTcpPort );
+        mRoboCtrl = new RoboControllerSDK( mRobIpAddress, mRobUdpStatusPortSend, mRobUdpStatusPortListen,
+                                           mRobUdpControlPort, mRobTcpPort );
 
         mIniSettings->setValue( ROB_IP, mRobIpAddress );
         mIniSettings->setValue( ROB_TCP_PORT, mRobTcpPort );
-        mIniSettings->setValue( ROB_UDP_STAT_PORT, mRobUdpStatusPort );
+        mIniSettings->setValue( ROB_UDP_STAT_PORT_SEND, mRobUdpStatusPortSend );
+        mIniSettings->setValue( ROB_UDP_STAT_PORT_LISTEN, mRobUdpStatusPortListen );
         mIniSettings->setValue( ROB_UDP_CTRL_PORT, mRobUdpControlPort );
         mIniSettings->sync();
     }
@@ -233,18 +260,35 @@ void CMainWindow::onConnectButtonClicked()
     mMotorSpeedRight=0;
     mMotorSpeedLeft=0;
 
-    mRoboCtrl->setBoardStatus( status );
+    try
+    {
+        mRoboCtrl->setBoardStatus( status );
+    }
+    catch( RcException &e)
+    {
+        qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+    }
     // <<<<< Setting last PID state
 
     // >>>>> Requesting Robot Configuration
-    mRoboCtrl->getRobotConfigurationFromEeprom();
+    try
+    {
+        mRoboCtrl->getRobotConfigurationFromEeprom();
+    }
+    catch( RcException &e)
+    {
+        qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+    }
     // <<<<< Requesting Robot Configuration
 
     ui->actionRobot_Configuration->setEnabled(true);
-    mStatusLabel->setText( tr("Connected to robot") );
+    mStatusLabel->setText( tr("Connected to robot on IP: %1").arg(mRobIpAddress) );
 
     mSpeedReqTimer = this->startTimer( 50, Qt::PreciseTimer);
     mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
+
+    mPushButtonFindServer->setEnabled(false);
+    mPushButtonConnect->setEnabled(false);
 }
 
 void CMainWindow::onNewMotorSpeed( quint16 mot, double speed )
@@ -295,8 +339,15 @@ void CMainWindow::onNewJoypadValues(float x, float y)
         motSx = motSx/scale*mMaxMotorSpeed;
         motDx = motDx/scale*mMaxMotorSpeed;
 
-        mRoboCtrl->setMotorSpeed(0, motSx);
-        mRoboCtrl->setMotorSpeed(1, motDx);
+        try
+        {
+            mRoboCtrl->setMotorSpeed(0, motSx);
+            mRoboCtrl->setMotorSpeed(1, motDx);
+        }
+        catch( RcException &e)
+        {
+            qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+        }
 
         //qDebug() << tr("Motor speeds: (%1,%2)").arg(motSx).arg(motDx);
     }
@@ -305,8 +356,15 @@ void CMainWindow::onNewJoypadValues(float x, float y)
         motSx = motSx/scale*2047.0f;
         motDx = motDx/scale*2047.0f;
 
-        mRoboCtrl->setMotorPWM( 0, (int)(motSx+0.5f) );
-        mRoboCtrl->setMotorPWM( 1, (int)(motDx+0.5f));
+        try
+        {
+            mRoboCtrl->setMotorPWM( 0, (int)(motSx+0.5f) );
+            mRoboCtrl->setMotorPWM( 1, (int)(motDx+0.5f));
+        }
+        catch( RcException &e)
+        {
+            qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+        }
 
         //qDebug() << tr("Motor PWMs: (%1,%2)").arg(motSx).arg(motDx);
     }
@@ -329,7 +387,14 @@ void CMainWindow::on_actionPidEnabled_triggered()
     status.saveToEeprom = true;
     status.wdEnable = true;
 
-    mRoboCtrl->setBoardStatus( status );
+    try
+    {
+        mRoboCtrl->setBoardStatus( status );
+    }
+    catch( RcException &e)
+    {
+        qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+    }
 }
 
 void CMainWindow::on_actionRobot_Configuration_triggered()
@@ -339,7 +404,14 @@ void CMainWindow::on_actionRobot_Configuration_triggered()
 
     mOpenRobotConfig = true;
 
-    mRoboCtrl->getRobotConfigurationFromEeprom();
+    try
+    {
+        mRoboCtrl->getRobotConfigurationFromEeprom();
+    }
+    catch( RcException &e)
+    {
+        qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+    }
 }
 
 void CMainWindow::onNewRobotConfiguration( RobotConfiguration& robConf )
@@ -363,8 +435,15 @@ void CMainWindow::onNewRobotConfiguration( RobotConfiguration& robConf )
         if( res==QDialog::Accepted )
         {
             dlg.getRobotConfiguration( mRoboConf );
-            mRoboCtrl->setRobotConfiguration( mRoboConf );
-            mRoboCtrl->saveRobotConfigurationToEeprom();
+            try
+            {
+                mRoboCtrl->setRobotConfiguration( mRoboConf );
+                mRoboCtrl->saveRobotConfigurationToEeprom();
+            }
+            catch( RcException &e)
+            {
+                qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+            }
         }
     }
 }
