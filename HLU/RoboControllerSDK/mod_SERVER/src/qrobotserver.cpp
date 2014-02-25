@@ -30,6 +30,7 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/,
     mModbus(NULL),
     mReplyBuffer(NULL),
     mBoardConnected(false),
+    mControllerClientIp(""),
     mMsgCounter(0)
 {
     // >>>>> Server Settings ini file
@@ -245,13 +246,13 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/,
 
     mSettings->sync();
 
-    mClientCount = 0;
+    mTcpClientCount = 0;
 
     // Start Server Thread
     this->start();
 
     // Start Ping Timer
-    mTestTimerId = startTimer( TEST_TIMER_INTERVAL, Qt::PreciseTimer );
+    mBoardTestTimerId = startTimer( TEST_TIMER_INTERVAL, Qt::PreciseTimer );
 }
 
 QRobotServer::~QRobotServer()
@@ -373,7 +374,7 @@ void QRobotServer::onNewTcpConnection()
     qDebug() << tr("TCP Client connected: %1").arg( mTcpSocket->localAddress().toString() );
 
     connect( mTcpSocket, SIGNAL(disconnected()),
-             this, SLOT(onClientDisconnected()) );
+             this, SLOT(onTcpClientDisconnected()) );
     connect( mTcpSocket, SIGNAL(readyRead()),
              this, SLOT(onTcpReadyRead()) );
 
@@ -381,7 +382,7 @@ void QRobotServer::onNewTcpConnection()
     data << (quint16)mBoardIdx;
     sendBlockTCP( MSG_CONNECTED, data );
 
-    mClientCount++;
+    mTcpClientCount++;
 }
 
 void QRobotServer::sendBlockTCP(quint16 msgCode, QVector<quint16>& data )
@@ -452,6 +453,7 @@ void QRobotServer::onTcpReadyRead()
 
     forever // Receiving data while there is data available
     {
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
         if( mNextTcpBlockSize==0) // No incomplete blocks received before
         {
             if (mTcpSocket->bytesAvailable() < (qint64)sizeof(quint16))
@@ -610,6 +612,8 @@ void QRobotServer::onUdpStatusReadyRead()
 
     while( mUdpStatusSocket->hasPendingDatagrams() ) // Receiving data while there is data available
     {
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
+
         QByteArray buffer( mUdpStatusSocket->pendingDatagramSize(), 0 );
         qint64 datagramSize = mUdpStatusSocket->pendingDatagramSize();
 
@@ -626,6 +630,7 @@ void QRobotServer::onUdpStatusReadyRead()
 
         while( !in.atEnd() )
         {
+            QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
 
             if( mNextUdpStatBlockSize==0) // No incomplete blocks received before
             {
@@ -676,7 +681,6 @@ void QRobotServer::onUdpStatusReadyRead()
                 qDebug() << tr("UDP Status Received msg #%1: CMD_SERVER_PING_REQ (%2)").arg(msgIdx).arg(msgCode);
 
                 QVector<quint16> vec;
-                //sendBlockTCP( mUdpStatusSocket, MSG_SERVER_PING_OK, vec );
                 sendStatusBlockUDP( addr, MSG_SERVER_PING_OK, vec );
 
                 break;
@@ -775,6 +779,36 @@ void QRobotServer::onUdpStatusReadyRead()
                 break;
             }
 
+            case CMD_GET_ROBOT_CTRL:
+            {
+                qDebug() << tr("UDP Status Received msg #%1: CMD_GET_ROBOT_CTRL (%2)").arg(msgIdx).arg(msgCode);
+
+                if( mControllerClientIp.isEmpty() || mControllerClientIp==addr.toString() )
+                {
+                    mControllerClientIp = addr.toString();
+                    QVector<quint16> vec;
+                    sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_OK, vec ); // Robot control taken
+                }
+                else
+                {
+                    QVector<quint16> vec;
+                    sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_KO, vec ); // Robot not free
+                }
+                break;
+            }
+
+            case CMD_REL_ROBOT_CTRL:
+            {
+                qDebug() << tr("UDP Status Received msg #%1: CMD_LEAVE_ROBOT_CTRL (%2)").arg(msgIdx).arg(msgCode);
+
+                mControllerClientIp = "";
+
+                QVector<quint16> vec;
+                sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_RELEASED, vec ); // Robot control released
+
+                break;
+            }
+
             default:
             {
                 qDebug() << tr("Received unknown message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
@@ -800,6 +834,8 @@ void QRobotServer::onUdpControlReadyRead()
 
     while( mUdpControlSocket->hasPendingDatagrams() ) // Receiving data while there is data available
     {
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
+
         QByteArray buffer( mUdpControlSocket->pendingDatagramSize(), 0 );
         qint64 datagramSize = mUdpControlSocket->pendingDatagramSize();
 
@@ -816,6 +852,8 @@ void QRobotServer::onUdpControlReadyRead()
 
         while( !in.atEnd() )
         {
+            QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
+
             if( mNextUdpCmdBlockSize==0) // No incomplete blocks received before
             {
                 if (datagramSize < (qint64)sizeof(quint16))
@@ -890,6 +928,23 @@ void QRobotServer::onUdpControlReadyRead()
                     vals << data;
                 }
 
+                // >>>>> Control taken test
+                // Before sending the control command to Robocontroller we must test
+                // if the client has the control of the robot. If not we send the information
+                // to the client using the UDP Status Socket
+                if(addr.toString()!=mControllerClientIp) // The client has no control of the robot
+                {
+                    QVector<quint16> vec;
+                    sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_KO, vec ); // Robot not controlled by client
+
+                    if(mControllerClientIp.isEmpty())
+                        qDebug() << tr("The client %1 cannot send commands before taking control of the robot").arg(addr.toString());
+                    else
+                        qDebug() << tr("The client %1 is controlling the robot. %2 cannot send commands").arg(mControllerClientIp).arg(addr.toString());
+
+                    break;
+                }
+
                 bool commOk = writeMultiReg( startAddr, nReg, vals );
 
                 if( !commOk )
@@ -916,17 +971,11 @@ void QRobotServer::onUdpControlReadyRead()
     }
 }
 
-void QRobotServer::onClientDisconnected()
+void QRobotServer::onTcpClientDisconnected()
 {
-    qDebug() << tr( "Client disconnected" );
-    //delete mClientConnection;
-    //mClientConnection = NULL;
+    qDebug() << tr( "TCP Client disconnected" );
 
-    mClientCount--;
-
-    // TODO Disconnect also over UDP
-
-    // TODO Stop the server if all the clients disconnected?
+    mTcpClientCount--;
 }
 
 modbus_t* QRobotServer::initializeSerialModbus( const char *device,
@@ -1068,7 +1117,6 @@ bool QRobotServer::connectModbus( int retryCount/*=-1*/)
         //msleep(1000); // Not needed there is the timeout on testBoardConnection function
     }
 
-
     if( !ok )
     {
         qCritical() << tr("Error on modbus: %1").arg(modbus_strerror( errno ));
@@ -1081,11 +1129,8 @@ bool QRobotServer::connectModbus( int retryCount/*=-1*/)
 
 void QRobotServer::timerEvent(QTimerEvent *event)
 {
-    if( event->timerId() == mTestTimerId )
+    if( event->timerId() == mBoardTestTimerId )
     {
-        if(mClientCount<1)
-            return;
-
         if( !testBoardConnection() )
         {
             mBoardConnected = false;

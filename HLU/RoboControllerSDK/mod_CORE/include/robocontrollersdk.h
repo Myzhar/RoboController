@@ -14,6 +14,8 @@
 
 #define SERVER_REPLY_TIMEOUT_MSEC 1000
 
+#define UDP_PING_TIME_MSEC 1000
+
 namespace roboctrl
 {
 
@@ -132,7 +134,13 @@ public:
      */
     void setRobotConfiguration( RobotConfiguration& roboConfig );
 
+    /** @brief Try to take control of the robot for driving
+     */
+    void getRobotControl();
 
+    /** @brief Release the control of the robot for other clients
+     */
+    void releaseRobotControl();
 
     //TODO: Implementare getWatchDogTime e setWatchDogTime
 
@@ -145,14 +153,6 @@ public:
      *         WatchDog if active stops motors if communication is lost
      */
     //void enableWatchdog();
-
-    /** @brief Takes the control over the movements of the robot
-     */
-    void getRobotControl(); //TODO
-
-    /** @brief Releases the control over the movements of the robot
-     */
-    void releaseRobotControl(); //TODO
 
 protected:
     /// Thread function
@@ -204,10 +204,6 @@ protected slots:
     /// Send Test ping to UDP Servers
     void onUdpTestTimerTimeout();
 
-
-
-
-
     /// Ping Timer handler
     void onPingTimerTimeout();
 
@@ -233,6 +229,13 @@ signals:
     void newRobotConfiguration( RobotConfiguration& robConf );
     /// Signal emitted when a new Board Status is ready
     void newBoardStatus(BoardStatus& status);
+
+    /// Signal emitted when client takes Robot Control successfully
+    void robotControlTaken();
+    /// Signal emitted when client try to take Robot Control, but fails
+    void robotControlNotTaken();
+    /// Signal emitted when client releases the Robot Control
+    void robotControlReleased();
 
 private:
     qint64 mLastServerReqTime; /**< Information about last connection time */
