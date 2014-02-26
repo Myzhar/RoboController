@@ -519,6 +519,14 @@ void RoboControllerSDK::processReplyMsg( QDataStream *inStream )
 
             emit newMotorSpeedValue( motorIdx, speed );
         }
+        else if( startAddr == WORD_TENSIONE_ALIM )
+        {
+            *inStream >> value;
+
+            double val = (double)value/1000.0;
+
+            emit newBatteryValue( val );
+        }
         else if( startAddr == WORD_STATUSBIT1 ||  startAddr == WORD_STATUSBIT2 )
         {
             *inStream >> value;
@@ -1180,6 +1188,24 @@ void RoboControllerSDK::releaseRobotControl()
 {
     QVector<quint16> vec;
     sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_REL_ROBOT_CTRL, vec, true );
+}
+
+void RoboControllerSDK::getBatteryChargeValue()
+{
+    QVector<quint16> data;
+    data << (quint16)WORD_TENSIONE_ALIM;
+
+    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, true );
+}
+
+void RoboControllerSDK::setBatteryCalibrationParams(double maxChargeVal, double curChargeVal)
+{
+    // TODO Send battery calibration parameters to robot
+
+    /*QVector<quint16> data;
+    data << (quint16); TODO mettere registro giusto!!!
+
+    sendBlockTCP( CMD_WR_MULTI_REG, data );*/
 }
 
 void RoboControllerSDK::saveRobotConfigurationToEeprom( )

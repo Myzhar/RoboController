@@ -1,20 +1,20 @@
 #include <qrobotconfigdialog.h>
-#include <ui_crobotconfigdialog.h>
+#include <ui_qrobotconfigdialog.h>
 
-#include <modbus_registers.h>
+//#include <modbus_registers.h>
 #include <QMessageBox>
 
 #include <loghandler.h>
 
 
-#define REG_COUNT 19
+//#define REG_COUNT 19
 
 namespace roboctrl
 {
 
 QRobotConfigDialog::QRobotConfigDialog( RobotConfiguration& robotConfig, QWidget *parent ) :
     QDialog(parent),
-    ui(new Ui::CRobotConfigDialog)
+    ui(new Ui::QRobotConfigDialog)
 {
     ui->setupUi(this);
 

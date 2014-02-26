@@ -8,6 +8,7 @@ DEFINES += RES_PATH=\\\"/mod_GUI/res/gui-resources.rcc\\\"
 SOURCES += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qjoypad.cpp \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qrobotconfigdialog.cpp \
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qbatterycalibdialog.cpp \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qscreentools.cpp
 
 INCLUDEPATH += \
@@ -16,10 +17,12 @@ INCLUDEPATH += \
 HEADERS += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qjoypad.h \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qrobotconfigdialog.h \
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qbatterycalibdialog.h \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qscreentools.h
             
 FORMS    += \
-            $$ROBOCONTROLLERSDKPATH/mod_GUI/ui/crobotconfigdialog.ui
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/ui/qrobotconfigdialog.ui \
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/ui/qbatterycalibdialog.ui
             
 RESOURCES += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/res/joypad.qrc

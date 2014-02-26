@@ -44,6 +44,10 @@ int main(int argc, char *argv[])
     try
     {
         QRobotServer* server = new QRobotServer();
+        if( server->isRunning() )
+        {
+            qDebug() << QObject::tr("Server has been correctly started.");
+        }
     }
     catch(roboctrl::RcException &e)
     {

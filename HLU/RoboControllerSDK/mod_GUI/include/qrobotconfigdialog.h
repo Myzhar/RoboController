@@ -1,5 +1,5 @@
-#ifndef CROBOTCONFIGDIALOG_H
-#define CROBOTCONFIGDIALOG_H
+#ifndef QROBOTCONFIGDIALOG_H
+#define QROBOTCONFIGDIALOG_H
 
 #include <QDialog>
 #include <QVector>
@@ -10,7 +10,7 @@
 #include <robocontrollersdk.h>
 
 namespace Ui {
-class CRobotConfigDialog;
+class QRobotConfigDialog;
 }
 
 namespace roboctrl
@@ -32,11 +32,11 @@ private slots:
     void on_buttonBox_accepted();
 
 private:
-    Ui::CRobotConfigDialog *ui;
+    Ui::QRobotConfigDialog *ui;
 
     RobotConfiguration mRobotConfig;
 };
 
 }
 
-#endif // CROBOTCONFIGDIALOG_H
+#endif // QROBOTCONFIGDIALOG_H

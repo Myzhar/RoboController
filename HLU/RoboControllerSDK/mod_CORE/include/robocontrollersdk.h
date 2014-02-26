@@ -142,6 +142,19 @@ public:
      */
     void releaseRobotControl();
 
+    /** @brief Gets the current charge value of battery
+     *  The reply is received with @ref newBatteryValue
+     *  signal
+     */
+    void getBatteryChargeValue();
+
+    /** @brief Calibrates the Battery charge value
+     *
+     * @param maxChargeVal Maximum charge value in Volts
+     * @param curChargeVal Current value of charge read with a tester connected to the battery
+     */
+    void setBatteryCalibrationParams(double maxChargeVal, double curChargeVal);
+
     //TODO: Implementare getWatchDogTime e setWatchDogTime
 
     /** @brief Disables the Communication Watchdog
@@ -229,6 +242,8 @@ signals:
     void newRobotConfiguration( RobotConfiguration& robConf );
     /// Signal emitted when a new Board Status is ready
     void newBoardStatus(BoardStatus& status);
+    /// Signal emitted when a new Battery Value is available
+    void newBatteryValue( double batChargeVal );
 
     /// Signal emitted when client takes Robot Control successfully
     void robotControlTaken();
