@@ -9,7 +9,7 @@
 *.la
 *.lai
 *.so
-*.dll
+# *.dll useful for bin folder under Windows
 *.dylib
 
 ####################################################
