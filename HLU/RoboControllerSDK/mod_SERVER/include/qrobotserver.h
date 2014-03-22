@@ -33,7 +33,7 @@ class ROBOCONTROLLERSDKSHARED_EXPORT QRobotServer : public QThread
 public:
     explicit QRobotServer(quint16 serverUdpControl=14560,
                           quint16 serverUdpStatusListener=14550, quint16 serverUdpStatusSender=14555,
-                          quint16 serverTcpPort=14500, QObject *parent=0); ///< Default constructor
+                          quint16 serverTcpPort=14500, bool testMode=false, QObject *parent=0); ///< Default constructor
     virtual ~QRobotServer(); ///< Destructor
 
 signals:
@@ -106,6 +106,8 @@ private:
     quint16         mNextTcpBlockSize;      ///< Used to recover incomplete TCP block
     quint16         mNextUdpCmdBlockSize;      ///< Used to recover incomplete UDP Control block
     quint16         mNextUdpStatBlockSize;      ///< Used to recover incomplete UDP Status block
+
+    bool            mTestMode; ///< If true the server does not connect to RoboController, but allows connection to sockets to test communications
 };
 
 }

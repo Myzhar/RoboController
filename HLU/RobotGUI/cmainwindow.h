@@ -42,6 +42,7 @@ private slots:
     void onNewJoypadValues(float x, float y);
     void onNewMotorSpeed( quint16 mot, double speed );
     void onNewRobotConfiguration( RobotConfiguration& robConf );
+    void onNewBatteryValue( double battVal);
 
     void on_actionRobot_Configuration_triggered();
 
@@ -66,6 +67,7 @@ private:
     QPushButton* mPushButtonFindServer;
 
     QLabel* mStatusLabel;
+    QLabel* mBatteryLabel;
     // <<<< GUI Objects
 
     bool mPidEnabled;

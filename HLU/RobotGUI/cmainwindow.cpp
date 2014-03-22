@@ -120,6 +120,9 @@ CMainWindow::CMainWindow(QWidget *parent) :
     // >>>>> Status Bar
     mStatusLabel = new QLabel(tr("Unconnected"));
     ui->statusBar->addPermanentWidget( mStatusLabel );
+
+    mBatteryLabel = new QLabel(tr(" - Battery: --.--V"));
+    ui->statusBar->addPermanentWidget( mBatteryLabel );
     // <<<<< Status Bar
 
     connect( mPushButtonConnect, SIGNAL(clicked()),
@@ -161,6 +164,14 @@ void CMainWindow::timerEvent( QTimerEvent* event )
     if( event->timerId() == mStatusReqTimer )
     {
         // TODO Request battery charge
+        try
+        {
+            mRoboCtrl->getBatteryChargeValue();
+        }
+        catch( RcException &e)
+        {
+            qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+        }
     }
     else if( event->timerId() == mSpeedReqTimer )
     {
@@ -245,6 +256,8 @@ void CMainWindow::onConnectButtonClicked()
              this, SLOT(onNewMotorSpeed(quint16,double)) );
     connect( mRoboCtrl, SIGNAL(newRobotConfiguration(RobotConfiguration&)) ,
              this, SLOT(onNewRobotConfiguration(RobotConfiguration&)) );
+    connect( mRoboCtrl, SIGNAL(newBatteryValue(double)),
+             this, SLOT(onNewBatteryValue(double)) );
     // <<<<< Signals/Slots connections
 
     // >>>>> Setting last PID state
@@ -447,3 +460,9 @@ void CMainWindow::onNewRobotConfiguration( RobotConfiguration& robConf )
         }
     }
 }
+
+void CMainWindow::onNewBatteryValue( double battVal)
+{
+    mBatteryLabel->setText( tr(" - Battery: %1V").arg( battVal, 5,'f', 2, ' ' ));
+}
+

@@ -43,7 +43,15 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
     connect(mTcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
             this, SLOT(onTcpError(QAbstractSocket::SocketError)));
 
-    connectToTcpServer();
+    try
+    {
+        connectToTcpServer();
+    }
+    catch( RcException &e )
+    {
+        qDebug() << e.getExcMessage();
+        throw e;
+    }
     // <<<<< TCP Socket
 
     // >>>>> UDP Sockets
@@ -64,7 +72,15 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
     connect( mUdpStatusSocket, SIGNAL(error(QAbstractSocket::SocketError)),
              this, SLOT(onUdpStatusError(QAbstractSocket::SocketError)) );
 
-    connectToUdpServers();
+    try
+    {
+        connectToUdpServers();
+    }
+    catch( RcException &e )
+    {
+        qDebug() << e.getExcMessage();
+        throw e;
+    }
 
     // <<<<< UDP Sockets
     mMotorCtrlMode = mcPID; // RoboController is in PID mode by default
@@ -92,6 +108,7 @@ QString RoboControllerSDK::findServer(quint16 udpSendPort/*=14550*/ , quint64 ud
     if( !udp->bind( udpListenPort, QAbstractSocket::ReuseAddressHint|QAbstractSocket::ShareAddress ) )
     {
         qDebug() << tr("UDP error: %1").arg(udp->errorString() );
+        delete udp;
         return QString();
     }
 
@@ -112,6 +129,8 @@ QString RoboControllerSDK::findServer(quint16 udpSendPort/*=14550*/ , quint64 ud
     udp->writeDatagram( block, QHostAddress::Broadcast, udpSendPort);
     // <<<<< sendCommand( udp, CMD_SERVER_PING_REQ, vec  );
 
+    msleep( 500 );
+
     if( udp->waitForReadyRead( 10000 ) )
     {
         QHostAddress addr;
@@ -130,15 +149,20 @@ QString RoboControllerSDK::findServer(quint16 udpSendPort/*=14550*/ , quint64 ud
             {
                 if( i>2 && data[i-4]==4 ) // The block size must be 4
                 {
+                    delete udp;
                     return addr.toString();
                 }
             }
         }
 
+        delete udp;
         return QString(); // Correct MSG_SERVER_PING_OK not found!
     }
     else
+    {
+        delete udp;
         return QString();
+    }
 }
 
 void RoboControllerSDK::connectToTcpServer()
@@ -185,7 +209,7 @@ void RoboControllerSDK::connectToUdpServers()
 {
     mUdpConnected = false;
 
-    if( !mUdpStatusSocket->bind( QHostAddress(mServerAddr), mUdpStatusPortListen, QAbstractSocket::ReuseAddressHint|QAbstractSocket::ShareAddress ) )
+    if( !mUdpStatusSocket->bind( /*QHostAddress(mServerAddr),*/ mUdpStatusPortListen, QAbstractSocket::ReuseAddressHint|QAbstractSocket::ShareAddress ) )
     {
         throw RcException( excUdpNotConnected, tr("It is not possible to bind UDP Status server: %1")
                            .arg(mUdpControlSocket->errorString() ).toLocal8Bit() );
@@ -233,7 +257,7 @@ void RoboControllerSDK::onTcpReadyRead()
         qint64 bytes = mTcpSocket->bytesAvailable();
 
         if( mNextTcpBlockSize==0) // No incomplete blocks received before
-        {            
+        {
             if ( bytes < (qint64)sizeof(quint16))
             {
                 //qDebug() << Q_FUNC_INFO << tr("No more TCP Data available");
@@ -313,6 +337,14 @@ void RoboControllerSDK::onTcpReadyRead()
         {
             qDebug() << tr("TCP Received msg #%1: MSG_READ_REPLY").arg(msgIdx);
             processReplyMsg( &in );
+            break;
+        }
+
+        case MSG_RC_NOT_FOUND:
+        {
+            qDebug() << tr("TCP Received msg #%1: MSG_RC_NOT_FOUND").arg(msgIdx);
+
+            // TODO: handle this error
             break;
         }
 
@@ -446,6 +478,14 @@ void RoboControllerSDK::onUdpStatusReadyRead()
                 qDebug() << tr("UDP Received msg #%1: MSG_ROBOT_CTRL_RELEASED").arg(msgIdx);
 
                 emit robotControlReleased();
+                break;
+            }
+
+            case MSG_RC_NOT_FOUND:
+            {
+                qDebug() << tr("UDP Received msg #%1: MSG_RC_NOT_FOUND").arg(msgIdx);
+
+                // TODO: handle this error
                 break;
             }
 
@@ -673,7 +713,7 @@ void RoboControllerSDK::onUdpControlError( QAbstractSocket::SocketError err )
 {
     mLastUdpErrorMsg = tr("%1 - %2").arg(err).arg(mUdpControlSocket->errorString());
 
-    qDebug() << tr( "UDP Status Communication error: %1 - %2").arg(err).arg(mUdpControlSocket->errorString());
+    qDebug() << tr( "UDP Control Communication error: %1 - %2").arg(err).arg(mUdpControlSocket->errorString());
 }
 
 void RoboControllerSDK::onTcpHostFound()
