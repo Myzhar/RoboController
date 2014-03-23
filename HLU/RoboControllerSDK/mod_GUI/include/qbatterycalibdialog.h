@@ -24,11 +24,15 @@ signals:
 
 private slots:
     void onNewBatteryValue(double val);
-    void on_pushButton_set_bat_calib_value_clicked();
     void on_pushButton_ok_clicked();
+
+    void on_pushButton_set_lower_clicked();
+    void on_pushButton_set_upper_clicked();
 
 private:
     Ui::QBatteryCalibDialog *ui;
+
+    RoboControllerSDK* mRobCom;
 };
 
 }

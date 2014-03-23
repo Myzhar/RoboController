@@ -66,6 +66,8 @@ QRobotConfigDialog::QRobotConfigDialog( RobotConfiguration& robotConfig, QWidget
     ui->lineEdit_robot_weight->setText( tr("%1").arg(mRobotConfig.Weight));
     ui->lineEdit_robot_wheelbase->setText( tr("%1").arg(mRobotConfig.WheelBase));
     ui->lineEdit_robot_width->setText( tr("%1").arg(mRobotConfig.Width));
+    ui->lineEdit_robot_max_batt_charge->setText( tr("%1").arg((double)(mRobotConfig.MaxChargedBatteryLevel)/1000.0));
+    ui->lineEdit_robot_min_batt_charge->setText( tr("%1").arg((double)(mRobotConfig.MinChargedBatteryLevel)/1000.0));
 
     ui->lineEdit_robot_cpr_left->setInputMethodHints(Qt::ImhDigitsOnly);
     ui->lineEdit_robot_cpr_right->setInputMethodHints(Qt::ImhDigitsOnly);
@@ -86,6 +88,8 @@ QRobotConfigDialog::QRobotConfigDialog( RobotConfiguration& robotConfig, QWidget
     ui->lineEdit_robot_weight->setInputMethodHints(Qt::ImhDigitsOnly);
     ui->lineEdit_robot_wheelbase->setInputMethodHints(Qt::ImhDigitsOnly);
     ui->lineEdit_robot_width->setInputMethodHints(Qt::ImhDigitsOnly);
+    ui->lineEdit_robot_max_batt_charge->setInputMethodHints(Qt::ImhDigitsOnly);
+    ui->lineEdit_robot_max_batt_charge->setInputMethodHints(Qt::ImhDigitsOnly);
     // <<<<< GUI initialization
 }
 
@@ -120,6 +124,9 @@ void QRobotConfigDialog::on_buttonBox_accepted()
     mRobotConfig.Weight = ui->lineEdit_robot_weight->text().toInt();
     mRobotConfig.WheelBase = ui->lineEdit_robot_wheelbase->text().toInt();
     mRobotConfig.Width = ui->lineEdit_robot_width->text().toInt();
+
+    mRobotConfig.MaxChargedBatteryLevel = (quint16)(ui->lineEdit_robot_max_batt_charge->text().toDouble()*1000.0);
+    mRobotConfig.MinChargedBatteryLevel = (quint16)(ui->lineEdit_robot_min_batt_charge->text().toDouble()*1000.0);
 
     emit accepted();
 }

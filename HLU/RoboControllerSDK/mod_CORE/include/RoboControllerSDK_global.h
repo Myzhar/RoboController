@@ -58,6 +58,16 @@ typedef enum
 } EncoderPos;
 
 /**
+ * @enum AnalogCalibValue
+ * @brief Indicates the type of value for Analogic Ports calibration
+ */
+typedef enum
+{
+    CalLow = 0, /**< Lower Value for analogic calibration */
+    CalHigh = 1 /**< Higher Value for analogic calibration */
+} AnalogCalibValue;
+
+/**
   * @struct _BoardStatus
   * @brief Used to mantain the state of the
   *        configuration of the board
@@ -102,6 +112,11 @@ typedef struct _RobotConfiguration
     PinLevel MotorEnableLevel;  /**< Enable Level of the Robot Driver (Low/High)*/
     EncoderPos EncoderPosition; /**< Encoder on the shaft of the motor or of the wheel */
     // <<<<< Wheels, Motors and Reduction
+
+    // >>>>> Battery
+    quint16 MaxChargedBatteryLevel; /**< Value of the power battery fully charged (Volts * 1000) */
+    quint16 MinChargedBatteryLevel; /**< Value of the power battery to be considered discharged (Volts * 1000) */
+    // <<<<< Battery
 } RobotConfiguration;
 
 }

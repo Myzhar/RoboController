@@ -9,6 +9,7 @@
 #include <QScreen>
 
 #include "qrobotconfigdialog.h"
+#include "qbatterycalibdialog.h"
 #include "qcommon.h"
 
 #define DEFAULT_IP "127.0.0.1"
@@ -121,8 +122,12 @@ CMainWindow::CMainWindow(QWidget *parent) :
     mStatusLabel = new QLabel(tr("Unconnected"));
     ui->statusBar->addPermanentWidget( mStatusLabel );
 
-    mBatteryLabel = new QLabel(tr(" - Battery: --.--V"));
-    ui->statusBar->addPermanentWidget( mBatteryLabel );
+    mBatteryLabel = new QLabel(tr("Battery: --.--V/--.--V"));
+    ui->statusBar->addWidget( mBatteryLabel );
+
+    mStatusBattLevelProgr = new QProgressBar(ui->statusBar);
+    ui->statusBar->addWidget( mStatusBattLevelProgr);
+    mStatusBattLevelProgr->setTextVisible(false);
     // <<<<< Status Bar
 
     connect( mPushButtonConnect, SIGNAL(clicked()),
@@ -295,6 +300,7 @@ void CMainWindow::onConnectButtonClicked()
     // <<<<< Requesting Robot Configuration
 
     ui->actionRobot_Configuration->setEnabled(true);
+    ui->actionBattery_Calibration->setEnabled(true);
     mStatusLabel->setText( tr("Connected to robot on IP: %1").arg(mRobIpAddress) );
 
     mSpeedReqTimer = this->startTimer( 50, Qt::PreciseTimer);
@@ -459,10 +465,54 @@ void CMainWindow::onNewRobotConfiguration( RobotConfiguration& robConf )
             }
         }
     }
+
+    mStatusBattLevelProgr->setRange( mRoboConf.MinChargedBatteryLevel, mRoboConf.MaxChargedBatteryLevel );
 }
 
-void CMainWindow::onNewBatteryValue( double battVal)
+void CMainWindow::onNewBatteryValue( double battVal )
 {
-    mBatteryLabel->setText( tr(" - Battery: %1V").arg( battVal, 5,'f', 2, ' ' ));
+    mBatteryLabel->setText( tr("Battery: %1V/%2V")
+                            .arg( battVal, 5,'f', 2, ' ' )
+                            .arg( (double)(mRoboConf.MaxChargedBatteryLevel)/1000.0f, 5,'f', 2, ' ' ));
+
+    mStatusBattLevelProgr->setValue( (int)(battVal*1000.0) );
+
+    double min = mStatusBattLevelProgr->minimum();
+    double max = mStatusBattLevelProgr->maximum();
+
+    double perc = (max-min)/(battVal*1000.0);
+
+    mStatusBattLevelProgr->setProperty("defaultStyleSheet",
+                                       mStatusBattLevelProgr->styleSheet());
+
+    if(perc<=10.0)
+    {
+        mStatusBattLevelProgr->setStyleSheet(mStatusBattLevelProgr->property("defaultStyleSheet").toString() +
+                                       " QProgressBar::chunk { background: red; }");
+    }
+    else if(perc<=25)
+    {
+        mStatusBattLevelProgr->setStyleSheet(mStatusBattLevelProgr->property("defaultStyleSheet").toString() +
+                                       " QProgressBar::chunk { background: orange; }");
+    }
+    else
+    {
+        mStatusBattLevelProgr->setStyleSheet(mStatusBattLevelProgr->property("defaultStyleSheet").toString() +
+                                       " QProgressBar::chunk { background: green; }");
+    }
 }
 
+
+void CMainWindow::on_actionBattery_Calibration_triggered()
+{
+    if(!mRoboCtrl)
+        return;
+
+    QBatteryCalibDialog dlg(mRoboCtrl, this);
+
+#ifdef ANDROID
+    dlg.setWindowState(dlg.windowState() | Qt::WindowMaximized);
+#endif
+
+    dlg.exec();
+}

@@ -684,6 +684,8 @@ void RoboControllerSDK::updateRobotConfigurationFromDataStream( QDataStream* inS
     *inStream >> mRobotConfig.RatioShaftRight;
     *inStream >> mRobotConfig.RatioMotorLeft;
     *inStream >> mRobotConfig.RatioMotorRight;
+    *inStream >> mRobotConfig.MaxChargedBatteryLevel;
+    *inStream >> mRobotConfig.MinChargedBatteryLevel;
 
     mReceivedRobConfig = true;
 }
@@ -1142,6 +1144,12 @@ bool RoboControllerSDK::getRobotConfigurationFromIni( QString iniFile )
         mRobotConfig.MotorEnableLevel = static_cast<PinLevel>(ini.value( "MotorEnableLevel", 1 ).toInt());
     }
     ini.endGroup();
+    ini.beginGroup( "Battery");
+    {
+        mRobotConfig.MaxChargedBatteryLevel = ini.value( "MaxChargedBatteryLevel", 16800 ).toInt();
+        mRobotConfig.MinChargedBatteryLevel = ini.value( "MinChargedBatteryLevel", 12000 ).toInt();
+    }
+    ini.endGroup();
     emit newRobotConfiguration( mRobotConfig );
     return true;
 }
@@ -1210,6 +1218,12 @@ void RoboControllerSDK::saveRobotConfigurationToIni( QString iniFile )
         ini.setValue( "MotorEnableLevel", static_cast<int>(mRobotConfig.MotorEnableLevel) );
     }
     ini.endGroup();
+    ini.beginGroup( "Battery");
+    {
+        ini.setValue( "MaxChargedBatteryLevel", mRobotConfig.MaxChargedBatteryLevel );
+        ini.setValue( "MinChargedBatteryLevel", mRobotConfig.MinChargedBatteryLevel );
+    }
+    ini.endGroup();
     ini.sync();
 }
 
@@ -1238,14 +1252,24 @@ void RoboControllerSDK::getBatteryChargeValue()
     sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, true );
 }
 
-void RoboControllerSDK::setBatteryCalibrationParams(double maxChargeVal, double curChargeVal)
+void RoboControllerSDK::setBatteryCalibrationParams( AnalogCalibValue valueType, double curChargeVal)
 {
-    // TODO Send battery calibration parameters to robot
+    quint16 charVal = (quint16)(curChargeVal*1000.0);
 
-    /*QVector<quint16> data;
-    data << (quint16); TODO mettere registro giusto!!!
+    QVector<quint16> data;
+    data << (quint16)WORD_VAL_TAR_FS;
+    data << charVal;
+    sendBlockTCP( CMD_WR_MULTI_REG, data );
 
-    sendBlockTCP( CMD_WR_MULTI_REG, data );*/
+    msleep(500);
+
+    data.clear();
+    quint16 flag = (valueType==CalLow)?0x00001:0x0020;
+    data << (quint16)WORD_FLAG_TARATURA;
+    data << flag;
+    sendBlockTCP( CMD_WR_MULTI_REG, data );
+
+    msleep(500);
 }
 
 void RoboControllerSDK::saveRobotConfigurationToEeprom( )

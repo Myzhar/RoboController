@@ -93,6 +93,619 @@
        <property name="spacing">
         <number>3</number>
        </property>
+       <item row="0" column="0" rowspan="3">
+        <widget class="QGroupBox" name="groupBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="title">
+          <string>Dimensions</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_11" rowstretch="0,0,0,0,0">
+          <property name="leftMargin">
+           <number>5</number>
+          </property>
+          <property name="topMargin">
+           <number>5</number>
+          </property>
+          <property name="rightMargin">
+           <number>5</number>
+          </property>
+          <property name="bottomMargin">
+           <number>5</number>
+          </property>
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <item row="2" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_28">
+            <item>
+             <widget class="QLabel" name="label_robot_weight_27">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Height (mm)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_27">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Preferred</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>13</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_robot_height">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>200</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_27">
+            <item>
+             <widget class="QLabel" name="label_robot_weight_26">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Width (mm)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_26">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Preferred</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>13</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_robot_width">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>420</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="4" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_29">
+            <item>
+             <widget class="QLabel" name="label_robot_weight_28">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Wheelbase (mm)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_28">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Preferred</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>13</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_robot_wheelbase">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>400</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="3" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_25">
+            <item>
+             <widget class="QLabel" name="label_robot_weight_13">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Length (mm)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_13">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Preferred</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>13</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_robot_lenght">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>380</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="0" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_26">
+            <item>
+             <widget class="QLabel" name="label_robot_weight_25">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Weight (g)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_25">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Preferred</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>13</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_robot_weight">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>3500</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QGroupBox" name="groupBox_8">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="title">
+          <string>Wheels</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_8" rowstretch="0,0">
+          <property name="leftMargin">
+           <number>5</number>
+          </property>
+          <property name="topMargin">
+           <number>5</number>
+          </property>
+          <property name="rightMargin">
+           <number>5</number>
+          </property>
+          <property name="bottomMargin">
+           <number>5</number>
+          </property>
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <item row="0" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_21">
+            <item>
+             <widget class="QLabel" name="label_robot_weight_21">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Radius Left (mm)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_21">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Preferred</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>13</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_robot_rad_left">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>50</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_22">
+            <item>
+             <widget class="QLabel" name="label_robot_weight_22">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Radius Right (mm)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_22">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Preferred</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>13</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_robot_rad_right">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>50</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item row="3" column="0" colspan="2">
         <widget class="QGroupBox" name="groupBox_2">
          <property name="sizePolicy">
@@ -104,7 +717,7 @@
          <property name="title">
           <string>Motors</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_12" rowstretch="0,0,0,0">
+         <layout class="QGridLayout" name="gridLayout_12" rowstretch="0,0,0,0,0">
           <property name="leftMargin">
            <number>5</number>
           </property>
@@ -1022,193 +1635,178 @@
             </item>
            </layout>
           </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QGroupBox" name="groupBox_8">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="title">
-          <string>Wheels</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_8" rowstretch="0,0">
-          <property name="leftMargin">
-           <number>5</number>
-          </property>
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>5</number>
-          </property>
-          <property name="bottomMargin">
-           <number>5</number>
-          </property>
-          <property name="spacing">
-           <number>3</number>
-          </property>
-          <item row="0" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_21">
-            <item>
-             <widget class="QLabel" name="label_robot_weight_21">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Radius Left (mm)</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_21">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Preferred</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>13</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="lineEdit_robot_rad_left">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>50</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="1" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_22">
-            <item>
-             <widget class="QLabel" name="label_robot_weight_22">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Radius Right (mm)</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_22">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Preferred</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>13</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="lineEdit_robot_rad_right">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>50</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
+          <item row="4" column="0" colspan="2">
+           <widget class="QGroupBox" name="groupBox_3">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="title">
+             <string>Battery</string>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_42">
+               <item>
+                <widget class="QLabel" name="label_robot_weight_40">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Max Charge (V)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_40">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Preferred</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>13</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="lineEdit_robot_max_batt_charge">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>16.8</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_41">
+               <item>
+                <widget class="QLabel" name="label_robot_weight_39">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Min Charge (V)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_39">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Preferred</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>13</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="lineEdit_robot_min_batt_charge">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>12</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -1443,431 +2041,6 @@
               </property>
               <property name="text">
                <string>400</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="0" rowspan="3">
-        <widget class="QGroupBox" name="groupBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="title">
-          <string>Dimensions</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_11" rowstretch="0,0,0,0,0">
-          <property name="leftMargin">
-           <number>5</number>
-          </property>
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>5</number>
-          </property>
-          <property name="bottomMargin">
-           <number>5</number>
-          </property>
-          <property name="spacing">
-           <number>3</number>
-          </property>
-          <item row="2" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_28">
-            <item>
-             <widget class="QLabel" name="label_robot_weight_27">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Height (mm)</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_27">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Preferred</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>13</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="lineEdit_robot_height">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>200</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="1" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_27">
-            <item>
-             <widget class="QLabel" name="label_robot_weight_26">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Width (mm)</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_26">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Preferred</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>13</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="lineEdit_robot_width">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>420</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="4" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_29">
-            <item>
-             <widget class="QLabel" name="label_robot_weight_28">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Wheelbase (mm)</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_28">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Preferred</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>13</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="lineEdit_robot_wheelbase">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>400</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="3" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_25">
-            <item>
-             <widget class="QLabel" name="label_robot_weight_13">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Length (mm)</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_13">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Preferred</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>13</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="lineEdit_robot_lenght">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>380</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="0" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_26">
-            <item>
-             <widget class="QLabel" name="label_robot_weight_25">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Weight (g)</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_25">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Preferred</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>13</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="lineEdit_robot_weight">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>3500</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>

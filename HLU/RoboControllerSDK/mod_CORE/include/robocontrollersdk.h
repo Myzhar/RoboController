@@ -150,10 +150,10 @@ public:
 
     /** @brief Calibrates the Battery charge value
      *
-     * @param maxChargeVal Maximum charge value in Volts
+     * @param valueType the type of value to be set (see @ref AnalogCalibValue)
      * @param curChargeVal Current value of charge read with a tester connected to the battery
      */
-    void setBatteryCalibrationParams(double maxChargeVal, double curChargeVal);
+    void setBatteryCalibrationParams( AnalogCalibValue valueType, double curChargeVal);
 
     //TODO: Implementare getWatchDogTime e setWatchDogTime
 

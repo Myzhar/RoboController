@@ -6,6 +6,8 @@
 #include <QPushButton>
 #include <QSettings>
 #include <QLabel>
+#include <QProgressBar>
+
 #include <robocontrollersdk.h>
 
 // >>>>> INI names
@@ -46,6 +48,8 @@ private slots:
 
     void on_actionRobot_Configuration_triggered();
 
+    void on_actionBattery_Calibration_triggered();
+
 protected:
     virtual void resizeEvent(QResizeEvent * ev) Q_DECL_OVERRIDE;
     virtual bool eventFilter(QObject *obj, QEvent *ev) Q_DECL_OVERRIDE;
@@ -68,6 +72,8 @@ private:
 
     QLabel* mStatusLabel;
     QLabel* mBatteryLabel;
+
+    QProgressBar* mStatusBattLevelProgr;
     // <<<< GUI Objects
 
     bool mPidEnabled;
