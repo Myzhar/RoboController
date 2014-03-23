@@ -2,14 +2,7 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1">
         <file>
             <url>src/main.c</url>
-            <line>255</line>
+            <line>260</line>
         </file>
     </editor-bookmarks>
-    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
-        <file>file:/home/max_xxv/MPLABXProjects/git/RoboController.git/LLU/CPU/src/main.c</file>
-        <file>file:/home/max_xxv/MPLABXProjects/git/RoboController.git/LLU/CPU/src/var.h</file>
-        <file>file:/home/max_xxv/MPLABXProjects/git/RoboController.git/LLU/CPU/src/modbus.h</file>
-        <file>file:/home/max_xxv/MPLABXProjects/git/RoboController.git/LLU/CPU/src/def.h</file>
-        <file>file:/home/max_xxv/MPLABXProjects/git/RoboController.git/LLU/CPU/src/Alarm.c</file>
-    </open-files>
 </project-private>
