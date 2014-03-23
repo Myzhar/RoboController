@@ -76,6 +76,12 @@ unsigned int LeggiWord(unsigned int Address)
         case WORD_ROBOT_GEARBOX_RATIO_MOTOR_LEFT    :   return((unsigned int )ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_LEFT]);
         case WORD_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT   :   return((unsigned int )ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT]);
 
+
+        case WORD_ROBOT_CHARGED_BATT                :   return((unsigned int )ParametriEEPROM[EEPROM_MODBUS_ROBOT_CHARGED_BATT]);
+        case WORD_ROBOT_DISCHARGED_BATT             :   return((unsigned int )ParametriEEPROM[EEPROM_MODBUS_ROBOT_DISCHARGED_BATT]);
+
+
+
 /* *****************************************************************************
  WORD MODBUS USATE PER LA CONFIGURAZIONE DEL PID, MAPPATE DALL'INDIRIZZO 250
   ******************************************************************************/
@@ -271,6 +277,18 @@ unsigned char ScriviWord(unsigned int Address,unsigned int Word)
                                                         {   DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT], EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT);
                                                         }
                                                         break;
+        case WORD_ROBOT_CHARGED_BATT                :   ParametriEEPROM[EEPROM_MODBUS_ROBOT_CHARGED_BATT] = Word;
+                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN)
+                                                        {   DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_CHARGED_BATT], EEPROM_MODBUS_ROBOT_CHARGED_BATT);
+                                                        }
+                                                        break;
+        case WORD_ROBOT_DISCHARGED_BATT             :   ParametriEEPROM[EEPROM_MODBUS_ROBOT_DISCHARGED_BATT] = Word;
+                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN)
+                                                        {   DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_DISCHARGED_BATT], EEPROM_MODBUS_ROBOT_DISCHARGED_BATT);
+                                                        }
+                                                        break;
+
+
 
 /* *****************************************************************************
  WORD MODBUS USATE PER LA CONFIGURAZIONE DEL PID, MAPPATE DALL'INDIRIZZO 250

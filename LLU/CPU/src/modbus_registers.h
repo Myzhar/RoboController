@@ -292,6 +292,8 @@
 #define WORD_ROBOT_GEARBOX_RATIO_AXE_RIGHT      216
 #define WORD_ROBOT_GEARBOX_RATIO_MOTOR_LEFT     217
 #define WORD_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT    218
+#define WORD_ROBOT_CHARGED_BATT                 219
+#define WORD_ROBOT_DISCHARGED_BATT              220
 
 /* *****************************************************************************
  WORD MODBUS USATE PER LA CONFIGURAZIONE DEL PID, MAPPATE DALL'INDIRIZZO 250

@@ -75,7 +75,8 @@
 #define EEPROM_MODBUS_PID_RAMP_LEFT                      51
 #define EEPROM_MODBUS_PID_RAMP_RIGHT                     52
 
+#define EEPROM_MODBUS_ROBOT_CHARGED_BATT                 53
+#define EEPROM_MODBUS_ROBOT_DISCHARGED_BATT              54
 
-
-#define NUMERO_PARAMETRI_EEPROM                 53  // N° totale di parametri in EEPROM
+#define NUMERO_PARAMETRI_EEPROM                          55  // N° totale di parametri in EEPROM
 
