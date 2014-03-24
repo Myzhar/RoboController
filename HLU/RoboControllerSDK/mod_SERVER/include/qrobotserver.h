@@ -68,6 +68,8 @@ private:
     // QVector used instead of QList to provide direct data access using "Data()" function
     bool writeMultiReg( quint16 startAddr, quint16 nReg, QVector<quint16> vals ); ///< Called to write registers to RoboController
 
+    bool readSpeedsAndSend(QHostAddress addr); ///< Called to send to client the speed of the robot after receiveing a command of movement
+
 protected:
     virtual void run() Q_DECL_OVERRIDE;
     virtual void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;

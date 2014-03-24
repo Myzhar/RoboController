@@ -47,6 +47,12 @@ public:
      */
     void getMotorSpeed( quint16 motorIdx );
 
+    /** @brief Send a request for motor speeds.
+     *         The reply is received with /ref newMotorSpeedValues
+     *         signal
+     */
+    void getMotorSpeeds( );
+
     /** @brief Sets the speed of the motor in m/sec
      *
      * @param motorIdx Index of the motor (0 or 1)
@@ -56,6 +62,16 @@ public:
      *       equal to @ref mcPid, else it does nothing
      */
     void setMotorSpeed( quint16 motorIdx, double speed );
+
+    /** @brief Sets the speed of the motors in m/sec
+     *
+     * @param speed0 The speed of motor 0 in m/sec - Speed range: [-32.768/+32.767] m/sec
+     * @param speed1 The speed of motor 1 in m/sec - Speed range: [-32.768/+32.767] m/sec
+     *
+     * @note This function works only when @ref mMotorCtrlMode is
+     *       equal to @ref mcPid, else it does nothing
+     */
+    void setMotorSpeeds( double speed0, double speed1 );
 
     /** @brief Send a request for motor pwm.
      *         The reply is received with /ref newMotorPwmValue
@@ -234,6 +250,8 @@ signals:
     void newMotorPwmValue( quint16 motorIdx, quint16 value );
     /// Signal emitted when a new SPEED value is received (speed is in m/sec)
     void newMotorSpeedValue( quint16 motorIdx, double value );
+    /// Signal emitted when a two new SPEED values are received (speed is in m/sec)
+    void newMotorSpeedValues( double speed1, double speed2 );
     /// Signal emitted when a new PWM value is received
     void newMotorPwmValue( quint16 motorIdx, double value );
     /// Signal emitted when new PID gains are received

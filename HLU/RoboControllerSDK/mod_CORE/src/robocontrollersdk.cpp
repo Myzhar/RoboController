@@ -620,6 +620,34 @@ void RoboControllerSDK::processReplyMsg( QDataStream *inStream )
         else
             qDebug() << tr("Address %1 not yet handled with nReg=1").arg(startAddr);
     }
+    else if(nReg==2)
+    {
+        if( ( startAddr == WORD_ENC1_SPEED ) )
+        {
+            quint16 speed1;
+            quint16 speed2;
+
+            *inStream >> speed1;
+            *inStream >> speed2;
+
+            /*double speed = ((double)value-32768)/1000.0;*/
+            double speed1_64;
+            if(speed1 < 32768)  // Speed is integer 2-complement!
+                speed1_64 = ((double)speed1)/1000.0;
+            else
+                speed1_64 = ((double)(speed1-65536))/1000.0;
+
+            double speed2_64;
+            if(speed2 < 32768)  // Speed is integer 2-complement!
+                speed2_64 = ((double)speed2)/1000.0;
+            else
+                speed2_64 = ((double)(speed2-65536))/1000.0;
+
+            emit newMotorSpeedValues( speed1, speed2 );
+        }
+        else
+            qDebug() << tr("Address %1 not yet handled with nReg=2").arg(startAddr);
+    }
     else if(nReg==3)
     {
         if( ( startAddr == WORD_PID_P_LEFT || startAddr == WORD_PID_P_RIGHT ) )
@@ -940,6 +968,17 @@ void RoboControllerSDK::getMotorSpeed( quint16 motorIdx )
     sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, true );
 }
 
+void RoboControllerSDK::getMotorSpeeds( )
+{
+    QVector<quint16> data;
+    data << (quint16)WORD_ENC1_SPEED;
+
+    data << 2; // Only one register
+
+    //sendBlockTCP( mUdpStatusSocket, CMD_RD_MULTI_REG, data );
+    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, true );
+}
+
 void RoboControllerSDK::getBoardStatus()
 {
     QVector<quint16> data;
@@ -1016,6 +1055,55 @@ void RoboControllerSDK::setMotorPWM(quint16 motorIdx, int pwm )
     //sendBlockTCP( mUdpControlSocket, CMD_WR_MULTI_REG, data );
     sendBlockUDP( mUdpControlSocket, QHostAddress(mServerAddr), mUdpControlPortSend, CMD_WR_MULTI_REG, data, false );
     // <<<<< New PWM to RoboController
+}
+
+void RoboControllerSDK::setMotorSpeeds( double speed0, double speed1 )
+{
+    if( mMotorCtrlMode != mcPID )
+    {
+        qWarning() << Q_FUNC_INFO << tr("Function available only in mcPID mode");
+    }
+
+    // >>>>> 16 bit saturation
+    if( speed0 > 32.767)
+        speed0 = 32.767;
+
+    if( speed0 < -32.768 )
+        speed0 = -32.768;
+
+    if( speed1 > 32.767)
+        speed1 = 32.767;
+
+    if( speed1 < -32.768 )
+        speed1 = -32.768;
+    // <<<<< 16 bit saturation
+
+    // >>>>> New SetPoint to RoboController
+    quint16 address = WORD_PWM_CH1;
+
+    QVector<quint16> data;
+    data << address;
+    //data << (quint16)nReg; <- Not requested by sendCommand!!!
+
+    quint16 sp; // Speed is integer 2-complement!
+    if(speed0 >= 0)
+        sp = (quint16)(speed0*1000.0);
+    else
+        sp = (quint16)(speed0*1000.0+65536.0);
+
+    //quint16 sp = (quint16)(speed*1000.0+32767.5);
+    data << sp;
+
+    if(speed1 >= 0)
+        sp = (quint16)(speed1*1000.0);
+    else
+        sp = (quint16)(speed1*1000.0+65536.0);
+
+    //quint16 sp = (quint16)(speed*1000.0+32767.5);
+    data << sp;
+
+    sendBlockUDP( mUdpControlSocket, QHostAddress(mServerAddr), mUdpControlPortSend, CMD_WR_MULTI_REG, data, false );
+    // <<<<< New SetPoint to RoboController
 }
 
 void RoboControllerSDK::setMotorSpeed( quint16 motorIdx, double speed )

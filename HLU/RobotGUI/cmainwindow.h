@@ -43,6 +43,7 @@ private slots:
     void onFindServerButtonClicked();
     void onNewJoypadValues(float x, float y);
     void onNewMotorSpeed( quint16 mot, double speed );
+    void onNewMotorSpeeds(double,double);
     void onNewRobotConfiguration( RobotConfiguration& robConf );
     void onNewBatteryValue( double battVal);
 
@@ -80,6 +81,7 @@ private:
     bool mOpenRobotConfig; /*!< Indicates that Robot Configuration dlg must be opened when receiving a new configuration message */
     bool mRobotConfigValid; /*!< Indicates that a new valid Robot Configuration has been received */
 
+    bool mSpeedRequested; /*! Indicates that the speeds of the motors have been requested and we are waiting for reply */
     bool mMotorSpeedLeftValid;
     bool mMotorSpeedRightValid;
     double mMotorSpeedRight;
@@ -90,8 +92,12 @@ private:
 
     float mMaxMotorSpeed; /*!< Max linear speed for each motor */
 
-    int mSpeedReqTimer;
-    int mStatusReqTimer;
+    int mSpeedSendTimer; /*!< Timer to read Joypad position and send related speed to Robot */
+    int mSpeedReqTimer; /*!< Timer to request speeds of the motors to Server */
+    int mStatusReqTimer; /*!< Timer to request status of the robot to server */
+
+    float mJoyMotSx; /*!< Value of the joypad related to left motor */
+    float mJoyMotDx; /*!< Valut of the joypad realted to right motor */
 };
 
 #endif // CMAINWINDOW_H

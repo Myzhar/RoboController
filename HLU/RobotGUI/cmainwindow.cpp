@@ -166,9 +166,57 @@ bool CMainWindow::eventFilter(QObject *obj, QEvent *event)
 
 void CMainWindow::timerEvent( QTimerEvent* event )
 {
-    if( event->timerId() == mStatusReqTimer )
+    if( event->timerId() == mSpeedSendTimer )
     {
-        // TODO Request battery charge
+        if(!mRoboCtrl)
+            return;
+
+        float scale = ui->widget_joypad->getMaxAbsAxisValue();
+
+        if(mPidEnabled)
+        {
+            mJoyMotSx = mJoyMotSx/scale*mMaxMotorSpeed;
+            mJoyMotDx = mJoyMotDx/scale*mMaxMotorSpeed;
+
+            try
+            {
+                //mRoboCtrl->setMotorSpeed(0, motSx);
+                //mRoboCtrl->setMotorSpeed(1, motDx);
+
+                mRoboCtrl->setMotorSpeeds( mJoyMotSx, mJoyMotDx );
+
+                mSpeedRequested = true; // Must be set because setMotorSpeeds replies on Status UDP with the speeds of the motors
+            }
+            catch( RcException &e)
+            {
+                qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+            }
+
+            //qDebug() << tr("Motor speeds: (%1,%2)").arg(motSx).arg(motDx);
+        }
+        else
+        {
+            mJoyMotSx = mJoyMotSx/scale*2047.0f;
+            mJoyMotDx = mJoyMotDx/scale*2047.0f;
+
+            try
+            {
+                mRoboCtrl->setMotorPWM( 0, (int)(mJoyMotSx+0.5f) );
+                mRoboCtrl->setMotorPWM( 1, (int)(mJoyMotDx+0.5f));
+            }
+            catch( RcException &e)
+            {
+                qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+            }
+
+            //qDebug() << tr("Motor PWMs: (%1,%2)").arg(motSx).arg(motDx);
+        }
+    }
+    else if( event->timerId() == mStatusReqTimer )
+    {
+        if(!mRoboCtrl)
+            return;
+
         try
         {
             mRoboCtrl->getBatteryChargeValue();
@@ -180,14 +228,23 @@ void CMainWindow::timerEvent( QTimerEvent* event )
     }
     else if( event->timerId() == mSpeedReqTimer )
     {
-        try
+        if(!mRoboCtrl)
+            return;
+
+        if( !mSpeedRequested )
         {
-            mRoboCtrl->getMotorSpeed( 0 );
-            mRoboCtrl->getMotorSpeed( 1 );
-        }
-        catch( RcException &e)
-        {
-            qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+            try
+            {
+                //mRoboCtrl->getMotorSpeed( 0 );
+                //mRoboCtrl->getMotorSpeed( 1 );
+
+                mSpeedRequested = true;
+                mRoboCtrl->getMotorSpeeds();
+            }
+            catch( RcException &e)
+            {
+                qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+            }
         }
     }
 }
@@ -259,6 +316,8 @@ void CMainWindow::onConnectButtonClicked()
     // >>>>> Signals/Slots connections
     connect( mRoboCtrl, SIGNAL(newMotorSpeedValue(quint16,double)),
              this, SLOT(onNewMotorSpeed(quint16,double)) );
+    connect( mRoboCtrl, SIGNAL(newMotorSpeedValues(double,double)),
+             this, SLOT(onNewMotorSpeeds(double,double)) );
     connect( mRoboCtrl, SIGNAL(newRobotConfiguration(RobotConfiguration&)) ,
              this, SLOT(onNewRobotConfiguration(RobotConfiguration&)) );
     connect( mRoboCtrl, SIGNAL(newBatteryValue(double)),
@@ -273,6 +332,7 @@ void CMainWindow::onConnectButtonClicked()
     status.saveToEeprom = true;
     status.wdEnable = true;
 
+    mSpeedRequested = false;
     mMotorSpeedLeftValid=false;
     mMotorSpeedRightValid=false;
     mMotorSpeedRight=0;
@@ -303,11 +363,37 @@ void CMainWindow::onConnectButtonClicked()
     ui->actionBattery_Calibration->setEnabled(true);
     mStatusLabel->setText( tr("Connected to robot on IP: %1").arg(mRobIpAddress) );
 
-    mSpeedReqTimer = this->startTimer( 50, Qt::PreciseTimer);
+    mSpeedSendTimer = this->startTimer( 30, Qt::PreciseTimer );
+    mSpeedReqTimer = this->startTimer( 50, Qt::PreciseTimer );
     mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
 
     mPushButtonFindServer->setEnabled(false);
     mPushButtonConnect->setEnabled(false);
+}
+
+void CMainWindow::onNewMotorSpeeds( double speed0, double speed1 )
+{
+    if(mRobotConfigValid)
+    {
+        mMotorSpeedLeft = speed0;
+        mMotorSpeedLeftValid = true;
+        mMotorSpeedRight = speed1;
+        mMotorSpeedRightValid = true;
+
+        mSpeedRequested = false;
+
+        double fwSpeed = mMotorSpeedLeft+mMotorSpeedRight/2.0;
+        ui->lcdNumber_fw_speed->display( fwSpeed ); // m/sec
+
+        double rotSpeed = (mMotorSpeedLeft-mMotorSpeedRight)/(mRoboConf.WheelBase/1000.0); // Wheelbase is in mm
+        ui->lcdNumber_rot_speed->display( rotSpeed*RAD2DEG ); // deg/sec
+
+    }
+    else
+    {
+        ui->lcdNumber_fw_speed->display("------");
+        ui->lcdNumber_rot_speed->display("------");
+    }
 }
 
 void CMainWindow::onNewMotorSpeed( quint16 mot, double speed )
@@ -327,6 +413,7 @@ void CMainWindow::onNewMotorSpeed( quint16 mot, double speed )
 
         if(mMotorSpeedLeftValid&&mMotorSpeedRightValid)
         {
+            mSpeedRequested = false;
             double fwSpeed = mMotorSpeedLeft+mMotorSpeedRight/2.0;
             ui->lcdNumber_fw_speed->display( fwSpeed ); // m/sec
 
@@ -345,48 +432,10 @@ void CMainWindow::onNewJoypadValues(float x, float y)
 {
     qDebug() << tr("Joypad: (%1,%2)").arg(x).arg(y);
 
-    if(!mRoboCtrl)
-        return;
+    mJoyMotSx = y - x;
+    mJoyMotDx = y + x;
 
-    float motSx = y - x;
-    float motDx = y + x;
 
-    float scale = ui->widget_joypad->getMaxAbsAxisValue();
-
-    if(mPidEnabled)
-    {
-        motSx = motSx/scale*mMaxMotorSpeed;
-        motDx = motDx/scale*mMaxMotorSpeed;
-
-        try
-        {
-            mRoboCtrl->setMotorSpeed(0, motSx);
-            mRoboCtrl->setMotorSpeed(1, motDx);
-        }
-        catch( RcException &e)
-        {
-            qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
-        }
-
-        //qDebug() << tr("Motor speeds: (%1,%2)").arg(motSx).arg(motDx);
-    }
-    else
-    {
-        motSx = motSx/scale*2047.0f;
-        motDx = motDx/scale*2047.0f;
-
-        try
-        {
-            mRoboCtrl->setMotorPWM( 0, (int)(motSx+0.5f) );
-            mRoboCtrl->setMotorPWM( 1, (int)(motDx+0.5f));
-        }
-        catch( RcException &e)
-        {
-            qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
-        }
-
-        //qDebug() << tr("Motor PWMs: (%1,%2)").arg(motSx).arg(motDx);
-    }
 }
 
 void CMainWindow::on_actionPidEnabled_triggered()
@@ -488,17 +537,17 @@ void CMainWindow::onNewBatteryValue( double battVal )
     if(perc<=10.0)
     {
         mStatusBattLevelProgr->setStyleSheet(mStatusBattLevelProgr->property("defaultStyleSheet").toString() +
-                                       " QProgressBar::chunk { background: red; }");
+                                             " QProgressBar::chunk { background: red; }");
     }
     else if(perc<=25)
     {
         mStatusBattLevelProgr->setStyleSheet(mStatusBattLevelProgr->property("defaultStyleSheet").toString() +
-                                       " QProgressBar::chunk { background: orange; }");
+                                             " QProgressBar::chunk { background: orange; }");
     }
     else
     {
         mStatusBattLevelProgr->setStyleSheet(mStatusBattLevelProgr->property("defaultStyleSheet").toString() +
-                                       " QProgressBar::chunk { background: green; }");
+                                             " QProgressBar::chunk { background: green; }");
     }
 }
 
