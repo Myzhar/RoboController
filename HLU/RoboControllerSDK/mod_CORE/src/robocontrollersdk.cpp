@@ -108,6 +108,7 @@ QString RoboControllerSDK::findServer(quint16 udpSendPort/*=14550*/ , quint64 ud
     if( !udp->bind( udpListenPort, QAbstractSocket::ReuseAddressHint|QAbstractSocket::ShareAddress ) )
     {
         qDebug() << tr("UDP error: %1").arg(udp->errorString() );
+        udp->abort();
         delete udp;
         return QString();
     }
@@ -136,12 +137,19 @@ QString RoboControllerSDK::findServer(quint16 udpSendPort/*=14550*/ , quint64 ud
         QHostAddress addr;
         quint16 port;
 
-        char data[256];
+        qint64 size = udp->pendingDatagramSize();
+        char* data = new char[size];
 
-        qint64 readCount = udp->readDatagram( data, 256, &addr, &port );
+        qint64 readCount = udp->readDatagram( data, size, &addr, &port );
 
-        if( readCount==0 )
+        if( readCount==0 || readCount!=size )
+        {
+            delete [] data;
+            udp->abort();
+            delete udp;
+
             return QString();
+        }
 
         for( int i=0; i<readCount; i++ )
         {
@@ -149,17 +157,22 @@ QString RoboControllerSDK::findServer(quint16 udpSendPort/*=14550*/ , quint64 ud
             {
                 if( i>2 && data[i-4]==4 ) // The block size must be 4
                 {
+                    delete [] data;
+                    udp->abort();
                     delete udp;
                     return addr.toString();
                 }
             }
         }
 
+        delete [] data;
+        udp->abort();
         delete udp;
         return QString(); // Correct MSG_SERVER_PING_OK not found!
     }
     else
     {
+        udp->abort();
         delete udp;
         return QString();
     }
@@ -622,28 +635,28 @@ void RoboControllerSDK::processReplyMsg( QDataStream *inStream )
     }
     else if(nReg==2)
     {
-        if( ( startAddr == WORD_ENC1_SPEED ) )
+        if( ( startAddr == WORD_ENC1_SPEED ) ) // Motor Speeds
         {
+            quint16 speed0;
             quint16 speed1;
-            quint16 speed2;
 
+            *inStream >> speed0;
             *inStream >> speed1;
-            *inStream >> speed2;
 
             /*double speed = ((double)value-32768)/1000.0;*/
+            double speed0_64;
+            if(speed0 < 32768)  // Speed is integer 2-complement!
+                speed0_64 = ((double)speed0)/1000.0;
+            else
+                speed0_64 = ((double)(speed0-65536))/1000.0;
+
             double speed1_64;
             if(speed1 < 32768)  // Speed is integer 2-complement!
                 speed1_64 = ((double)speed1)/1000.0;
             else
                 speed1_64 = ((double)(speed1-65536))/1000.0;
 
-            double speed2_64;
-            if(speed2 < 32768)  // Speed is integer 2-complement!
-                speed2_64 = ((double)speed2)/1000.0;
-            else
-                speed2_64 = ((double)(speed2-65536))/1000.0;
-
-            emit newMotorSpeedValues( speed1, speed2 );
+            emit newMotorSpeedValues( speed0_64, speed1_64 );
         }
         else
             qDebug() << tr("Address %1 not yet handled with nReg=2").arg(startAddr);

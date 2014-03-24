@@ -23,8 +23,8 @@ namespace roboctrl
  */
 typedef enum
 {
-    mcDirectPWM = 0, /**< PID is not active, speeds are in PWM mode: 0 -> Motor Stopped, +100/-100 -> Motor at max rate */
-    mcPID = 1 /**< PID is active, speeds are in mm/sec */
+    mcDirectPWM = 0,    /**< PID is not active, speeds are in PWM mode: 0 -> Motor Stopped, +100/-100 -> Motor at max rate */
+    mcPID = 1           /**< PID is active, speeds are in mm/sec */
 } MotorCtrlMode;
 
 /**
@@ -33,8 +33,8 @@ typedef enum
  */
 typedef enum
 {
-    Off = 0, /**< Option not active */
-    On = 1 /**< Option active */
+    Off = 0,    /**< Option not active */
+    On = 1      /**< Option active */
 } Option;
 
 /**
@@ -53,8 +53,8 @@ typedef enum
  */
 typedef enum
 {
-    Motor = 0, /**< Encoder suited on the shaft of the motor */
-    Wheel = 1 /**< Encoder suited on the shaft of the wheel */
+    Motor = 0,  /**< Encoder suited on the shaft of the motor */
+    Wheel = 1   /**< Encoder suited on the shaft of the wheel */
 } EncoderPos;
 
 /**
@@ -74,10 +74,10 @@ typedef enum
   */
 typedef struct _BoardStatus
 {
-    bool pidEnable; /**< Indicates if the motor PID controls are enabled */
-    bool wdEnable; /**< Indicates if the Command WatchDod is enabled. If it is true and the board does not receive command for N msec (@ref getWatchDogTime and @ref setWatchDogTime)the motors stop */
-    bool saveToEeprom; /**< Indicates if the Board parameters are saved to Eeprom when changed */
-    bool accelRampEnable; /**< Indicates if acceleration is limited by speed ramps */
+    bool pidEnable;         /**< Indicates if the motor PID controls are enabled */
+    bool wdEnable;          /**< Indicates if the Command WatchDod is enabled. If it is true and the board does not receive command for N msec (@ref getWatchDogTime and @ref setWatchDogTime)the motors stop */
+    bool saveToEeprom;      /**< Indicates if the Board parameters are saved to Eeprom when changed */
+    bool accelRampEnable;   /**< Indicates if acceleration is limited by speed ramps */
 } BoardStatus;
 
 /**
@@ -109,8 +109,8 @@ typedef struct _RobotConfiguration
     quint16 RatioShaftRight;        /**< Reduction Ratio from the shaft of the right motor to the shaft of the right wheel*/
     quint16 RatioMotorLeft;         /**< Reduction Ratio on the left Motor Shaft (Put 1 if you set Max RPM considering it just reduced) */
     quint16 RatioMotorRight;        /**< Reduction Ratio on the right Motor Shaft (Put 1 if you set Max RPM considering it just reduced) */
-    PinLevel MotorEnableLevel;  /**< Enable Level of the Robot Driver (Low/High)*/
-    EncoderPos EncoderPosition; /**< Encoder on the shaft of the motor or of the wheel */
+    PinLevel MotorEnableLevel;      /**< Enable Level of the Robot Driver (Low/High)*/
+    EncoderPos EncoderPosition;     /**< Encoder on the shaft of the motor or of the wheel */
     // <<<<< Wheels, Motors and Reduction
 
     // >>>>> Battery
