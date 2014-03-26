@@ -659,7 +659,7 @@ void QRobotServer::onUdpStatusReadyRead()
                     break;
                 }
 
-                int count = 0;
+                /*int count = 0;
                 while( mNextUdpStatBlockSize == 0 )
                 {
                     // Datagram dimension
@@ -671,6 +671,20 @@ void QRobotServer::onUdpStatusReadyRead()
                         QDataStream::Status st = in.status();
 
                         qCritical() << Q_FUNC_INFO << tr("Read %1 bytes equal to ZERO. Stream status: %2")
+                                       .arg(datagramSize).arg(st);
+                        return;
+                    }
+                }*/
+                int count = 0;
+                quint val16 = 0x0000;
+                while( val16 != UDP_START_VAL ) // TODO verify if this works!
+                {
+                    count++;
+                    if(count == datagramSize)
+                    {
+                        QDataStream::Status st = in.status();
+
+                        qCritical() << Q_FUNC_INFO << tr("Read %1 bytes not founding UDP_START_VAL. Stream status: %2")
                                        .arg(datagramSize).arg(st);
                         return;
                     }
