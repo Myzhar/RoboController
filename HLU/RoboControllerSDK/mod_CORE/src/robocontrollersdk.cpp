@@ -787,6 +787,7 @@ void RoboControllerSDK::sendBlockUDP( QUdpSocket *socket, QHostAddress addr, qui
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_2);
+    out << (quint16)UDP_START_VAL; // Start word
     out << (quint16)0;     // Block size
     out << mMsgCounter;    // Message counter
     out << msgCode;        // Message Code
@@ -802,6 +803,7 @@ void RoboControllerSDK::sendBlockUDP( QUdpSocket *socket, QHostAddress addr, qui
 
     out.device()->seek(0);          // Back to the beginning to set block size
     int blockSize = (block.size() - sizeof(quint16));
+    out << (quint16)UDP_START_VAL; // Start word again
     out << (quint16)blockSize;
 
     //QMutexLocker locker( &mConnMutex );
