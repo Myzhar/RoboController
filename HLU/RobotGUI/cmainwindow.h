@@ -9,6 +9,7 @@
 #include <QProgressBar>
 
 #include <robocontrollersdk.h>
+#include <qwebcamclient.h>
 
 // >>>>> INI names
 #ifdef ANDROID
@@ -46,6 +47,7 @@ private slots:
     void onNewMotorSpeeds(double,double);
     void onNewRobotConfiguration( RobotConfiguration& robConf );
     void onNewBatteryValue( double battVal);
+    void onNewImage();
 
     void on_actionRobot_Configuration_triggered();
 
@@ -89,6 +91,8 @@ private:
 
     RoboControllerSDK* mRoboCtrl; /*!< Pointer to RoboControllerSDK object */
     RobotConfiguration mRoboConf; /*!< Robot Configuration */
+
+    QWebcamClient* mWebcamClient; /*!< Webcam client */
 
     float mMaxMotorSpeed; /*!< Max linear speed for each motor */
 

@@ -33,7 +33,7 @@ void QBatteryCalibDialog::on_pushButton_ok_clicked()
     emit accepted();
 }
 
-void QBatteryCalibDialog::QBatteryCalibDialog::on_pushButton_set_lower_clicked()
+void QBatteryCalibDialog::on_pushButton_set_lower_clicked()
 {
     bool ok1;
     double val;
@@ -49,7 +49,7 @@ void QBatteryCalibDialog::QBatteryCalibDialog::on_pushButton_set_lower_clicked()
 }
 
 
-void QBatteryCalibDialog::QBatteryCalibDialog::on_pushButton_set_upper_clicked()
+void QBatteryCalibDialog::on_pushButton_set_upper_clicked()
 {
     bool ok1;
     double val;

@@ -16,8 +16,9 @@ ROBOCONTROLLERSDKPATH = ../RoboControllerSDK
 DEFINES += ROBOCONTROLLERSDK_LIBRARY
 
 include($$ROBOCONTROLLERSDKPATH/mod_CORE/RoboControllerSDK_CORE.pri) # Core module
+include($$ROBOCONTROLLERSDKPATH/mod_VISION/RoboControllerSDK_VISION.pri) # Vision module: to be included always before GUI module
 include($$ROBOCONTROLLERSDKPATH/mod_GUI/RoboControllerSDK_GUI.pri) # GUI module
-#include($$ROBOCONTROLLERSDKPATH/mod_SERVER/RoboControllerSDK_SERVER.pri) # SERVER module
+include($$ROBOCONTROLLERSDKPATH/mod_EXTERN/RoboControllerSDK_extern.pri) # EXTERN module: to be included always as last module
 
 INCLUDEPATH += \
     ../common/include\
@@ -37,9 +38,13 @@ FORMS    += \
 RESOURCES += \
     resources.qrc
 
-ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+android {
+    message(Building for Android)
 
-OTHER_FILES += \
-    android/AndroidManifest.xml
+    ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+    OTHER_FILES += \
+        android/AndroidManifest.xml
+}
 
 

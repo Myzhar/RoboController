@@ -8,6 +8,9 @@
 #include <Qdir>
 #include <QScreen>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include "qrobotconfigdialog.h"
 #include "qbatterycalibdialog.h"
 #include "qcommon.h"
@@ -25,7 +28,8 @@ CMainWindow::CMainWindow(QWidget *parent) :
     mRobIpLineEdit(NULL),
     mPushButtonConnect(NULL),
     mPushButtonFindServer(NULL),
-    mRoboCtrl(NULL)
+    mRoboCtrl(NULL),
+    mWebcamClient(NULL)
 {
     ui->setupUi(this);
 
@@ -147,6 +151,9 @@ CMainWindow::~CMainWindow()
 {
     if(mRoboCtrl)
         delete mRoboCtrl;
+
+    if(mWebcamClient)
+        delete mWebcamClient;
 
     delete ui;
 }
@@ -309,7 +316,7 @@ void CMainWindow::onConnectButtonClicked()
     }
     catch( RcException &e)
     {
-        QMessageBox::critical( this, tr("Connection error"), QString(e.getExcMessage()) );
+        QMessageBox::critical(  this, tr("Connection error"), QString(e.getExcMessage()) );
         return;
     }
 
@@ -369,6 +376,16 @@ void CMainWindow::onConnectButtonClicked()
 
     mPushButtonFindServer->setEnabled(false);
     mPushButtonConnect->setEnabled(false);
+
+    // >>>>> Webcam Client
+
+    QCoreApplication::processEvents( QEventLoop::AllEvents, 500 );
+
+    mWebcamClient = new QWebcamClient( mRobIpAddress, 55554, 55555, this );
+
+    connect( mWebcamClient, SIGNAL(newImageReceived()),
+             this, SLOT(onNewImage()) );
+    // <<<<< Webcam Client
 }
 
 void CMainWindow::onNewMotorSpeeds( double speed0, double speed1 )
@@ -551,6 +568,17 @@ void CMainWindow::onNewBatteryValue( double battVal )
     }
 }
 
+void CMainWindow::onNewImage()
+{
+    // TODO: Perché non viene mai chiamato!?!??!
+
+    qDebug() << tr("New Image");
+    cv::Mat frame = mWebcamClient->getLastFrame();
+
+    cv::imshow( "Received Frame", frame );
+
+    //cv::waitKey(1);
+}
 
 void CMainWindow::on_actionBattery_Calibration_triggered()
 {

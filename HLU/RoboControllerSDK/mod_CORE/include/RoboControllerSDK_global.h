@@ -11,8 +11,18 @@
 
 #include "exception.h"
 
+// >>>>> Radians/Degree conversion constants
+#ifdef RAD2DEG
+#undef RAD2DEG
+#endif
+
+#ifdef DEG2RAD
+#undef DEG2RAD
+#endif
+
 #define RAD2DEG 57.29577951308233
 #define DEG2RAD 0.0174532925199433
+// <<<<< Radians/Degree conversion constants
 
 namespace roboctrl
 {

@@ -1,6 +1,8 @@
+message(Added SERVER module)
+
 QT += network serialport
 
-include(../mod_EXTERN/RoboControllerSDK_EXTERN.pri) # SERVER module
+CONFIG += rcserver
 
 SOURCES += \
         $$ROBOCONTROLLERSDKPATH/mod_SERVER/src/qrobotserver.cpp
@@ -11,3 +13,10 @@ INCLUDEPATH += \
 HEADERS += \
         $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/qrobotserver.h
 
+CONFIG(opencv) {
+    HEADERS += \
+        $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/qwebcamserver.h
+
+    SOURCES += \
+        $$ROBOCONTROLLERSDKPATH/mod_SERVER/src/qwebcamserver.cpp
+}

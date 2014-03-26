@@ -105,7 +105,7 @@ QString RoboControllerSDK::findServer(quint16 udpSendPort/*=14550*/ , quint64 ud
         return mServerAddr;*/
 
     QUdpSocket* udp = new QUdpSocket();
-    if( !udp->bind( udpListenPort, QAbstractSocket::ReuseAddressHint|QAbstractSocket::ShareAddress ) )
+    if( !udp->bind( udpListenPort, /*QAbstractSocket::ReuseAddressHint|*/QAbstractSocket::ShareAddress ) )
     {
         qDebug() << tr("UDP error: %1").arg(udp->errorString() );
         udp->abort();
@@ -222,7 +222,7 @@ void RoboControllerSDK::connectToUdpServers()
 {
     mUdpConnected = false;
 
-    if( !mUdpStatusSocket->bind( /*QHostAddress(mServerAddr),*/ mUdpStatusPortListen, QAbstractSocket::ReuseAddressHint|QAbstractSocket::ShareAddress ) )
+    if( !mUdpStatusSocket->bind( /*QHostAddress(mServerAddr),*/ mUdpStatusPortListen, /*QAbstractSocket::ReuseAddressHint|*/QAbstractSocket::ShareAddress ) )
     {
         throw RcException( excUdpNotConnected, tr("It is not possible to bind UDP Status server: %1")
                            .arg(mUdpControlSocket->errorString() ).toLocal8Bit() );
@@ -505,8 +505,11 @@ void RoboControllerSDK::onUdpStatusReadyRead()
             default:
                 qDebug() << tr("UDP Received unknown message (%1) with msg #%2").arg(msgCode).arg(msgIdx);
 
-                char buf[256];
-                in.readRawData( buf, mNextTcpBlockSize );
+                char* buf = new char[mUdpStatusSocket->pendingDatagramSize()];
+                //in.readRawData( buf, mNextTcpBlockSize );
+                in.readRawData( buf, mUdpStatusSocket->pendingDatagramSize() );
+                delete [] buf;
+
                 break;
             }
 
@@ -803,7 +806,7 @@ void RoboControllerSDK::sendBlockUDP( QUdpSocket *socket, QHostAddress addr, qui
         mLastServerReqTime = time;
 
         QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-        qDebug() << tr("%1 - Sent msg #%2").arg(timeStr).arg(mMsgCounter);
+        qDebug() << tr("%1 - Sent msg #%2 (Code: %3) over UDP").arg(timeStr).arg(mMsgCounter).arg(msgCode);
     }
     mConnMutex.unlock();
 
@@ -857,7 +860,7 @@ void RoboControllerSDK::sendBlockTCP(quint16 msgCode, QVector<quint16> &data )
         mLastServerReqTime = time;
 
         QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-        qDebug() << tr("%1 - Sent msg #%2").arg(timeStr).arg(mMsgCounter);
+        qDebug() << tr("%1 - Sent msg #%2 over TCP").arg(timeStr).arg(mMsgCounter);
     }
     mConnMutex.unlock();
 
@@ -965,7 +968,7 @@ void RoboControllerSDK::getMotorPWM( quint16 motorIdx )
     data << 1; // Only one register
 
     //sendBlockTCP( mUdpStatusSocket, CMD_RD_MULTI_REG, data );
-    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, true );
+    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, /*true*/false );
 }
 
 void RoboControllerSDK::getMotorSpeed( quint16 motorIdx )
@@ -978,7 +981,7 @@ void RoboControllerSDK::getMotorSpeed( quint16 motorIdx )
     data << 1; // Only one register
 
     //sendBlockTCP( mUdpStatusSocket, CMD_RD_MULTI_REG, data );
-    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, true );
+    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, /*true*/false );
 }
 
 void RoboControllerSDK::getMotorSpeeds( )
@@ -989,7 +992,7 @@ void RoboControllerSDK::getMotorSpeeds( )
     data << 2; // Only one register
 
     //sendBlockTCP( mUdpStatusSocket, CMD_RD_MULTI_REG, data );
-    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, true );
+    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, /*true*/false );
 }
 
 void RoboControllerSDK::getBoardStatus()

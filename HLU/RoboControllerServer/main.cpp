@@ -3,6 +3,7 @@
 #include <QDebug>
 
 #include <qrobotserver.h>
+#include <qwebcamserver.h>
 
 using namespace roboctrl;
 
@@ -53,7 +54,13 @@ int main(int argc, char *argv[])
         QRobotServer* server = new QRobotServer(14560, 14550, 14555, 14500, test, NULL);
         if( server->isRunning() )
         {
-            qDebug() << QObject::tr("Server has been correctly started.");
+            qDebug() << QObject::tr("Control Server has been correctly started.");
+        }
+
+        QWebcamServer* webcamServer = new QWebcamServer(0, 55554, 55555, 1024, 5, NULL );
+        if( webcamServer->isRunning() )
+        {
+            qDebug() << QObject::tr("Webcam Server has been correctly started.");
         }
     }
     catch(roboctrl::RcException &e)

@@ -330,7 +330,7 @@ void QRobotServer::openUdpStatusSession()
 
     mUdpStatusSocket = new QUdpSocket(this);
 
-    if( !mUdpStatusSocket->bind( mServerUdpStatusPortListen, QAbstractSocket::ReuseAddressHint|QAbstractSocket::ShareAddress ) )
+    if( !mUdpStatusSocket->bind( mServerUdpStatusPortListen, /*QAbstractSocket::ReuseAddressHint|*/QAbstractSocket::ShareAddress ) )
     {
         qCritical() << tr("Unable to bind the UDP Status server on %1:%2. Error: %3")
                        .arg(mUdpStatusSocket->localAddress().toString())
@@ -354,7 +354,7 @@ void QRobotServer::openUdpControlSession()
 
     mUdpControlSocket = new QUdpSocket(this);
 
-    if( !mUdpControlSocket->bind( mServerUdpControlPortListen, QAbstractSocket::ReuseAddressHint|QAbstractSocket::ShareAddress  ) )
+    if( !mUdpControlSocket->bind( mServerUdpControlPortListen, /*QAbstractSocket::ReuseAddressHint|*/QAbstractSocket::ShareAddress  ) )
     {
         qCritical() << tr("Unable to bind the UDP Control server on %1:%2. Error: %3")
                        .arg(mUdpControlSocket->localAddress().toString())
@@ -604,8 +604,15 @@ void QRobotServer::onTcpReadyRead()
         {
             qDebug() << tr("Received wrong message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
 
-            char buf[256];
-            in.readRawData( buf, mNextTcpBlockSize );
+            qint64 bytes = mTcpSocket->bytesAvailable();
+            if(bytes>0)
+            {
+                qDebug() << tr("Removing %1 bytes from TCP socket buffer").arg(bytes);
+                char* buf = new char[bytes];
+                //in.readRawData( buf, mNextTcpBlockSize );
+                in.readRawData( buf, bytes );
+                delete [] buf;
+            }
 
             QVector<quint16> vec;
             sendBlockTCP(  MSG_FAILED, vec );
@@ -828,8 +835,16 @@ void QRobotServer::onUdpStatusReadyRead()
             {
                 qDebug() << tr("Received unknown message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
 
-                char buf[256];
-                in.readRawData( buf, mNextTcpBlockSize );
+
+                qint64 bytes = mUdpStatusSocket->pendingDatagramSize();
+                if(bytes>0)
+                {
+                    qDebug() << tr("Removing %1 bytes from UDP Status socket buffer").arg(bytes);
+                    char* buf = new char[bytes];
+                    //in.readRawData( buf, mNextTcpBlockSize );
+                    in.readRawData( buf, bytes );
+                    delete [] buf;
+                }
 
                 break;
             }
@@ -976,8 +991,15 @@ void QRobotServer::onUdpControlReadyRead()
             {
                 qDebug() << tr("UDP Control Received wrong message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
 
-                char buf[256];
-                in.readRawData( buf, mNextTcpBlockSize );
+                qint64 bytes = mUdpControlSocket->pendingDatagramSize();
+                if(bytes>0)
+                {
+                    qDebug() << tr("Removing %1 bytes from UDP Control socket buffer").arg(bytes);
+                    char* buf = new char[bytes];
+                    //in.readRawData( buf, mNextTcpBlockSize );
+                    in.readRawData( buf, bytes );
+                    delete [] buf;
+                }
 
                 break;
             }
@@ -1029,7 +1051,7 @@ bool QRobotServer::testBoardConnection()
     return true;
 }
 
-bool QRobotServer::readSpeedsAndSend( QHostAddress addr )
+void QRobotServer::readSpeedsAndSend( QHostAddress addr )
 {
     quint16 startAddr = WORD_ENC1_SPEED;
     quint16 nReg = 2;
