@@ -381,6 +381,9 @@ void RoboControllerSDK::onTcpReadyRead()
 
 void RoboControllerSDK::onUdpStatusReadyRead()
 {
+    // TODO try to implement the same as http://www.informit.com/articles/article.aspx?p=1405552&seqNum=4
+    
+    
     mNextUdpStBlockSize=0;
     quint16 msgCode;
 
@@ -415,21 +418,22 @@ void RoboControllerSDK::onUdpStatusReadyRead()
                 }
 
                 int count = 0;
-                while( mNextUdpStBlockSize == 0 )
+                quint val16 = 0x0000;
+                while( val16 != UDP_START_VAL ) // TODO verify if this works!
                 {
-                    // Datagram dimension
-                    in >> mNextUdpStBlockSize; // Updated only if we are parsing a new block
-
                     count++;
                     if(count == datagramSize)
                     {
                         QDataStream::Status st = in.status();
 
-                        qCritical() << Q_FUNC_INFO << tr("Read %1 bytes equal to ZERO. Stream status: %2")
+                        qCritical() << Q_FUNC_INFO << tr("Read %1 bytes not founding UDP_START_VAL. Stream status: %2")
                                        .arg(datagramSize).arg(st);
                         return;
                     }
                 }
+                
+                // Datagram dimension
+                in >> mNextUdpStBlockSize; // Updated only if we are parsing a new block
             }
 
             if( datagramSize < mNextUdpStBlockSize )
