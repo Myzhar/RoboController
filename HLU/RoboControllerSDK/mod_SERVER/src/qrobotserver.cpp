@@ -405,7 +405,7 @@ void QRobotServer::sendBlockTCP(quint16 msgCode, QVector<quint16>& data )
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_2);
-    out << (quint16)TCP_START_VAL; // Start work
+    out << (quint16)TCP_START_VAL; // Start word
     out << (quint16)0;      // Block size
     out << mMsgCounter;     // Message counter
     out << msgCode;         // Message Code
@@ -435,6 +435,7 @@ void QRobotServer::sendStatusBlockUDP( QHostAddress addr, quint16 msgCode, QVect
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_2);
+    out << (quint16)UDP_START_VAL; // Start Word
     out << (quint16)0;      // Block size
     out << mMsgCounter;     // Message counter
     out << msgCode;         // Message Code
@@ -449,6 +450,7 @@ void QRobotServer::sendStatusBlockUDP( QHostAddress addr, quint16 msgCode, QVect
 
     out.device()->seek(0);          // Back to the beginning to set block size
     int blockSize = (block.size() - sizeof(quint16));
+    out << (quint16)UDP_START_VAL; // Start Word again
     out << (quint16)blockSize;
 
     mUdpStatusSocket->writeDatagram( block, addr, mServerUdpStatusPortSend );
