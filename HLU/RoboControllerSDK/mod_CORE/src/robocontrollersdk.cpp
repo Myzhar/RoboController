@@ -119,12 +119,14 @@ QString RoboControllerSDK::findServer(quint16 udpSendPort/*=14550*/ , quint64 ud
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_2);
+    out << (quint16)UDP_START_VAL; // Start word
     out << (quint16)0;    // Block size
     out << (quint16)1;    // Message counter
     out << (quint16)CMD_SERVER_PING_REQ;       // Message Code
 
     out.device()->seek(0);          // Back to the beginning to set block size
     int blockSize = (block.size() - sizeof(quint16));
+    out << (quint16)UDP_START_VAL; // Start word again
     out << (quint16)blockSize;
 
     udp->writeDatagram( block, QHostAddress::Broadcast, udpSendPort);
