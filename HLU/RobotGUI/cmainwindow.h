@@ -6,6 +6,8 @@
 #include <QPushButton>
 #include <QSettings>
 #include <QLabel>
+#include <QProgressBar>
+
 #include <robocontrollersdk.h>
 
 // >>>>> INI names
@@ -14,6 +16,9 @@
 #endif
 #define ROB_IP "robot_ip"
 #define ROB_TCP_PORT "robot_tcp_port"
+#define ROB_UDP_CTRL_PORT "robot_udp_control_port"
+#define ROB_UDP_STAT_PORT_SEND "robot_udp_status_port_send"
+#define ROB_UDP_STAT_PORT_LISTEN "robot_udp_status_port_listen"
 #define PID_ENABLED "pid_enabled"
 // <<<<< INI names
 
@@ -35,8 +40,15 @@ public:
 private slots:
     void on_actionPidEnabled_triggered();
     void onConnectButtonClicked();
+    void onFindServerButtonClicked();
     void onNewJoypadValues(float x, float y);
-    void onNewMotorSpeed( int mot, double speed );
+    void onNewMotorSpeed( quint16 mot, double speed );
+    void onNewRobotConfiguration( RobotConfiguration& robConf );
+    void onNewBatteryValue( double battVal);
+
+    void on_actionRobot_Configuration_triggered();
+
+    void on_actionBattery_Calibration_triggered();
 
 protected:
     virtual void resizeEvent(QResizeEvent * ev) Q_DECL_OVERRIDE;
@@ -52,20 +64,34 @@ private:
     QString mRobIpAddress;
     QLineEdit* mRobIpLineEdit;
     int mRobTcpPort;
-    QLineEdit* mRobTcpPortLineEdit;
-    QPushButton* mConnectButton;
+    int mRobUdpControlPort;
+    int mRobUdpStatusPortSend;
+    int mRobUdpStatusPortListen;
+    QPushButton* mPushButtonConnect;
+    QPushButton* mPushButtonFindServer;
 
     QLabel* mStatusLabel;
+    QLabel* mBatteryLabel;
+
+    QProgressBar* mStatusBattLevelProgr;
     // <<<< GUI Objects
 
     bool mPidEnabled;
+    bool mOpenRobotConfig; /*!< Indicates that Robot Configuration dlg must be opened when receiving a new configuration message */
+    bool mRobotConfigValid; /*!< Indicates that a new valid Robot Configuration has been received */
+
+    bool mMotorSpeedLeftValid;
+    bool mMotorSpeedRightValid;
+    double mMotorSpeedRight;
+    double mMotorSpeedLeft;
 
     RoboControllerSDK* mRoboCtrl; /*!< Pointer to RoboControllerSDK object */
+    RobotConfiguration mRoboConf; /*!< Robot Configuration */
 
     float mMaxMotorSpeed; /*!< Max linear speed for each motor */
 
-    int mSpeedReqTimer = this->startTimer( 50, Qt::PreciseTimer);
-    int mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
+    int mSpeedReqTimer;
+    int mStatusReqTimer;
 };
 
 #endif // CMAINWINDOW_H

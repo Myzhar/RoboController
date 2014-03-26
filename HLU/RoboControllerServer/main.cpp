@@ -2,7 +2,7 @@
 #include <QSettings>
 #include <QDebug>
 
-#include "qrobottcpserver.h"
+#include <qrobotserver.h>
 
 using namespace roboctrl;
 
@@ -23,7 +23,7 @@ public:
         }
         catch(roboctrl::RcException &e)
         {
-            qCritical() << QObject::tr("RoboController Exception: %1").arg(e.getExcMessage());
+            qCritical() << QObject::tr("Robot Server Exception: %1").arg(e.getExcMessage());
             exit( EXIT_FAILURE );
         }
         catch(...)
@@ -41,9 +41,20 @@ int main(int argc, char *argv[])
 
     QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, ".");
 
+    bool test = false;
+
+    QString param = QObject::tr("%1").arg(argv[1]);
+
+    if( argc==2 && param.compare( QObject::tr("test"), Qt::CaseInsensitive)==0 )
+        test = true;
+
     try
     {
-        QRobotTcpServer* server = new QRobotTcpServer();
+        QRobotServer* server = new QRobotServer(14560, 14550, 14555, 14500, test, NULL);
+        if( server->isRunning() )
+        {
+            qDebug() << QObject::tr("Server has been correctly started.");
+        }
     }
     catch(roboctrl::RcException &e)
     {

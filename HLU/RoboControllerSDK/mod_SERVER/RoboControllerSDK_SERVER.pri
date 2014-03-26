@@ -1,10 +1,13 @@
 QT += network serialport
 
-SOURCES += \
-    $$ROBOCONTROLLERSDKPATH/mod_SERVER/src/qrobottcpserver.cpp
+include(../mod_EXTERN/RoboControllerSDK_EXTERN.pri) # SERVER module
 
-INCLUDEPATH += $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/
+SOURCES += \
+        $$ROBOCONTROLLERSDKPATH/mod_SERVER/src/qrobotserver.cpp
+
+INCLUDEPATH += \
+        $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/
 
 HEADERS += \
-        $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/qrobottcpserver.h
+        $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/qrobotserver.h
 

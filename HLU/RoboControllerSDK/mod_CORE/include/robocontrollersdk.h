@@ -14,6 +14,8 @@
 
 #define SERVER_REPLY_TIMEOUT_MSEC 1000
 
+#define UDP_PING_TIME_MSEC 1000
+
 namespace roboctrl
 {
 
@@ -22,20 +24,20 @@ class ROBOCONTROLLERSDKSHARED_EXPORT RoboControllerSDK : public QThread
     Q_OBJECT
 
 public:
-    explicit RoboControllerSDK(int udpListenPort=4550,
-                               int udpSendPort=4560,
-                               QString tcpAddr=QString("localhost"),
-                               int tcpPort=4500  );
+    explicit RoboControllerSDK(QString serverAddr=QString("127.0.0.1"),
+                               quint16 udpStatusPortSend=14550,
+                               quint16 udpStatusPortListen=14555,
+                               quint16 udpControlPort=14560,
+                               quint16 tcpPort=14500);
 
     virtual ~RoboControllerSDK();
 
-    /** @brief Sets the current motor control mode
+    /** @brief Searches for the server on the local network
      *
-     * @param mode The mode to be set. See @ref CommMode
      *
-     * @throw RcException
+     * @returns IP of the server or an empty QString
      */
-    void setCommMode( CommMode mode );
+    static QString findServer(quint16 udpSendPort=14550, quint64 udpListenPort=14555 );
 
     /** @brief Send a request for motor speed.
      *         The reply is received with /ref newMotorSpeedValue
@@ -124,9 +126,34 @@ public:
     void saveRobotConfigurationToIni( QString iniFile = ROBOT_CONFIG_INI_FILE );
 
     /** @brief Save the Robot Configuration to Robot EEPROM
-     *         The Robot configuration is saved on the Robot     *
+     *         The Robot configuration is saved on the Robot
      */
     void saveRobotConfigurationToEeprom( );
+
+    /** @brief Set a new Robot Configuration without saving to EEPROM
+     */
+    void setRobotConfiguration( RobotConfiguration& roboConfig );
+
+    /** @brief Try to take control of the robot for driving
+     */
+    void getRobotControl();
+
+    /** @brief Release the control of the robot for other clients
+     */
+    void releaseRobotControl();
+
+    /** @brief Gets the current charge value of battery
+     *  The reply is received with @ref newBatteryValue
+     *  signal
+     */
+    void getBatteryChargeValue();
+
+    /** @brief Calibrates the Battery charge value
+     *
+     * @param valueType the type of value to be set (see @ref AnalogCalibValue)
+     * @param curChargeVal Current value of charge read with a tester connected to the battery
+     */
+    void setBatteryCalibrationParams( AnalogCalibValue valueType, double curChargeVal);
 
     //TODO: Implementare getWatchDogTime e setWatchDogTime
 
@@ -140,13 +167,9 @@ public:
      */
     //void enableWatchdog();
 
-
-
 protected:
-
     /// Thread function
     virtual void run();
-
 
 private:
     /// Operations performed during communication
@@ -158,23 +181,41 @@ private:
     void disconnectTcpServer();
 
     /// UDP Connection
-    void connectToUdpServer();
+    void connectToUdpServers();
     /// UDP Disconnection
-    void disconnectUdpServer();
+    void disconnectUdpServers();
 
     /// Processes a reply message
-    void processReplyMsg( QDataStream *inStream );
+    void processReplyMsg(QDataStream *inStream );
 
     /// Updates Robot Configuration from data stream
     void updateRobotConfigurationFromDataStream( QDataStream* inStream );
 
-    /// Sends a command to current server
-    void sendCommand(quint16 msgCode, QVector<quint16> &data );       
+    /// Sends a command to TCP server
+    void sendBlockTCP( quint16 msgCode, QVector<quint16> &data );
+
+    /// Sends a command to UDP server
+    void sendBlockUDP( QUdpSocket *socket, QHostAddress addr, quint16 port, quint16 msgCode, QVector<quint16> &data, bool waitReply=false );
 
 protected slots:
+    /// Processes data from TCP Socket
     void onTcpReadyRead();
+    /// Handles errors on TCP socket
     void onTcpError(QAbstractSocket::SocketError err);
+    /// Handles the "Host Found" status
     void onTcpHostFound();
+
+    /// Processes data from UDP Status Socket
+    void onUdpStatusReadyRead();
+    /// Processes data from UDP Control Socket
+    //void onUdpControlReadyRead();
+    /// Handles errors on UDP Status Socket
+    void onUdpStatusError( QAbstractSocket::SocketError err );
+    /// Handles errors on UDP Control Socket
+    void onUdpControlError( QAbstractSocket::SocketError err );
+
+    /// Send Test ping to UDP Servers
+    void onUdpTestTimerTimeout();
 
     /// Ping Timer handler
     void onPingTimerTimeout();
@@ -201,27 +242,39 @@ signals:
     void newRobotConfiguration( RobotConfiguration& robConf );
     /// Signal emitted when a new Board Status is ready
     void newBoardStatus(BoardStatus& status);
+    /// Signal emitted when a new Battery Value is available
+    void newBatteryValue( double batChargeVal );
+
+    /// Signal emitted when client takes Robot Control successfully
+    void robotControlTaken();
+    /// Signal emitted when client try to take Robot Control, but fails
+    void robotControlNotTaken();
+    /// Signal emitted when client releases the Robot Control
+    void robotControlReleased();
 
 private:
     qint64 mLastServerReqTime; /**< Information about last connection time */
 
-    int mUdpListenPort; /**< Socket UDP Listen Port */
-    int mUdpSendPort;   /**< Socket UDP Send Port */
-    int mTcpPort;       /**< Socket TCP Port */
-    QString mTcpAddr;   /**< TCP Server address */
+    int mUdpStatusPortSend;      /**< Socket UDP Status Port to send datagrams*/
+    int mUdpStatusPortListen;    /**< Socket UDP Status Port to bind to receive datagrams*/
+    int mUdpControlPortSend;     /**< Socket UDP Control Port */
+    int mTcpPort;          /**< Socket TCP Port */
+
+    QString mServerAddr;   /**< Server address */
 
     QMutex mConnMutex;  /**< Mutex to share connection between functions safely */
 
     QTcpSocket* mTcpSocket;         /**< TCP Socket for secure communications */
-    QUdpSocket* mUdpSocket;         /**< UDP Socket for unsecure communications */
-    QAbstractSocket* mCurrSocket;   /**< Socket active */
+    QUdpSocket* mUdpStatusSocket;   /**< UDP Socket for status communications */
+    QUdpSocket* mUdpControlSocket;   /**< UDP Socket for control communications */
 
     quint16 mNextTcpBlockSize;      /**< Used to recover incomplete TCP block */
+    quint16 mNextUdpStBlockSize;    /**< Used to recover incomplete UDP Status block */
+    quint16 mNextUdpCtrlBlockSize;  /**< Used to recover incomplete UDP Control block */
 
     bool mTcpConnected;     /**< Indicates if TCP Socket is connected */
     bool mUdpConnected;     /**< Indicates if UDP Socket is connected */
 
-    CommMode mCommMode;     /**< Current communication mode */
     MotorCtrlMode mMotorCtrlMode; /**< Current motor control mode */
     BoardStatus mBoardStatus; /**< Current board status */
 
@@ -251,6 +304,7 @@ private:
                                   If both @ref mReceivedStatus2 and @ref mReceivedRobConfig
                                   are true a @ref newRobotConfiguration signal can be emitted. */
 
+    QTimer mUdpPingTimer; /**< Timer of Udp Servers testing */
 };
 
 }

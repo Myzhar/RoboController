@@ -2,14 +2,14 @@
 #define QCOMMON_H
 
 #include <QObject>
-#include "qscreentools.h"
+#include <qscreentools.h>
 
 class QCommon : public QObject
 {
     Q_OBJECT
 
 public:
-    QScreenTools mScreen;
+    roboctrl::QScreenTools mScreen;
 
 private:
     qreal mDefFontSize;

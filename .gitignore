@@ -9,7 +9,7 @@
 *.la
 *.lai
 *.so
-*.dll
+# *.dll useful for bin folder under Windows
 *.dylib
 
 ####################################################
@@ -30,6 +30,15 @@ build-*
 ####################################################
 
 *.autosave
+
+####################################################
+# QtAndroid
+####################################################
+
+build.xml
+local.properties
+proguard-project.txt
+project.properties
 
 ####################################################
 # OS generated files

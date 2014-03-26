@@ -17,19 +17,18 @@ DEFINES += ROBOCONTROLLERSDK_LIBRARY
 
 include($$ROBOCONTROLLERSDKPATH/mod_CORE/RoboControllerSDK_CORE.pri) # Core module
 include($$ROBOCONTROLLERSDKPATH/mod_GUI/RoboControllerSDK_GUI.pri) # GUI module
+#include($$ROBOCONTROLLERSDKPATH/mod_SERVER/RoboControllerSDK_SERVER.pri) # SERVER module
 
 INCLUDEPATH += \
     ../common/include\
 
 SOURCES += \
     main.cpp\
-    cmainwindow.cpp\
-    qscreentools.cpp \
+    cmainwindow.cpp\    
     qcommon.cpp
 
 HEADERS  += \
     cmainwindow.h \
-    qscreentools.h \
     qcommon.h
 
 FORMS    += \

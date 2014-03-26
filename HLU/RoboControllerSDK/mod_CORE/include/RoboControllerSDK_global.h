@@ -11,6 +11,12 @@
 
 #include "exception.h"
 
+#define RAD2DEG 57.29577951308233
+#define DEG2RAD 0.0174532925199433
+
+namespace roboctrl
+{
+
 /**
  * @enum MotorCtrlMode
  * @brief Motor control modes.
@@ -52,14 +58,14 @@ typedef enum
 } EncoderPos;
 
 /**
- * @enum CommMode
- * @brief Communication modes.
+ * @enum AnalogCalibValue
+ * @brief Indicates the type of value for Analogic Ports calibration
  */
 typedef enum
 {
-    cmNormal = 0, /**< Normal communication over unsecure UDP protocol */
-    cmConfiguration = 1 /**< Secure communication mode over TCP used to send configuration parameters */
-} CommMode;
+    CalLow = 0, /**< Lower Value for analogic calibration */
+    CalHigh = 1 /**< Higher Value for analogic calibration */
+} AnalogCalibValue;
 
 /**
   * @struct _BoardStatus
@@ -106,6 +112,13 @@ typedef struct _RobotConfiguration
     PinLevel MotorEnableLevel;  /**< Enable Level of the Robot Driver (Low/High)*/
     EncoderPos EncoderPosition; /**< Encoder on the shaft of the motor or of the wheel */
     // <<<<< Wheels, Motors and Reduction
+
+    // >>>>> Battery
+    quint16 MaxChargedBatteryLevel; /**< Value of the power battery fully charged (Volts * 1000) */
+    quint16 MinChargedBatteryLevel; /**< Value of the power battery to be considered discharged (Volts * 1000) */
+    // <<<<< Battery
 } RobotConfiguration;
+
+}
 
 #endif // ROBOCONTROLLERSDK_GLOBAL_H

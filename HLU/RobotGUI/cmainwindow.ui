@@ -20,7 +20,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
-    <normaloff>:/images/MyzharBot_favicon_64x64.png</normaloff>:/images/MyzharBot_favicon_64x64.png</iconset>
+    <normaloff>:/icon/images/MyzharBot_favicon_64x64.png</normaloff>:/icon/images/MyzharBot_favicon_64x64.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -45,9 +45,31 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Maximum</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>10</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
          <widget class="QLCDNumber" name="lcdNumber_fw_speed">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+           <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -56,38 +78,16 @@
            <number>6</number>
           </property>
           <property name="value" stdset="0">
-           <double>-11.220000000000001</double>
+           <double>0.000000000000000</double>
           </property>
          </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <spacer name="horizontalSpacer_2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>10</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
            <widget class="QLabel" name="label_fw_speed">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -104,9 +104,31 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Maximum</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>10</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
          <widget class="QLCDNumber" name="lcdNumber_rot_speed">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+           <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -115,38 +137,16 @@
            <number>6</number>
           </property>
           <property name="value" stdset="0">
-           <double>-11.220000000000001</double>
+           <double>0.000000000000000</double>
           </property>
          </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <spacer name="horizontalSpacer_3">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>10</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
            <widget class="QLabel" name="label_rot_speed">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -177,7 +177,7 @@
        </spacer>
       </item>
       <item>
-       <widget class="CQtJoypad" name="widget_joypad" native="true">
+       <widget class="QJoypad" name="widget_joypad" native="true">
         <property name="minimumSize">
          <size>
           <width>200</width>
@@ -222,6 +222,8 @@
      <addaction name="actionPidEnabled"/>
     </widget>
     <addaction name="menuPID"/>
+    <addaction name="actionRobot_Configuration"/>
+    <addaction name="actionBattery_Calibration"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuOption"/>
@@ -251,13 +253,29 @@
     <string>PID state</string>
    </property>
   </action>
+  <action name="actionRobot_Configuration">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Robot Configuration</string>
+   </property>
+  </action>
+  <action name="actionBattery_Calibration">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Battery Calibration</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>CQtJoypad</class>
+   <class>QJoypad</class>
    <extends>QWidget</extends>
-   <header>cqtjoypad.h</header>
+   <header>qjoypad.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -276,8 +294,8 @@
      <y>-1</y>
     </hint>
     <hint type="destinationlabel">
-     <x>199</x>
-     <y>149</y>
+     <x>392</x>
+     <y>235</y>
     </hint>
    </hints>
   </connection>
