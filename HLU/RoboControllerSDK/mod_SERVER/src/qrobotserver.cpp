@@ -405,6 +405,7 @@ void QRobotServer::sendBlockTCP(quint16 msgCode, QVector<quint16>& data )
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_2);
+    out << (quint16)TCP_START_VAL; // Start work
     out << (quint16)0;      // Block size
     out << mMsgCounter;     // Message counter
     out << msgCode;         // Message Code
@@ -419,13 +420,14 @@ void QRobotServer::sendBlockTCP(quint16 msgCode, QVector<quint16>& data )
 
     out.device()->seek(0);          // Back to the beginning to set block size
     int blockSize = (block.size() - sizeof(quint16));
+    out << (quint16)TCP_START_VAL; // Start work again
     out << (quint16)blockSize;
 
     mTcpSocket->write( block );
     mTcpSocket->flush();
 
     QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-    qDebug() << tr("%1 - Sent msg #%2 - Code: %3").arg(timeStr).arg(mMsgCounter).arg(msgCode);
+    qDebug() << tr("%1 - Sent TCP msg #%2 - Code: %3").arg(timeStr).arg(mMsgCounter).arg(msgCode);
 }
 
 void QRobotServer::sendStatusBlockUDP( QHostAddress addr, quint16 msgCode, QVector<quint16>& data )
