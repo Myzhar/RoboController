@@ -260,7 +260,7 @@ void RoboControllerSDK::onTcpReadyRead()
     QDataStream in(mTcpSocket);
     in.setVersion(QDataStream::Qt_5_2);
 
-    mNextTcpBlockSize=0;
+    // mNextTcpBlockSize=0; WRONG!!!!!!!!
     quint16 msgCode;
 
     forever // Receiving data while there is data available
@@ -276,11 +276,17 @@ void RoboControllerSDK::onTcpReadyRead()
                 //qDebug() << Q_FUNC_INFO << tr("No more TCP Data available");
                 break;
             }
+            
+            quint16 val16 = 0x0000;
+            while( val16 != TCP_START_VAL ) // TODO: VERIFICARE!!!
+            {
+                in >> val16;                              
+            }
 
             // Datagram dimension
             in >> mNextTcpBlockSize; // Updated only if we are parsing a new block
         }
-
+        
         if ( bytes < mNextTcpBlockSize)
         {
             qDebug() << Q_FUNC_INFO << tr("Received incomplete TCP Block... waiting for the missing data");
