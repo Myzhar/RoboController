@@ -16,6 +16,9 @@
 #define WORD_TEST_BOARD 0
 #define TEST_TIMER_INTERVAL 1000
 
+#define TCP_START_VAL 0x55AA /*!< Start word for TCP data block */
+#define UDP_START_VAL 0xAA55 /*!< Start word for UDP data block */
+
 #define INITIAL_REPLY_BUFFER_SIZE 20
 
 class QTcpServer;
