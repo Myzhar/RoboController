@@ -5,7 +5,7 @@
 #include <QMessageBox>
 #include <QLabel>
 #include <QDesktopWidget>
-#include <Qdir>
+#include <QDir>
 #include <QScreen>
 
 #include <opencv2/core/core.hpp>

@@ -61,7 +61,12 @@ CONFIG(opencv)
 
     unix {
         message(Used OpenCV for Unix)
-        OPENCV_LIB_PATH =
+        OPENCV_LIB_PATH = /usr/lib
+        
+        LIBS += \
+            -lopencv_core \
+            -lopencv_highgui
+            
     }
 }
 #######################################################################################
