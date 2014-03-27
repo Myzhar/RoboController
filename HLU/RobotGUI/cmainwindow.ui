@@ -179,7 +179,7 @@
      </layout>
     </item>
     <item row="0" column="0">
-     <widget class="QWidget" name="widget" native="true">
+     <widget class="QGlOpenCVWidget" name="widget_video" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
         <horstretch>0</horstretch>
@@ -270,6 +270,12 @@
    <class>QJoypad</class>
    <extends>QWidget</extends>
    <header>qjoypad.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QGlOpenCVWidget</class>
+   <extends>QWidget</extends>
+   <header>qglopencvwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

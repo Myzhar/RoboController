@@ -1,6 +1,6 @@
 message(Added GUI module)
 
-QT += gui
+QT += gui opengl
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 DEFINES += SDK_PATH=\\\"$$ROBOCONTROLLERSDKPATH\\\"
@@ -10,7 +10,8 @@ SOURCES += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qjoypad.cpp \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qrobotconfigdialog.cpp \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qbatterycalibdialog.cpp \
-            $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qscreentools.cpp
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qscreentools.cpp \
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qglopencvwidget.cpp
 
 INCLUDEPATH += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/ \
@@ -19,7 +20,8 @@ HEADERS += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qjoypad.h \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qrobotconfigdialog.h \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qbatterycalibdialog.h \
-            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qscreentools.h
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qscreentools.h \
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qglopencvwidget.h
 
 FORMS    += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/ui/qrobotconfigdialog.ui \

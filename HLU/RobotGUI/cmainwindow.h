@@ -37,6 +37,9 @@ class CMainWindow : public QMainWindow
 public:
     explicit CMainWindow(QWidget *parent = 0);
     ~CMainWindow();
+
+public slots:
+    void onNewImage();
     
 private slots:
     void on_actionPidEnabled_triggered();
@@ -46,8 +49,7 @@ private slots:
     void onNewMotorSpeed( quint16 mot, double speed );
     void onNewMotorSpeeds(double,double);
     void onNewRobotConfiguration( RobotConfiguration& robConf );
-    void onNewBatteryValue( double battVal);
-    void onNewImage();
+    void onNewBatteryValue( double battVal);    
 
     void on_actionRobot_Configuration_triggered();
 
@@ -102,6 +104,8 @@ private:
 
     float mJoyMotSx; /*!< Value of the joypad related to left motor */
     float mJoyMotDx; /*!< Valut of the joypad realted to right motor */
+
+    bool mNewImageAvailable; /*!< Used to retrieve image from WebcamServer */
 };
 
 #endif // CMAINWINDOW_H

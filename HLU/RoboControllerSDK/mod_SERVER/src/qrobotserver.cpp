@@ -419,7 +419,7 @@ void QRobotServer::sendBlockTCP(quint16 msgCode, QVector<quint16>& data )
     // <<<<< Data
 
     out.device()->seek(0);          // Back to the beginning to set block size
-    int blockSize = (block.size() - sizeof(quint16));
+    int blockSize = (block.size() - 2*sizeof(quint16));
     out << (quint16)TCP_START_VAL; // Start work again
     out << (quint16)blockSize;
 
@@ -449,7 +449,7 @@ void QRobotServer::sendStatusBlockUDP( QHostAddress addr, quint16 msgCode, QVect
     // <<<<< Data
 
     out.device()->seek(0);          // Back to the beginning to set block size
-    int blockSize = (block.size() - sizeof(quint16));
+    int blockSize = (block.size() - 2*sizeof(quint16));
     out << (quint16)UDP_START_VAL; // Start Word again
     out << (quint16)blockSize;
 
@@ -472,22 +472,50 @@ void QRobotServer::onTcpReadyRead()
 
     forever // Receiving data while there is data available
     {
+        qint64 bytesAvailable = mTcpSocket->bytesAvailable();
+
         QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
         if( mNextTcpBlockSize==0) // No incomplete blocks received before
         {
-            if (mTcpSocket->bytesAvailable() < (qint64)sizeof(quint16))
+            if (bytesAvailable < (qint64)sizeof(quint16))
             {
                 qDebug() << Q_FUNC_INFO << tr("No more TCP Data available");
                 break;
             }
 
+            /*quint16 val16 = 0x0000;
+            while( val16 != TCP_START_VAL ) // TODO: VERIFICARE!!!
+            {
+                in >> val16;
+            }*/
+
+            int count = 0;
+            quint16 val16;
+            //in >> val16;
+
+            do
+            {
+                in >> val16;
+
+                if(count == bytesAvailable)
+                {
+                    qCritical() << Q_FUNC_INFO << tr("Read %1 bytes not founding TCP_START_VAL.")
+                                   .arg(bytesAvailable);
+                    return;
+                }
+                count++;
+
+            }
+            while( val16 != TCP_START_VAL ); // TODO verify if this works!
+
             // Datagram dimension
             in >> mNextTcpBlockSize; // Updated only if we are parsing a new block
         }
 
-        if (mTcpSocket->bytesAvailable() < mNextTcpBlockSize)
+
+        if ( bytesAvailable < mNextTcpBlockSize)
         {
-            qDebug() << Q_FUNC_INFO << tr("Received incomplete TCP Block... waiting for the missing data");
+            qDebug() << Q_FUNC_INFO << tr("Received incomplete TCP Block... waiting for the missing data (aspected %1 bytes - received %2 bytes)").arg(mNextTcpBlockSize).arg(bytesAvailable);
             break;
         }
 
@@ -505,7 +533,8 @@ void QRobotServer::onTcpReadyRead()
         {
         case CMD_SERVER_PING_REQ: // Sent by client to verify that Server is running
         {
-            qDebug() << tr("TCP Received msg #%1: MSG_SERVER_PING_REQ").arg(msgIdx);
+            qDebug() << tr("TCP Received msg #%1: MSG_SERVER_PING_REQ (%2)").arg(msgIdx).arg(msgCode);
+
 
             QVector<quint16> vec;
             sendBlockTCP( MSG_SERVER_PING_OK, vec );
@@ -515,10 +544,14 @@ void QRobotServer::onTcpReadyRead()
 
         case CMD_RD_MULTI_REG:
         {
-            qDebug() << tr("TCP Received msg #%1: CMD_RD_MULTI_REG").arg(msgIdx);
+            qDebug() << tr("TCP Received msg #%1: CMD_RD_MULTI_REG (%2)").arg(msgIdx).arg(msgCode);
 
             if( !mBoardConnected )
             {
+                // TODO: LEGGERE I BYTE RIMANENTI
+                // Dovrebbe essere così:
+                mTcpSocket->read( mNextTcpBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
+
                 QVector<quint16> vec;
                 sendBlockTCP( MSG_RC_NOT_FOUND, vec);
 
@@ -557,10 +590,14 @@ void QRobotServer::onTcpReadyRead()
 
         case CMD_WR_MULTI_REG:
         {
-            qDebug() << tr("TCP Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
+            qDebug() << tr("TCP Received msg #%1: CMD_WR_MULTI_REG (%2)").arg(msgIdx).arg(msgCode);
 
             if( !mBoardConnected )
             {
+                // TODO: LEGGERE I BYTE RIMANENTI
+                // Dovrebbe essere così:
+                mTcpSocket->read( mNextTcpBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
+
                 QVector<quint16> vec;
                 sendBlockTCP( MSG_RC_NOT_FOUND, vec );
                 break;
@@ -683,7 +720,9 @@ void QRobotServer::onUdpStatusReadyRead()
                     }
                 }*/
                 int count = 0;
-                quint val16 = 0x0000;
+                quint16 val16;
+                in >> val16;
+
                 while( val16 != UDP_START_VAL ) // TODO verify if this works!
                 {
                     count++;
@@ -695,7 +734,11 @@ void QRobotServer::onUdpStatusReadyRead()
                                        .arg(datagramSize).arg(st);
                         return;
                     }
+                    in >> val16;
                 }
+
+                // Datagram dimension
+                in >> mNextUdpStatBlockSize; // Updated only if we are parsing a new block
             }
 
             if( datagramSize < mNextUdpStatBlockSize )
@@ -732,6 +775,9 @@ void QRobotServer::onUdpStatusReadyRead()
 
                 if( !mBoardConnected )
                 {
+                    // TODO: LEGGERE I BYTE RIMANENTI
+                    mUdpStatusSocket->read( mNextUdpStatBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
+
                     QVector<quint16> vec;
                     sendStatusBlockUDP( addr, MSG_RC_NOT_FOUND, vec );
 
@@ -776,6 +822,9 @@ void QRobotServer::onUdpStatusReadyRead()
 
                 if( !mBoardConnected )
                 {
+                    // TODO: LEGGERE I BYTE RIMANENTI
+                    mUdpStatusSocket->read( mNextUdpStatBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
+
                     QVector<quint16> vec;
                     sendStatusBlockUDP( addr, MSG_RC_NOT_FOUND, vec );
                     break;
@@ -952,6 +1001,9 @@ void QRobotServer::onUdpControlReadyRead()
 
                 if( !mBoardConnected )
                 {
+                    // TODO: LEGGERE I BYTE RIMANENTI
+                    mUdpControlSocket->read( mNextUdpCmdBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
+
                     QVector<quint16> vec;
                     qCritical() << tr("RoboController board is not connected");
                     break;

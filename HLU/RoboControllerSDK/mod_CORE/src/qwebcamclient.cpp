@@ -21,7 +21,6 @@ QWebcamClient::QWebcamClient(QString serverIp, int listenPort, int sendPort, QOb
     mServerIp = serverIp;
 
     connectToServer( sendPort, listenPort );
-
 }
 
 QWebcamClient::~QWebcamClient()
@@ -112,7 +111,7 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
     // <<<< Trying connection
 
     if(mConnected)
-        exec();
+        start();
 
     return mConnected;
 }
@@ -221,7 +220,7 @@ void QWebcamClient::processPendingDatagrams()
 
                 //cv::waitKey( 1 );
                 //QCoreApplication::processEvents( QEventLoop::AllEvents, 50 );
-                //qDebug() << tr( "Frame #%1 ready" ).arg((int)id);
+                qDebug() << tr( "Frame #%1 ready" ).arg((int)id);
             }
             else
                 qDebug() << tr( "Frame #%1 error: Wrong encoding" ).arg((int)id);
@@ -233,12 +232,12 @@ cv::Mat QWebcamClient::getLastFrame()
 {
     qDebug() << Q_FUNC_INFO;
 
-    mImgMutex.lock();
+    //mImgMutex.lock();
     {
 
         return mLastCompleteFrame;
     }
-    mImgMutex.unlock();
+    //mImgMutex.unlock();
 }
 
 }

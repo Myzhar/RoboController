@@ -36,6 +36,8 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
     mServerAddr = serverAddr;
     mTcpPort = tcpPort;
 
+    mNextTcpBlockSize=0;
+
     connect(mTcpSocket, SIGNAL(readyRead()),
             this, SLOT(onTcpReadyRead()));
     connect(mTcpSocket, SIGNAL(hostFound()),
@@ -61,6 +63,9 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
     mUdpControlPortSend = udpControlPort;
     mUdpStatusPortSend = udpStatusPortSend;
     mUdpStatusPortListen = udpStatusPortListen;
+
+    mNextUdpCtrlBlockSize = 0;
+    mNextUdpStBlockSize = 0;
 
     /*connect( mUdpControlSocket, SIGNAL(readyRead()),
              this, SLOT(onUdpControlReadyRead()) ); // The control UDP Socket does not receive!*/
@@ -125,7 +130,7 @@ QString RoboControllerSDK::findServer(quint16 udpSendPort/*=14550*/ , quint64 ud
     out << (quint16)CMD_SERVER_PING_REQ;       // Message Code
 
     out.device()->seek(0);          // Back to the beginning to set block size
-    int blockSize = (block.size() - sizeof(quint16));
+    int blockSize = (block.size() - 2*sizeof(quint16));
     out << (quint16)UDP_START_VAL; // Start word again
     out << (quint16)blockSize;
 
@@ -157,7 +162,7 @@ QString RoboControllerSDK::findServer(quint16 udpSendPort/*=14550*/ , quint64 ud
         {
             if( data[i]==MSG_SERVER_PING_OK )
             {
-                if( i>2 && data[i-4]==4 ) // The block size must be 4
+                if( i>2 && data[i-4]==4 ) // The block size must be 6
                 {
                     delete [] data;
                     udp->abort();
@@ -279,11 +284,29 @@ void RoboControllerSDK::onTcpReadyRead()
                 break;
             }
             
-            quint16 val16 = 0x0000;
+            /*quint16 val16 = 0x0000;
             while( val16 != TCP_START_VAL ) // TODO: VERIFICARE!!!
             {
                 in >> val16;                              
+            }*/
+
+            int count = 0;
+            quint16 val16;
+            in >> val16;
+
+            // TODO: FARE UGUALE A QUELLO DEL SERVER
+            while( val16 != TCP_START_VAL ) // TODO verify if this works!
+            {
+                count++;
+                if(count == bytes)
+                {
+                    qCritical() << Q_FUNC_INFO << tr("Read %1 bytes not founding TCP_START_VAL.")
+                                   .arg(bytes);
+                    return;
+                }
+                in >> val16;
             }
+
 
             // Datagram dimension
             in >> mNextTcpBlockSize; // Updated only if we are parsing a new block
@@ -420,7 +443,9 @@ void RoboControllerSDK::onUdpStatusReadyRead()
                 }
 
                 int count = 0;
-                quint val16 = 0x0000;
+                quint16 val16;
+                in >> val16;
+
                 while( val16 != UDP_START_VAL ) // TODO verify if this works!
                 {
                     count++;
@@ -432,6 +457,7 @@ void RoboControllerSDK::onUdpStatusReadyRead()
                                        .arg(datagramSize).arg(st);
                         return;
                     }
+                    in >> val16;
                 }
                 
                 // Datagram dimension
@@ -796,7 +822,7 @@ void RoboControllerSDK::sendBlockUDP( QUdpSocket *socket, QHostAddress addr, qui
     out << msgCode;        // Message Code
 
     ++mMsgCounter;
-    mMsgCounter %= 65536;
+    //mMsgCounter %= 65536;
 
     // ---> Data
     QVector<quint16>::iterator it;
@@ -805,7 +831,7 @@ void RoboControllerSDK::sendBlockUDP( QUdpSocket *socket, QHostAddress addr, qui
     // <--- Data
 
     out.device()->seek(0);          // Back to the beginning to set block size
-    int blockSize = (block.size() - sizeof(quint16));
+    int blockSize = (block.size() - 2*sizeof(quint16));
     out << (quint16)UDP_START_VAL; // Start word again
     out << (quint16)blockSize;
 
@@ -847,6 +873,7 @@ void RoboControllerSDK::sendBlockTCP(quint16 msgCode, QVector<quint16> &data )
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_2);
+    out << (quint16)TCP_START_VAL; // Start word
     out << (quint16)0;     // Block size
     out << mMsgCounter;    // Message counter
     out << msgCode;        // Message Code
@@ -861,7 +888,8 @@ void RoboControllerSDK::sendBlockTCP(quint16 msgCode, QVector<quint16> &data )
     // <--- Data
 
     out.device()->seek(0);          // Back to the beginning to set block size
-    int blockSize = (block.size() - sizeof(quint16));
+    int blockSize = (block.size() - 2*sizeof(quint16));
+    out << (quint16)TCP_START_VAL; // Start work again
     out << (quint16)blockSize;
 
     //QMutexLocker locker( &mConnMutex );

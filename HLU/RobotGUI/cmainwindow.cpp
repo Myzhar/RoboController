@@ -145,6 +145,8 @@ CMainWindow::CMainWindow(QWidget *parent) :
     mMaxMotorSpeed = 2.0f; // m/sec
     mOpenRobotConfig = false;
     mRobotConfigValid = false;
+
+    mNewImageAvailable = false;
 }
 
 CMainWindow::~CMainWindow()
@@ -220,7 +222,7 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         }
     }
     else if( event->timerId() == mStatusReqTimer )
-    {
+    {        
         if(!mRoboCtrl)
             return;
 
@@ -232,9 +234,21 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         {
             qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
         }
+
+
     }
     else if( event->timerId() == mSpeedReqTimer )
     {
+        if( mWebcamClient!=NULL && mNewImageAvailable   )
+        {
+            mNewImageAvailable = false;
+            cv::Mat frame = mWebcamClient->getLastFrame();
+            //cv::imshow( "Received Frame", frame );
+            ui->widget_video->showImage(frame);
+
+            //cv::waitKey(1);
+        }
+
         if(!mRoboCtrl)
             return;
 
@@ -385,6 +399,8 @@ void CMainWindow::onConnectButtonClicked()
 
     connect( mWebcamClient, SIGNAL(newImageReceived()),
              this, SLOT(onNewImage()) );
+
+    //mWebcamClient->connectToServer(55555,55554);
     // <<<<< Webcam Client
 }
 
@@ -573,9 +589,11 @@ void CMainWindow::onNewImage()
     // TODO: Perché non viene mai chiamato!?!??!
 
     qDebug() << tr("New Image");
-    cv::Mat frame = mWebcamClient->getLastFrame();
 
-    cv::imshow( "Received Frame", frame );
+    mNewImageAvailable = true;
+   // cv::Mat frame = mWebcamClient->getLastFrame();
+
+    //cv::imshow( "Received Frame", frame );
 
     //cv::waitKey(1);
 }
