@@ -12,7 +12,7 @@
 
 #define ROBOT_CONFIG_INI_FILE "./robotConfig.ini"
 
-#define SERVER_REPLY_TIMEOUT_MSEC 5000
+#define SERVER_REPLY_TIMEOUT_MSEC 1000
 
 #define UDP_PING_TIME_MSEC 1000
 
@@ -36,8 +36,9 @@ public:
      *
      *
      * @returns IP of the server or an empty QString
+     *
      */
-    static QString findServer(quint16 udpSendPort=14550, quint64 udpListenPort=14555 );
+    static QString findServer(quint16 udpSendPort=14550, quint64 udpListenPort=14555 ); // Tested
 
     /** @brief Send a request for motor speed.
      *         The reply is received with /ref newMotorSpeedValue
@@ -45,13 +46,13 @@ public:
      *
      * @param motorIdx Index of the motor (0 or 1)
      */
-    void getMotorSpeed( quint16 motorIdx );
+    void getMotorSpeed( quint16 motorIdx ); // Tested
 
     /** @brief Send a request for motor speeds.
      *         The reply is received with /ref newMotorSpeedValues
      *         signal
      */
-    void getMotorSpeeds( );
+    void getMotorSpeeds( ); // Tested
 
     /** @brief Sets the speed of the motor in m/sec
      *
@@ -79,13 +80,13 @@ public:
      *
      * @param motorIdx Index of the motor (0 or 1)
      */
-    void getMotorPWM( quint16 motorIdx );
+    void getMotorPWM( quint16 motorIdx ); // Tested
 
     /** @brief Send a request for motor PWMs.
      *         The reply is received with /ref newMotorPwmValues
      *         signal
      */
-    //void getMotorPWMsSpeeds( ) // TODO create getMotorPWMsSpeeds
+    //void getMotorPWMs( ) // TODO create getMotorPWMs
 
     /** @brief Sets the PWM of the motor
      *
@@ -105,7 +106,7 @@ public:
      * @note This function works only when @ref mMotorCtrlMode is
      *       equal to @ref mcDirectPWM, else it does nothing
      */
-    // void setMotorPWMs( quint16 pwmMotor0, quint16 pwmMotor1 );
+    // void setMotorPWMs( quint16 pwmMotor0, quint16 pwmMotor1 ); // TODO create setMotorPWMs
 
     /** @brief Sets motor PID Controllers parameters.
      *
@@ -127,13 +128,13 @@ public:
     /** @brief Gets current board status (@ref BoardStatus)
      *         The reply is received with @ref newBoardStatus
      */
-    void getBoardStatus();
+    void getBoardStatus(); // Tested
 
     /** @brief Sets a new @ref BoardStatus
      *
      * @param status The new status to be set
      */
-    void setBoardStatus( BoardStatus &status );
+    bool setBoardStatus( BoardStatus &status ); // Tested
 
     /** @brief Load the Robot Configuration from ini file
      *         The Robot configuration is not stored on
@@ -192,12 +193,23 @@ public:
     /** @brief Disables the Communication Watchdog
      *         WatchDog if active stops motors if communication is lost
      */
-    //void disableWatchdog();
+    void disableWatchdog();
 
     /** @brief Enables the Communication Watchdog
      *         WatchDog if active stops motors if communication is lost
+     *
+     * @param timeOut_msec if the board does not receive commands by an @ref RoboControllerSDK
+     *                     object stops the motor for security
      */
-    //void enableWatchdog();
+    void enableWatchdog( quint16 timeOut_msec);
+
+    /** @brief Send a request for watchdog time.
+     *         The reply is received with /ref newWatchdogValue
+     *         signal
+     */
+    void getWatchdogTime( );
+
+
 
 protected:
     /// Thread function
@@ -224,7 +236,7 @@ private:
     void updateRobotConfigurationFromDataStream( QDataStream* inStream );
 
     /// Sends a command to TCP server
-    void sendBlockTCP( quint16 msgCode, QVector<quint16> &data );
+    bool sendBlockTCP( quint16 msgCode, QVector<quint16> &data );
 
     /// Sends a command to UDP server
     void sendBlockUDP( QUdpSocket *socket, QHostAddress addr, quint16 port, quint16 msgCode, QVector<quint16> &data, bool waitReply=false );
@@ -280,6 +292,8 @@ signals:
     void newBoardStatus(BoardStatus& status);
     /// Signal emitted when a new Battery Value is available
     void newBatteryValue( double batChargeVal );
+    /// Signal emitted when a new Watchdog value is available
+    void newWatchdogTime( quint64 wd_value );
 
     /// Signal emitted when client takes Robot Control successfully
     void robotControlTaken();
@@ -313,6 +327,8 @@ private:
 
     MotorCtrlMode mMotorCtrlMode; /**< Current motor control mode */
     BoardStatus mBoardStatus; /**< Current board status */
+
+    bool mBoardStatusValid; /**< Indicates if mBoardStatus is valid */
 
     RobotConfiguration mRobotConfig; /**< Configuration of the robot */
 

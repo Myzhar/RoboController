@@ -4,7 +4,7 @@
 #include <QCoreApplication>
 
 #include <network_msg.h>
-#include "modbus_registers.h"
+#include <modbus_registers.h>
 #include <QDateTime>
 #include <QSettings>
 #include <QFile>
@@ -27,8 +27,19 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
     mWatchDogTimeMsec = 1000;
     mMsgCounter = 0;
 
+
+
     // Ping Timer
     connect( &mPingTimer, SIGNAL(timeout()), this, SLOT(onPingTimerTimeout()));
+
+    // >>>>> Default board status
+    mBoardStatusValid = false;
+
+    mBoardStatus.pidEnable = true;
+    mBoardStatus.accelRampEnable = true;
+    mBoardStatus.saveToEeprom = true;
+    mBoardStatus.wdEnable = true;
+    // <<<<< Default board status
 
     // >>>>> TCP Socket
     mTcpSocket = new QTcpSocket(this);
@@ -92,6 +103,9 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
 
     // Start thread
     mStopped = false;
+
+    mPingTimer.setTimerType( Qt::PreciseTimer );
+
     start();
 }
 
@@ -211,6 +225,11 @@ void RoboControllerSDK::connectToTcpServer()
         throw RcException( excTcpNotConnected, tr("It is not possible to find a valid TCP server: %1")
                            .arg(mTcpSocket->errorString() ).toLocal8Bit() );
 
+    // Update Board Status
+    getBoardStatus();
+
+    msleep( 300 );
+
     emit tcpConnected();
 }
 
@@ -319,7 +338,7 @@ void RoboControllerSDK::onTcpReadyRead()
         in >> msgIdx;
 
         QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-        qDebug() << tr("%1 - Received msg #%2").arg(timeStr).arg(msgIdx);
+        //qDebug() << tr("%1 - Received msg #%2").arg(timeStr).arg(msgIdx);
 
         // Datagram Code
         in >> msgCode;
@@ -331,7 +350,7 @@ void RoboControllerSDK::onTcpReadyRead()
             if( !mTcpConnected )
             {
                 mTcpConnected = true;
-                qDebug() << tr("TCP Received msg #%1: MSG_CONNECTED").arg(msgIdx);
+                //qDebug() << tr("TCP Received msg #%1: MSG_CONNECTED").arg(msgIdx);
                 qDebug() << tr( "Server ready: %1").arg(mTcpSocket->localAddress().toString() );
 
                 in >> mBoardIdx;
@@ -355,8 +374,8 @@ void RoboControllerSDK::onTcpReadyRead()
             in>>msg;
             in>>reg;
 
-            qDebug() << tr("TCP Received msg #%1: MSG_FAILED - Command: %2 - Reg: %3")
-                        .arg(msgIdx).arg(msg).arg(reg);
+            //qDebug() << tr("TCP Received msg #%1: MSG_FAILED - Command: %2 - Reg: %3")
+            //.arg(msgIdx).arg(msg).arg(reg);
             break;
         }
 
@@ -368,14 +387,14 @@ void RoboControllerSDK::onTcpReadyRead()
             in>>reg;
             in>>nReg;
 
-            qDebug() << tr("TCP Received msg #%1: MSG_WRITE_OK - StartReg: %2 - Nreg: %3")
-                        .arg(msgIdx).arg(reg).arg(nReg);
+            //qDebug() << tr("TCP Received msg #%1: MSG_WRITE_OK - StartReg: %2 - Nreg: %3")
+            //.arg(msgIdx).arg(reg).arg(nReg);
             break;
         }
 
         case MSG_READ_REPLY:
         {
-            qDebug() << tr("TCP Received msg #%1: MSG_READ_REPLY").arg(msgIdx);
+            //qDebug() << tr("TCP Received msg #%1: MSG_READ_REPLY").arg(msgIdx);
             processReplyMsg( &in );
             break;
         }
@@ -471,7 +490,7 @@ void RoboControllerSDK::onUdpStatusReadyRead()
             in >> msgIdx;
 
             QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-            qDebug() << tr("%1 - UDP Status Received msg #%2 by %3:%4").arg(timeStr).arg(msgIdx).arg(addr.toString()).arg(port);
+            //qDebug() << tr("%1 - UDP Status Received msg #%2 by %3:%4").arg(timeStr).arg(msgIdx).arg(addr.toString()).arg(port);
 
             // Datagram Code
             in >> msgCode;
@@ -492,21 +511,21 @@ void RoboControllerSDK::onUdpStatusReadyRead()
                 in>>reg;
                 in>>nReg;
 
-                qDebug() << tr("UDP Received msg #%1: MSG_WRITE_OK - StartReg: %2 - Nreg: %3")
-                            .arg(msgIdx).arg(reg).arg(nReg);
+                //qDebug() << tr("UDP Received msg #%1: MSG_WRITE_OK - StartReg: %2 - Nreg: %3")
+                //.arg(msgIdx).arg(reg).arg(nReg);
                 break;
             }
 
             case MSG_READ_REPLY:
             {
-                qDebug() << tr("UDP Received msg #%1: MSG_READ_REPLY").arg(msgIdx);
+                //qDebug() << tr("UDP Received msg #%1: MSG_READ_REPLY").arg(msgIdx);
                 processReplyMsg( &in );
                 break;
             }
 
             case MSG_ROBOT_CTRL_OK:
             {
-                qDebug() << tr("UDP Received msg #%1: MSG_ROBOT_CTRL_OK").arg(msgIdx);
+                //qDebug() << tr("UDP Received msg #%1: MSG_ROBOT_CTRL_OK").arg(msgIdx);
 
                 emit robotControlTaken();
                 break;
@@ -514,7 +533,7 @@ void RoboControllerSDK::onUdpStatusReadyRead()
 
             case MSG_ROBOT_CTRL_KO:
             {
-                qDebug() << tr("UDP Received msg #%1: MSG_ROBOT_CTRL_KO").arg(msgIdx);
+                //qDebug() << tr("UDP Received msg #%1: MSG_ROBOT_CTRL_KO").arg(msgIdx);
 
                 emit robotControlNotTaken();
                 break;
@@ -522,7 +541,7 @@ void RoboControllerSDK::onUdpStatusReadyRead()
 
             case MSG_ROBOT_CTRL_RELEASED:
             {
-                qDebug() << tr("UDP Received msg #%1: MSG_ROBOT_CTRL_RELEASED").arg(msgIdx);
+                //qDebug() << tr("UDP Received msg #%1: MSG_ROBOT_CTRL_RELEASED").arg(msgIdx);
 
                 emit robotControlReleased();
                 break;
@@ -530,7 +549,7 @@ void RoboControllerSDK::onUdpStatusReadyRead()
 
             case MSG_RC_NOT_FOUND:
             {
-                qDebug() << tr("UDP Received msg #%1: MSG_RC_NOT_FOUND").arg(msgIdx);
+                //qDebug() << tr("UDP Received msg #%1: MSG_RC_NOT_FOUND").arg(msgIdx);
 
                 // TODO: handle this error
                 break;
@@ -560,8 +579,8 @@ void RoboControllerSDK::processReplyMsg( QDataStream *inStream )
     *inStream >> startAddr;
     *inStream >> nReg;
 
-    qDebug() << tr("WORD: %1 - nReg: %2")
-                .arg(startAddr).arg(nReg);
+    //qDebug() << tr("WORD: %1 - nReg: %2")
+    //            .arg(startAddr).arg(nReg);
 
     quint16 value;
 
@@ -633,7 +652,12 @@ void RoboControllerSDK::processReplyMsg( QDataStream *inStream )
                 else
                     mMotorCtrlMode = mcDirectPWM;
 
+                if( mBoardStatus.wdEnable )
+                    mPingTimer.start( mWatchDogTimeMsec ); // Enable Ping Watchdog timer
+
+                mBoardStatusValid = true;
                 emit newBoardStatus( mBoardStatus );
+
             }
             else
             {
@@ -665,7 +689,16 @@ void RoboControllerSDK::processReplyMsg( QDataStream *inStream )
             quint64 newWd = (quint64)value;
             mWatchDogTimeMsec = newWd - newWd/10;
 
-            qDebug() << tr( "New Board WatchDog Time: %1 msec").arg(mWatchDogTimeMsec);
+            emit newWatchdogTime( newWd );
+
+            //qDebug() << tr( "New Board WatchDog Time: %1 msec").arg(newWd);
+        }
+        else if( startAddr == WORD_ADDRESS_SLAVE )
+        {
+            *inStream >> value;
+            quint64 boardIdx = value;
+
+            // qDebug() << tr( "Board Idx: %1").arg(boardIdx);
         }
         else
             qDebug() << tr("Address %1 not yet handled with nReg=1").arg(startAddr);
@@ -717,9 +750,9 @@ void RoboControllerSDK::processReplyMsg( QDataStream *inStream )
         else
             qDebug() << tr("Address %1 not yet handled with nReg=3").arg(startAddr);
     }
-    else if(nReg==19)
+    else if(nReg==21)
     {
-        if(  startAddr == WORD_ROBOT_DIMENSION_WEIGHT ) // Robot Configuration is stored in 19 consegutive register starting from WORD_ROBOT_DIMENSION_WEIGHT
+        if(  startAddr == WORD_ROBOT_DIMENSION_WEIGHT ) // Robot Configuration is stored in 21 consequtive registers starting from WORD_ROBOT_DIMENSION_WEIGHT
         {
             updateRobotConfigurationFromDataStream( inStream );
 
@@ -806,7 +839,9 @@ void RoboControllerSDK::sendBlockUDP( QUdpSocket *socket, QHostAddress addr, qui
     if(!socket)
         return;
 
-    mPingTimer.start( mWatchDogTimeMsec ); // Restart timer to avoid unuseful Ping
+    if(mWatchDogEnable)
+        mPingTimer.start( mWatchDogTimeMsec ); // Restart timer to avoid unuseful Ping
+
     mUdpPingTimer.start(UDP_PING_TIME_MSEC); // Restart timer to avoid unuseful Ping
 
     QByteArray block;
@@ -842,7 +877,7 @@ void RoboControllerSDK::sendBlockUDP( QUdpSocket *socket, QHostAddress addr, qui
         mLastServerReqTime = time;
 
         QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-        qDebug() << tr("%1 - Sent msg #%2 (Code: %3) over UDP").arg(timeStr).arg(mMsgCounter).arg(msgCode);
+        //qDebug() << tr("%1 - Sent msg #%2 (Code: %3) over UDP").arg(timeStr).arg(mMsgCounter).arg(msgCode);
     }
     mConnMutex.unlock();
 
@@ -859,12 +894,13 @@ void RoboControllerSDK::sendBlockUDP( QUdpSocket *socket, QHostAddress addr, qui
     }
 }
 
-void RoboControllerSDK::sendBlockTCP(quint16 msgCode, QVector<quint16> &data )
+bool RoboControllerSDK::sendBlockTCP(quint16 msgCode, QVector<quint16> &data )
 {
     if(!mTcpSocket)
-        return;
+        return false;
 
-    mPingTimer.start( mWatchDogTimeMsec ); // Restart timer to avoid unuseful Ping
+    if( mWatchDogEnable )
+        mPingTimer.start( mWatchDogTimeMsec ); // Restart timer to avoid unuseful Ping
 
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
@@ -898,8 +934,7 @@ void RoboControllerSDK::sendBlockTCP(quint16 msgCode, QVector<quint16> &data )
         mLastServerReqTime = time;
 
         QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-        //qDebug() << tr("%1 - Sent msg #%2 over TCP").arg(timeStr).arg(mMsgCounter).arg(msgCode);;
-        qDebug() << tr("%1 - Sent msg #%2 (Code: %3) over TCP").arg(timeStr).arg(mMsgCounter).arg(msgCode);
+        //qDebug() << tr("%1 - Sent msg #%2 (Code: %3) over TCP").arg(timeStr).arg(mMsgCounter).arg(msgCode);
     }
     mConnMutex.unlock();
 
@@ -910,7 +945,11 @@ void RoboControllerSDK::sendBlockTCP(quint16 msgCode, QVector<quint16> &data )
         throw RcException( excCommunicationLost, tr("The server does not reply to requests (Timeout: %1 msec). Last error: %2")
                            .arg(SERVER_REPLY_TIMEOUT_MSEC)
                            .arg(mTcpSocket->errorString() ).toLocal8Bit() );
+
+        return false;
     }
+
+    return true;
 }
 
 /// Disables the Communication Watchdog
@@ -989,9 +1028,6 @@ void RoboControllerSDK::run()
 {
     qDebug() << tr("RoboControllerSDK thread started");
 
-    mPingTimer.setTimerType( Qt::PreciseTimer );
-    mPingTimer.start( mWatchDogTimeMsec );
-
     exec();
 
     qDebug() << tr("RoboControllerSDK thread finished");
@@ -1041,11 +1077,13 @@ void RoboControllerSDK::getBoardStatus()
     data << 1;
 
     sendBlockTCP( CMD_RD_MULTI_REG, data );
+
+    mBoardStatusValid = false;
 }
 
-void RoboControllerSDK::setBoardStatus( BoardStatus &status )
+bool RoboControllerSDK::setBoardStatus( BoardStatus &status )
 {
-    quint16 statusVal = 0;
+    quint16 statusVal = 0x0000;
     if(status.accelRampEnable)
         statusVal |= FLG_STATUSBI1_EEPROM_RAMP_EN;
     if(status.pidEnable)
@@ -1064,7 +1102,16 @@ void RoboControllerSDK::setBoardStatus( BoardStatus &status )
     data << (quint16)WORD_STATUSBIT1;
     data << statusVal;
 
-    sendBlockTCP( CMD_WR_MULTI_REG, data );
+    bool ok = sendBlockTCP( CMD_WR_MULTI_REG, data );
+
+    if( ok )
+    {
+        mBoardStatus = status;
+        mBoardStatusValid = true;
+    }
+    else
+        mBoardStatusValid = false;
+    return ok;
 }
 
 void RoboControllerSDK::getMotorPidGains( quint16 motorIdx )
@@ -1104,7 +1151,6 @@ void RoboControllerSDK::setMotorPWM(quint16 motorIdx, int pwm )
     QVector<quint16> data;
     data << address;
     //data << (quint16)nReg; <- Not requested by sendCommand!!!
-
     data << pwm;
 
     //sendBlockTCP( mUdpControlSocket, CMD_WR_MULTI_REG, data );
@@ -1229,7 +1275,7 @@ void RoboControllerSDK::onPingTimerTimeout()
 
     quint64 elapsed = QDateTime::currentDateTime().toMSecsSinceEpoch() - mLastServerReqTime;
 
-    qDebug() << tr(" Ping WatchDog - Elapsed: %1").arg(elapsed);
+    qDebug() << tr(" Ping RC WatchDog - Elapsed: %1").arg(elapsed);
 
     sendBlockTCP( CMD_RD_MULTI_REG, pingData );
 }
@@ -1305,7 +1351,7 @@ void RoboControllerSDK::getRobotConfigurationFromEeprom( )
     // >>>>> Robot Configuration Data
     QVector<quint16> data;
     data << (quint16)WORD_ROBOT_DIMENSION_WEIGHT;
-    data << 19; // Only one register
+    data << 21; // 21 Registers!!!
 
     sendBlockTCP( CMD_RD_MULTI_REG, data );
     // <<<<< Robot Configuration Data
@@ -1375,6 +1421,8 @@ void RoboControllerSDK::saveRobotConfigurationToIni( QString iniFile )
 void RoboControllerSDK::setRobotConfiguration( RobotConfiguration& roboConfig )
 {
     memcpy( &mRobotConfig, &roboConfig, sizeof(RobotConfiguration) );
+
+    // TODO Send RobotConfiguration to RoboController!!!!!!!!!
 }
 
 void RoboControllerSDK::getRobotControl()
@@ -1393,13 +1441,14 @@ void RoboControllerSDK::getBatteryChargeValue()
 {
     QVector<quint16> data;
     data << (quint16)WORD_TENSIONE_ALIM;
+    data << 1; // Just a register
 
     sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, true );
 }
 
 void RoboControllerSDK::setBatteryCalibrationParams( AnalogCalibValue valueType, double curChargeVal)
 {
-    quint16 charVal = (quint16)(curChargeVal*1000.0);
+    quint16 charVal = (quint16)(curChargeVal*100.0);
 
     QVector<quint16> data;
     data << (quint16)WORD_VAL_TAR_FS;
@@ -1415,6 +1464,61 @@ void RoboControllerSDK::setBatteryCalibrationParams( AnalogCalibValue valueType,
     sendBlockTCP( CMD_WR_MULTI_REG, data );
 
     msleep(500);
+}
+
+void RoboControllerSDK::enableWatchdog( quint16 timeOut_msec )
+{
+    mPingTimer.stop();
+
+    mWatchDogTimeMsec = timeOut_msec;
+
+    if( !mBoardStatusValid )
+    {
+        mBoardStatus.pidEnable = true;
+        mBoardStatus.accelRampEnable = true;
+        mBoardStatus.saveToEeprom = true;
+    }
+
+    mBoardStatus.wdEnable = true;
+
+    setBoardStatus( mBoardStatus );
+
+    msleep( 100 );
+
+    QVector<quint16> data;
+    data << (quint16)WORD_COMWATCHDOG_TIME;
+    data << timeOut_msec;
+    if( sendBlockTCP( CMD_WR_MULTI_REG, data ) )
+    {
+        msleep( 100 );
+
+        // Update board status from EEPROM
+        getBoardStatus();
+    }
+}
+
+void RoboControllerSDK::getWatchdogTime( )
+{
+    QVector<quint16> data;
+    data << (quint16)WORD_COMWATCHDOG_TIME;
+    data << 1;
+
+    sendBlockTCP( CMD_RD_MULTI_REG, data );
+}
+
+void RoboControllerSDK::disableWatchdog( )
+{
+    mPingTimer.stop();
+
+    if( !mBoardStatusValid )
+    {
+        mBoardStatus.pidEnable = true;
+        mBoardStatus.accelRampEnable = true;
+        mBoardStatus.saveToEeprom = true;
+    }
+    mBoardStatus.wdEnable = false;
+
+    setBoardStatus( mBoardStatus );
 }
 
 void RoboControllerSDK::saveRobotConfigurationToEeprom( )
@@ -1466,8 +1570,13 @@ void RoboControllerSDK::saveRobotConfigurationToEeprom( )
 
 void RoboControllerSDK::onUdpTestTimerTimeout()
 {
-    QVector<quint16> vec;
-    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, vec, true );
+    QVector<quint16> pingData;
+    pingData << (quint16)WORD_ADDRESS_SLAVE;
+    pingData << 1; // Only one register
+
+    qDebug() << tr("Ping UDP");
+
+    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, pingData, true );
 }
 
 

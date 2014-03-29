@@ -322,8 +322,6 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         {
             qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
         }
-
-
     }
     else if( event->timerId() == mSpeedsReqTimer )
     {
@@ -440,7 +438,6 @@ void CMainWindow::onConnectButtonClicked()
     try
     {
         mRoboCtrl->getRobotConfigurationFromEeprom();
-
     }
     catch( RcException &e)
     {
@@ -450,7 +447,7 @@ void CMainWindow::onConnectButtonClicked()
     }
     // <<<<< Requesting Robot Configuration
 
-     QThread::msleep( 250 );
+    QThread::msleep( 250 );
 
     // >>>>> Requesting Robot Configuration
     try
@@ -465,14 +462,16 @@ void CMainWindow::onConnectButtonClicked()
     }
     // <<<<< Requesting Robot Configuration
 
+
+    // >>>>> Taking robot control
+    mRoboCtrl->getRobotControl();
+    // <<<<< Taking robot control
+
     ui->actionRobot_Configuration->setEnabled(true);
     ui->actionBattery_Calibration->setEnabled(true);
     mStatusLabel->setText( tr("Connected to robot on IP: %1").arg(mRobIpAddress) );
 
-    mSpeedSendTimer = this->startTimer( 30, Qt::PreciseTimer );
-    mSpeedsReqTimer = this->startTimer( 50, Qt::PreciseTimer );
-    mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
-    mFrameReqTimer = this->startTimer( 100, Qt::PreciseTimer );
+
 
     mPushButtonFindServer->setEnabled(false);
     mPushButtonConnect->setEnabled(false);
@@ -487,6 +486,8 @@ void CMainWindow::onConnectButtonClicked()
              this, SLOT(onNewImage()) );
     // <<<<< Webcam Client */
 #endif
+
+    startTimers();
 }
 
 void CMainWindow::onNewMotorSpeeds( double speed0, double speed1 )
@@ -611,10 +612,28 @@ void CMainWindow::on_actionPidEnabled_triggered()
     }
 }
 
+void CMainWindow::stopTimers()
+{
+    this->killTimer( mSpeedSendTimer );
+    this->killTimer( mSpeedsReqTimer );
+    this->killTimer( mStatusReqTimer );
+    this->killTimer( mFrameReqTimer );
+}
+
+void CMainWindow::startTimers()
+{
+    mSpeedSendTimer = this->startTimer( 30, Qt::PreciseTimer );
+    mSpeedsReqTimer = this->startTimer( 50, Qt::PreciseTimer );
+    mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
+    mFrameReqTimer = this->startTimer( 100, Qt::PreciseTimer );
+}
+
 void CMainWindow::on_actionRobot_Configuration_triggered()
 {
     if(!mRoboCtrl)
         return;
+
+    stopTimers();
 
     mOpenRobotConfig = true;
 
@@ -659,6 +678,8 @@ void CMainWindow::onNewRobotConfiguration( RobotConfiguration& robConf )
                 qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
             }
         }
+
+        startTimers();
     }
 
     mStatusBattLevelProgr->setRange( mRoboConf.MinChargedBatteryLevel, mRoboConf.MaxChargedBatteryLevel );
@@ -668,14 +689,14 @@ void CMainWindow::onNewBatteryValue( double battVal )
 {
     mBatteryLabel->setText( tr("Battery: %1V/%2V")
                             .arg( battVal, 5,'f', 2, ' ' )
-                            .arg( (double)(mRoboConf.MaxChargedBatteryLevel)/1000.0f, 5,'f', 2, ' ' ));
+                            .arg( (double)(mRoboConf.MaxChargedBatteryLevel)/100.0f, 5,'f', 2, ' ' ));
 
-    mStatusBattLevelProgr->setValue( (int)(battVal*1000.0) );
+    mStatusBattLevelProgr->setValue( (int)(battVal*100.0) );
 
     double min = mStatusBattLevelProgr->minimum();
     double max = mStatusBattLevelProgr->maximum();
 
-    double perc = (max-min)/(battVal*1000.0);
+    double perc = (max-min)/(battVal*100.0);
 
     mStatusBattLevelProgr->setProperty("defaultStyleSheet",
                                        mStatusBattLevelProgr->styleSheet());

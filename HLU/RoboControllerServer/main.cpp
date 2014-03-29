@@ -57,11 +57,11 @@ int main(int argc, char *argv[])
             qDebug() << QObject::tr("Control Server has been correctly started.");
         }
 
-        QWebcamServer* webcamServer = new QWebcamServer(0, 55554, 55555, 512, 5, NULL );
+        /*QWebcamServer* webcamServer = new QWebcamServer(0, 55554, 55555, 512, 5, NULL );
         if( webcamServer->isRunning() )
         {
             qDebug() << QObject::tr("Webcam Server has been correctly started.");
-        }
+        }//*/
     }
     catch(roboctrl::RcException &e)
     {

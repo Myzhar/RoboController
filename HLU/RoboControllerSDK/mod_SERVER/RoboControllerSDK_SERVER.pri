@@ -15,8 +15,10 @@ HEADERS += \
 
 CONFIG(opencv) {
     HEADERS += \
-        $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/qwebcamserver.h
+        $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/qwebcamserver.h \
+        $$ROBOCONTROLLERSDKPATH/mod_SERVER/include/qwebcamclient.h
 
     SOURCES += \
-        $$ROBOCONTROLLERSDKPATH/mod_SERVER/src/qwebcamserver.cpp
+        $$ROBOCONTROLLERSDKPATH/mod_SERVER/src/qwebcamserver.cpp \
+        $$ROBOCONTROLLERSDKPATH/mod_SERVER/src/qwebcamclient.cpp
 }

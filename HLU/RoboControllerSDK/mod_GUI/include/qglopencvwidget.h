@@ -2,6 +2,7 @@
 #define CQTOPENCVVIEWERGL_H
 
 #include <QGLWidget>
+
 #include <opencv2/core/core.hpp>
 
 class QGlOpenCVWidget : public QGLWidget

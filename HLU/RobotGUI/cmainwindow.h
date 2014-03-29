@@ -68,6 +68,9 @@ protected:
 
     virtual void timerEvent( QTimerEvent* event ) Q_DECL_OVERRIDE;
 
+    void stopTimers();
+    void startTimers();
+
 private:
     Ui::CMainWindow *ui;
 

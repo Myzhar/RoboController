@@ -25,11 +25,13 @@ HEADERS += \
 android {
             message(Android GUI)
 } else {
-    HEADERS += \
+    CONFIG(opencv) {
+        HEADERS += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qglopencvwidget.h
 
-    SOURCES += \
+        SOURCES += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qglopencvwidget.cpp
+    }
 }
 
 FORMS    += \

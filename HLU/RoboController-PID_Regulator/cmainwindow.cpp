@@ -12,7 +12,7 @@
 CMainWindow::CMainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::CMainWindow),
-    mTcpServerPort(4500),
+    mTcpServerPort(14500),
     mTcpServerAddr(tr("localhost")),
     mSettings(INI_FILE,QSettings::IniFormat),
     mRcComm(NULL)
@@ -491,7 +491,8 @@ void CMainWindow::on_action_Connect_TCP_Server_triggered()
 
     try
     {
-        mRcComm = new RoboControllerSDK( 4550, 4560, mTcpServerAddr, mTcpServerPort );
+        //mRcComm = new RoboControllerSDK( 4550, 4560, mTcpServerAddr, mTcpServerPort );
+        mRcComm = new RoboControllerSDK( mTcpServerAddr, 14550,14555,14560,mTcpServerPort );
 
         connect( mRcComm, SIGNAL(tcpConnected()),
                  this, SLOT(onSdkServerConnected()));
@@ -539,7 +540,7 @@ void CMainWindow::onSdkServerConnected()
 
     try
     {
-        mRcComm->setCommMode( cmConfiguration );
+        //mRcComm->setCommMode( cmConfiguration );
         mRcComm->getMotorPidGains( 0 );
         mRcComm->getMotorPidGains( 1 );
         mRcComm->getBoardStatus();

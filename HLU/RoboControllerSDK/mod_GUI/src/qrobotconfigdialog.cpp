@@ -6,9 +6,6 @@
 
 #include <loghandler.h>
 
-
-//#define REG_COUNT 19
-
 namespace roboctrl
 {
 
@@ -66,8 +63,8 @@ QRobotConfigDialog::QRobotConfigDialog( RobotConfiguration& robotConfig, QWidget
     ui->lineEdit_robot_weight->setText( tr("%1").arg(mRobotConfig.Weight));
     ui->lineEdit_robot_wheelbase->setText( tr("%1").arg(mRobotConfig.WheelBase));
     ui->lineEdit_robot_width->setText( tr("%1").arg(mRobotConfig.Width));
-    ui->lineEdit_robot_max_batt_charge->setText( tr("%1").arg((double)(mRobotConfig.MaxChargedBatteryLevel)/1000.0));
-    ui->lineEdit_robot_min_batt_charge->setText( tr("%1").arg((double)(mRobotConfig.MinChargedBatteryLevel)/1000.0));
+    ui->lineEdit_robot_max_batt_charge->setText( tr("%1").arg((double)(mRobotConfig.MaxChargedBatteryLevel)/100.0));
+    ui->lineEdit_robot_min_batt_charge->setText( tr("%1").arg((double)(mRobotConfig.MinChargedBatteryLevel)/100.0));
 
     ui->lineEdit_robot_cpr_left->setInputMethodHints(Qt::ImhDigitsOnly);
     ui->lineEdit_robot_cpr_right->setInputMethodHints(Qt::ImhDigitsOnly);
@@ -125,8 +122,8 @@ void QRobotConfigDialog::on_buttonBox_accepted()
     mRobotConfig.WheelBase = ui->lineEdit_robot_wheelbase->text().toInt();
     mRobotConfig.Width = ui->lineEdit_robot_width->text().toInt();
 
-    mRobotConfig.MaxChargedBatteryLevel = (quint16)(ui->lineEdit_robot_max_batt_charge->text().toDouble()*1000.0);
-    mRobotConfig.MinChargedBatteryLevel = (quint16)(ui->lineEdit_robot_min_batt_charge->text().toDouble()*1000.0);
+    mRobotConfig.MaxChargedBatteryLevel = (quint16)(ui->lineEdit_robot_max_batt_charge->text().toDouble()*100.0);
+    mRobotConfig.MinChargedBatteryLevel = (quint16)(ui->lineEdit_robot_min_batt_charge->text().toDouble()*100.0);
 
     emit accepted();
 }
