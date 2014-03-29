@@ -76,6 +76,12 @@ unsigned int LeggiWord(unsigned int Address)
         case WORD_ROBOT_GEARBOX_RATIO_MOTOR_LEFT    :   return((unsigned int )ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_LEFT]);
         case WORD_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT   :   return((unsigned int )ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT]);
 
+
+        case WORD_ROBOT_CHARGED_BATT                :   return((unsigned int )ParametriEEPROM[EEPROM_MODBUS_ROBOT_CHARGED_BATT]);
+        case WORD_ROBOT_DISCHARGED_BATT             :   return((unsigned int )ParametriEEPROM[EEPROM_MODBUS_ROBOT_DISCHARGED_BATT]);
+
+
+
 /* *****************************************************************************
  WORD MODBUS USATE PER LA CONFIGURAZIONE DEL PID, MAPPATE DALL'INDIRIZZO 250
   ******************************************************************************/
@@ -237,23 +243,23 @@ unsigned char ScriviWord(unsigned int Address,unsigned int Word)
                                                         }
                                                         break;
         case WORD_ROBOT_MOTOR_IMAX_RIGHT            :   ParametriEEPROM[EEPROM_MODBUS_ROBOT_MOTOR_IMAX_RIGHT] = Word;
-                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN)
-                                                        {   DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_MOTOR_IMAX_RIGHT], EEPROM_MODBUS_ROBOT_MOTOR_IMAX_RIGHT);
+                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN) {
+                                                            DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_MOTOR_IMAX_RIGHT], EEPROM_MODBUS_ROBOT_MOTOR_IMAX_RIGHT);
                                                         }
                                                         break;
         case WORD_ROBOT_MOTOR_TORQUEMAX_LEFT        :   ParametriEEPROM[EEPROM_MODBUS_ROBOT_MOTOR_TORQUEMAX_LEFT] = Word;
-                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN)
-                                                        {   DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_MOTOR_TORQUEMAX_LEFT], EEPROM_MODBUS_ROBOT_MOTOR_TORQUEMAX_LEFT);
+                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN) {
+                                                            DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_MOTOR_TORQUEMAX_LEFT], EEPROM_MODBUS_ROBOT_MOTOR_TORQUEMAX_LEFT);
                                                         }
                                                         break;
         case WORD_ROBOT_MOTOR_TORQUEMAX_RIGHT       :   ParametriEEPROM[EEPROM_MODBUS_ROBOT_MOTOR_TORQUEMAX_RIGHT] = Word;
-                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN)
-                                                        {   DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_MOTOR_TORQUEMAX_RIGHT], EEPROM_MODBUS_ROBOT_MOTOR_TORQUEMAX_RIGHT);
+                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN) {
+                                                            DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_MOTOR_TORQUEMAX_RIGHT], EEPROM_MODBUS_ROBOT_MOTOR_TORQUEMAX_RIGHT);
                                                         }
                                                         break;
         case WORD_ROBOT_GEARBOX_RATIO_AXE_LEFT      :   ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_AXE_LEFT] = Word;
-                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN)
-                                                        {   DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_AXE_LEFT], EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_AXE_LEFT);
+                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN) {
+                                                            DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_AXE_LEFT], EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_AXE_LEFT);
                                                         }
                                                         break;
         case WORD_ROBOT_GEARBOX_RATIO_AXE_RIGHT     :   ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_AXE_RIGHT] = Word;
@@ -262,15 +268,27 @@ unsigned char ScriviWord(unsigned int Address,unsigned int Word)
                                                         }
                                                         break;
         case WORD_ROBOT_GEARBOX_RATIO_MOTOR_LEFT    :   ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_LEFT] = Word;
-                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN)
-                                                        {   DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_LEFT], EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_LEFT);
+                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN) {
+                                                            DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_LEFT], EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_LEFT);
                                                         }
                                                         break;
         case WORD_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT   :   ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT] = Word;
-                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN)
-                                                        {   DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT], EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT);
+                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN) {
+                                                            DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT], EEPROM_MODBUS_ROBOT_GEARBOX_RATIO_MOTOR_RIGHT);
                                                         }
                                                         break;
+        case WORD_ROBOT_CHARGED_BATT                :   ParametriEEPROM[EEPROM_MODBUS_ROBOT_CHARGED_BATT] = Word;
+                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN) {
+                                                            DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_CHARGED_BATT], EEPROM_MODBUS_ROBOT_CHARGED_BATT);
+                                                        }
+                                                        break;
+        case WORD_ROBOT_DISCHARGED_BATT             :   ParametriEEPROM[EEPROM_MODBUS_ROBOT_DISCHARGED_BATT] = Word;
+                                                        if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_SAVE_EN) {
+                                                            DataEEWrite(ParametriEEPROM[EEPROM_MODBUS_ROBOT_DISCHARGED_BATT], EEPROM_MODBUS_ROBOT_DISCHARGED_BATT);
+                                                        }
+                                                        break;
+
+
 
 /* *****************************************************************************
  WORD MODBUS USATE PER LA CONFIGURAZIONE DEL PID, MAPPATE DALL'INDIRIZZO 250

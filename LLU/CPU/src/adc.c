@@ -314,8 +314,9 @@ unsigned int TaraturaAnalogiche(unsigned int FlagTaratura)
  *  ***************************************************************************
  */
 
-void _ISR_PSV _DMA7Interrupt(void)	// DMA for ADC
-{   // A seconda di quale buffer è pronto chiamo MediaADC passandogli quello
+void _ISR_PSV _DMA7Interrupt(void) {	// DMA for ADC
+    InterruptTest11++;
+    // A seconda di quale buffer è pronto chiamo MediaADC passandogli quello
     // giusto come argomento.
     _DMA7IF = 0;	// interrupt flag reset
     
@@ -325,6 +326,6 @@ void _ISR_PSV _DMA7Interrupt(void)	// DMA for ADC
         MediaADC(&IngressiAnalogici[0], DmaAdc_B);
    
     DmaBuffer ^= 1;
-
-    
+    InterruptTest11--;
 }
+
