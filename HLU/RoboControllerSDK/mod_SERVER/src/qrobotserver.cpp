@@ -1054,9 +1054,9 @@ void QRobotServer::onUdpControlReadyRead()
 
                 // >>>>> Control taken test
                 // Before sending the control command to Robocontroller we must test
-                // if the client has the control of the robot. If not we send the information
+                // if the client has the control of the robot. If we not send the information
                 // to the client using the UDP Status Socket
-                if(addr.toString()!=mControllerClientIp) // The client has no control of the robot
+                if(addr.toString()!= mControllerClientIp) // The client has no control of the robot
                 {
                     QVector<quint16> vec;
                     sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_KO, vec ); // Robot not controlled by client

@@ -70,6 +70,8 @@ CONFIG(opencv)
             $$OPENCV_LIB_PATH/liblibtiff.a \
             $$OPENCV_LIB_PATH/liblibjasper.a \
             $$OPENCV_LIB_PATH/libtbb.a
+
+        CONFIG+=link_pkgconfig PKGCONFIG+=opencv
     }
 
     linux {

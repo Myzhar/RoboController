@@ -162,6 +162,42 @@ CMainWindow::CMainWindow(QWidget *parent) :
     mStatusBattLevelProgr->setTextVisible(false);
     // <<<<< Status Bar
 
+    // >>>>> Fonts
+    int fontPx = COMMON->mScreen.cvtMm2Px( 3 );
+
+#ifndef ANDROID
+    QFont font = this->font( );
+#else
+    QFont font("Roboto");
+#endif
+    font.setPixelSize( fontPx );
+    mStatusLabel->setFont( font );
+    mBatteryLabel->setFont( font );
+    mPushButtonConnect->setFont( font );
+    mPushButtonFindServer->setFont( font );
+    mRobIpLineEdit->setFont( font );
+
+#ifndef ANDROID
+    QFont unitFont("Monospace");
+#else
+    QFont unitFont("Roboto");
+#endif
+
+    unitFont.setStyleHint(QFont::TypeWriter);
+    fontPx = COMMON->mScreen.cvtMm2Px( 3 );
+    unitFont.setPixelSize( fontPx );
+    ui->label_fw_speed->setFont( unitFont );
+    ui->label_rot_speed->setFont( unitFont );
+
+    fontPx = COMMON->mScreen.cvtMm2Px( 2 );
+    font.setPixelSize( fontPx );
+    font.setBold( QFont::Normal);
+    ui->label_PID_status->setFont( font );
+    ui->label_ramp_status->setFont( font );
+    ui->label_WD_status->setFont( font );
+    ui->label_save_EEPROM_status->setFont( font );
+    // <<<<< Fonts
+
     connect( mPushButtonConnect, SIGNAL(clicked()),
              this, SLOT(onConnectButtonClicked()) );
     connect( mPushButtonFindServer, SIGNAL(clicked()),
@@ -251,6 +287,26 @@ void CMainWindow::timerEvent( QTimerEvent* event )
             //qDebug() << tr("Motor PWMs: (%1,%2)").arg(motSx).arg(motDx);
         }
     }
+    else if( event->timerId() == mFrameReqTimer )
+    {
+        if( !mWebcamClient )
+            return;
+
+        qDebug() << Q_FUNC_INFO <<  "mFrameReqTimer";
+
+        if( mWebcamClient!=NULL && mNewImageAvailable   )
+        {
+            if( mWebcamClient )
+            {
+                mNewImageAvailable = false;
+                cv::Mat frame = mWebcamClient->getLastFrame();
+                //cv::imshow( "Received Frame", frame );
+#ifndef ANDROID
+                mOpenCVWidget->showImage(frame);
+#endif
+            }
+        }
+    }
     else if( event->timerId() == mStatusReqTimer )
     {
         if(!mRoboCtrl)
@@ -269,25 +325,8 @@ void CMainWindow::timerEvent( QTimerEvent* event )
 
 
     }
-    else if( event->timerId() == mFastUpdateTimer )
+    else if( event->timerId() == mSpeedsReqTimer )
     {
-        qDebug() << Q_FUNC_INFO <<  "mFastUpdateTimer";
-
-        if( mWebcamClient!=NULL && mNewImageAvailable   )
-        {
-            if( mWebcamClient )
-            {
-                mNewImageAvailable = false;
-                cv::Mat frame = mWebcamClient->getLastFrame();
-                //cv::imshow( "Received Frame", frame );
-#ifndef ANDROID
-                mOpenCVWidget->showImage(frame);
-#endif
-            }
-
-            //cv::waitKey(1);
-        }
-
         if(!mRoboCtrl)
             return;
 
@@ -313,26 +352,6 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
     int jw = COMMON->mScreen.cvtMm2Px(30); // Joypad sized 3 cm
     ui->widget_joypad->setFixedWidth( jw );
     ui->widget_joypad->setFixedHeight( jw );
-
-    int fontPx = COMMON->mScreen.cvtMm2Px( 3 );
-    QFont font = this->font();
-    font.setPixelSize( fontPx );
-    this->setFont( font );
-
-    QFont unitFont("Monospace");
-    unitFont.setStyleHint(QFont::TypeWriter);
-    fontPx = COMMON->mScreen.cvtMm2Px( 3 );
-    unitFont.setPixelSize( fontPx );
-    ui->label_fw_speed->setFont( unitFont );
-    ui->label_rot_speed->setFont( unitFont );
-
-    fontPx = COMMON->mScreen.cvtMm2Px( 2 );
-    font.setPixelSize( fontPx );
-    font.setBold( QFont::Normal);
-    ui->label_PID_status->setFont( font );
-    ui->label_ramp_status->setFont( font );
-    ui->label_WD_status->setFont( font );
-    ui->label_save_EEPROM_status->setFont( font );
 }
 
 void CMainWindow::onFindServerButtonClicked()
@@ -451,14 +470,15 @@ void CMainWindow::onConnectButtonClicked()
     mStatusLabel->setText( tr("Connected to robot on IP: %1").arg(mRobIpAddress) );
 
     mSpeedSendTimer = this->startTimer( 30, Qt::PreciseTimer );
-    mFastUpdateTimer = this->startTimer( 50, Qt::PreciseTimer );
+    mSpeedsReqTimer = this->startTimer( 50, Qt::PreciseTimer );
     mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
+    mFrameReqTimer = this->startTimer( 100, Qt::PreciseTimer );
 
     mPushButtonFindServer->setEnabled(false);
     mPushButtonConnect->setEnabled(false);
 
+#ifndef ANDROID
     // >>>>> Webcam Client
-
     QCoreApplication::processEvents( QEventLoop::AllEvents, 500 );
 
     mWebcamClient = new QWebcamClient( mRobIpAddress, 55554, 55555, this );
@@ -466,6 +486,7 @@ void CMainWindow::onConnectButtonClicked()
     connect( mWebcamClient, SIGNAL(newImageReceived()),
              this, SLOT(onNewImage()) );
     // <<<<< Webcam Client */
+#endif
 }
 
 void CMainWindow::onNewMotorSpeeds( double speed0, double speed1 )

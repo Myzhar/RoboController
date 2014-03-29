@@ -106,8 +106,9 @@ private:
     float mMaxMotorSpeed; /*!< Max linear speed for each motor */
 
     int mSpeedSendTimer; /*!< Timer to read Joypad position and send related speed to Robot */
-    int mFastUpdateTimer; /*!< Timer to request speeds of the motors to Server */
+    int mSpeedsReqTimer; /*!< Timer to request speeds of the motors to Server */
     int mStatusReqTimer; /*!< Timer to request status of the robot to server */
+    int mFrameReqTimer; /*!< Timer to request frame to Webcam server */
 
     float mJoyMotSx; /*!< Value of the joypad related to left motor */
     float mJoyMotDx; /*!< Valut of the joypad realted to right motor */
