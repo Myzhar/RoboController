@@ -33,6 +33,32 @@ CMainWindow::CMainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    mOpenCVWidget = NULL;
+
+    // >>>>> Video Widget
+#ifdef ANDROID
+    //TODO add widget OpenCV not OpenGL
+#else
+    mOpenCVWidget = new QGlOpenCVWidget( this );
+    mOpenCVWidget->setSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+    ((QGridLayout*)(this->centralWidget()->layout()))->addWidget(mOpenCVWidget,0,0);
+
+    ui->widget_video_container->setLayout( new QGridLayout(ui->widget_video_container) );
+    ui->widget_video_container->layout()->setContentsMargins(0,0,0,0);
+    ui->widget_video_container->layout()->addWidget(mOpenCVWidget);
+
+#endif
+    // <<<<< Video Widget
+
+    // >>>>> Board Status Widgets
+    QPalette pal = ui->widget_PID_status->palette();
+    pal.setColor( QPalette::Window, Qt::gray );
+    ui->widget_PID_status->setPalette( pal );
+    ui->widget_ramp_status->setPalette( pal );
+    ui->widget_save_EEPROM_status->setPalette( pal );
+    ui->widget_WD_status->setPalette( pal );
+    // >>>>> Board Status Widgets
+
     // >>>>> File INI
     QString iniPath;
 
@@ -104,6 +130,9 @@ CMainWindow::CMainWindow(QWidget *parent) :
     // <<<<< PID State from INI File
 
     // >>>>> Main Toolbar
+    mPushButtonFindServer = new QPushButton( tr("Find Server"), ui->mainToolBar );
+    ui->mainToolBar->addWidget( mPushButtonFindServer );
+
     QLabel* lab = new QLabel(tr("TCP address:"));
     ui->mainToolBar->addWidget( lab );
     mRobIpLineEdit = new QLineEdit( mRobIpAddress, ui->mainToolBar );
@@ -116,8 +145,7 @@ CMainWindow::CMainWindow(QWidget *parent) :
     mPushButtonConnect = new QPushButton( tr("Connect"), ui->mainToolBar );
     ui->mainToolBar->addWidget( mPushButtonConnect );
 
-    mPushButtonFindServer = new QPushButton( tr("Find Server"), ui->mainToolBar );
-    ui->mainToolBar->addWidget( mPushButtonFindServer );
+
     mPushButtonFindServer->setDefault(true);
     mPushButtonFindServer->setFocus();
     // <<<<< Main Toolbar
@@ -180,6 +208,8 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         if(!mRoboCtrl)
             return;
 
+        qDebug() << Q_FUNC_INFO <<  "mSpeedSendTimer";
+
         float scale = ui->widget_joypad->getMaxAbsAxisValue();
 
         if(mPidEnabled)
@@ -222,9 +252,11 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         }
     }
     else if( event->timerId() == mStatusReqTimer )
-    {        
+    {
         if(!mRoboCtrl)
             return;
+
+        qDebug() << Q_FUNC_INFO <<  "mStatusReqTimer";
 
         try
         {
@@ -237,14 +269,21 @@ void CMainWindow::timerEvent( QTimerEvent* event )
 
 
     }
-    else if( event->timerId() == mSpeedReqTimer )
+    else if( event->timerId() == mFastUpdateTimer )
     {
+        qDebug() << Q_FUNC_INFO <<  "mFastUpdateTimer";
+
         if( mWebcamClient!=NULL && mNewImageAvailable   )
         {
-            mNewImageAvailable = false;
-            cv::Mat frame = mWebcamClient->getLastFrame();
-            //cv::imshow( "Received Frame", frame );
-            ui->widget_video->showImage(frame);
+            if( mWebcamClient )
+            {
+                mNewImageAvailable = false;
+                cv::Mat frame = mWebcamClient->getLastFrame();
+                //cv::imshow( "Received Frame", frame );
+#ifndef ANDROID
+                mOpenCVWidget->showImage(frame);
+#endif
+            }
 
             //cv::waitKey(1);
         }
@@ -256,9 +295,6 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         {
             try
             {
-                //mRoboCtrl->getMotorSpeed( 0 );
-                //mRoboCtrl->getMotorSpeed( 1 );
-
                 mSpeedRequested = true;
                 mRoboCtrl->getMotorSpeeds();
             }
@@ -289,6 +325,14 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
     unitFont.setPixelSize( fontPx );
     ui->label_fw_speed->setFont( unitFont );
     ui->label_rot_speed->setFont( unitFont );
+
+    fontPx = COMMON->mScreen.cvtMm2Px( 2 );
+    font.setPixelSize( fontPx );
+    font.setBold( QFont::Normal);
+    ui->label_PID_status->setFont( font );
+    ui->label_ramp_status->setFont( font );
+    ui->label_WD_status->setFont( font );
+    ui->label_save_EEPROM_status->setFont( font );
 }
 
 void CMainWindow::onFindServerButtonClicked()
@@ -365,18 +409,40 @@ void CMainWindow::onConnectButtonClicked()
     }
     catch( RcException &e)
     {
-        qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+        qWarning() << tr("setBoardStatus Exception error: %1").arg(e.getExcMessage() );
+        QMessageBox::warning( this, tr("Communication Error"), tr("There was an error configuring Robot communication.\rPlease try again to connect."));
+        return;
     }
     // <<<<< Setting last PID state
+
+    QThread::msleep( 250 );
 
     // >>>>> Requesting Robot Configuration
     try
     {
         mRoboCtrl->getRobotConfigurationFromEeprom();
+
     }
     catch( RcException &e)
     {
-        qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+        qWarning() << tr("getRobotConfigurationFromEeprom Exception error: %1").arg(e.getExcMessage() );
+        QMessageBox::warning( this, tr("Communication Error"), tr("There was an error retrieving Robot configuration.\rPlease try again to connect."));
+        return;
+    }
+    // <<<<< Requesting Robot Configuration
+
+     QThread::msleep( 250 );
+
+    // >>>>> Requesting Robot Configuration
+    try
+    {
+        mRoboCtrl->getBoardStatus();
+    }
+    catch( RcException &e)
+    {
+        qWarning() << tr("getBoardStatus Exception error: %1").arg(e.getExcMessage() );
+        QMessageBox::warning( this, tr("Communication Error"), tr("There was an error retrieving RoboController configuration.\rPlease try again to connect."));
+        return;
     }
     // <<<<< Requesting Robot Configuration
 
@@ -385,7 +451,7 @@ void CMainWindow::onConnectButtonClicked()
     mStatusLabel->setText( tr("Connected to robot on IP: %1").arg(mRobIpAddress) );
 
     mSpeedSendTimer = this->startTimer( 30, Qt::PreciseTimer );
-    mSpeedReqTimer = this->startTimer( 50, Qt::PreciseTimer );
+    mFastUpdateTimer = this->startTimer( 50, Qt::PreciseTimer );
     mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
 
     mPushButtonFindServer->setEnabled(false);
@@ -399,9 +465,7 @@ void CMainWindow::onConnectButtonClicked()
 
     connect( mWebcamClient, SIGNAL(newImageReceived()),
              this, SLOT(onNewImage()) );
-
-    //mWebcamClient->connectToServer(55555,55554);
-    // <<<<< Webcam Client
+    // <<<<< Webcam Client */
 }
 
 void CMainWindow::onNewMotorSpeeds( double speed0, double speed1 )
@@ -467,19 +531,47 @@ void CMainWindow::onNewJoypadValues(float x, float y)
 
     mJoyMotSx = y - x;
     mJoyMotDx = y + x;
+}
 
+void CMainWindow::onNewBoardStatus(BoardStatus& status)
+{
+    QPalette pal;
+    pal = ui->widget_PID_status->palette();
 
+    if(status.pidEnable)
+        pal.setColor( QPalette::Window, Qt::green );
+    else
+        pal.setColor( QPalette::Window, Qt::green );
+    ui->widget_PID_status->setPalette( pal );
+
+    if(status.accelRampEnable)
+        pal.setColor( QPalette::Window, Qt::green );
+    else
+        pal.setColor( QPalette::Window, Qt::green );
+    ui->widget_ramp_status->setPalette( pal );
+
+    if(status.saveToEeprom)
+        pal.setColor( QPalette::Window, Qt::green );
+    else
+        pal.setColor( QPalette::Window, Qt::green );
+    ui->widget_save_EEPROM_status->setPalette( pal );
+
+    if(status.wdEnable)
+        pal.setColor( QPalette::Window, Qt::green );
+    else
+        pal.setColor( QPalette::Window, Qt::green );
+    ui->widget_WD_status->setPalette( pal );
 }
 
 void CMainWindow::on_actionPidEnabled_triggered()
 {
     mPidEnabled = ui->actionPidEnabled->isChecked();
 
-    if(!mRoboCtrl)
-        return;
-
     mIniSettings->setValue( PID_ENABLED, mPidEnabled );
     mIniSettings->sync();
+
+    if(!mRoboCtrl)
+        return;
 
     BoardStatus status;
 
@@ -591,7 +683,7 @@ void CMainWindow::onNewImage()
     qDebug() << tr("New Image");
 
     mNewImageAvailable = true;
-   // cv::Mat frame = mWebcamClient->getLastFrame();
+    // cv::Mat frame = mWebcamClient->getLastFrame();
 
     //cv::imshow( "Received Frame", frame );
 

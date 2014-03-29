@@ -56,16 +56,31 @@ CONFIG(opencv)
 
     android {
         message(Used OpenCV for Android)
-        OPENCV_LIB_PATH =
+        OPENCV_LIB_PATH = $$ROBOCONTROLLERSDKPATH/mod_EXTERN/opencv-2.4.8/bin/android-armeabi-v7a
+
+        LIBS += \
+            $$OPENCV_LIB_PATH/libopencv_contrib.a \
+            $$OPENCV_LIB_PATH/libopencv_video.a \
+            $$OPENCV_LIB_PATH/libopencv_highgui.a \
+            $$OPENCV_LIB_PATH/libopencv_androidcamera.a \
+            $$OPENCV_LIB_PATH/libopencv_core.a \
+            $$OPENCV_LIB_PATH/libIlmImf.a \
+            $$OPENCV_LIB_PATH/liblibjpeg.a \
+            $$OPENCV_LIB_PATH/liblibpng.a \
+            $$OPENCV_LIB_PATH/liblibtiff.a \
+            $$OPENCV_LIB_PATH/liblibjasper.a \
+            $$OPENCV_LIB_PATH/libtbb.a
     }
 
-    unix {
-        message(Used OpenCV for Unix)
-        OPENCV_LIB_PATH = /usr/lib
+    linux {
+        !android {
+            message(Used OpenCV for Unix)
+            OPENCV_LIB_PATH = /usr/lib
         
-        LIBS += \
-            -lopencv_core \
-            -lopencv_highgui
+            LIBS += \
+                -lopencv_core \
+                -lopencv_highgui
+        }
             
     }
 }

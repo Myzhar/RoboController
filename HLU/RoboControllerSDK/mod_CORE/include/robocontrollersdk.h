@@ -81,7 +81,13 @@ public:
      */
     void getMotorPWM( quint16 motorIdx );
 
-    /** @brief Sets the PWM of the motor in m/sec
+    /** @brief Send a request for motor PWMs.
+     *         The reply is received with /ref newMotorPwmValues
+     *         signal
+     */
+    //void getMotorPWMsSpeeds( ) // TODO create getMotorPWMsSpeeds
+
+    /** @brief Sets the PWM of the motor
      *
      * @param motorIdx Index of the motor (0 or 1)
      * @param pwm PWM range: [-2048/2047]
@@ -90,6 +96,16 @@ public:
      *       equal to @ref mcDirectPWM, else it does nothing
      */
     void setMotorPWM( quint16 motorIdx, int pwm );
+
+    /** @brief Sets the PWMs of both motors
+     *
+     * @param pwmMotor0 PWM range: [-2048/2047]
+     * @param pwmMotor1 PWM range: [-2048/2047]
+     *
+     * @note This function works only when @ref mMotorCtrlMode is
+     *       equal to @ref mcDirectPWM, else it does nothing
+     */
+    // void setMotorPWMs( quint16 pwmMotor0, quint16 pwmMotor1 );
 
     /** @brief Sets motor PID Controllers parameters.
      *
@@ -248,6 +264,8 @@ signals:
 
     /// Signal emitted when a new PWM value is received
     void newMotorPwmValue( quint16 motorIdx, quint16 value );
+    /// Signal emitted when new PWM values for both motors are received
+    void newMotorPwmValues( quint16 pwmMotor0, quint16 pwmMotor1 );
     /// Signal emitted when a new SPEED value is received (speed is in m/sec)
     void newMotorSpeedValue( quint16 motorIdx, double value );
     /// Signal emitted when a two new SPEED values are received (speed is in m/sec)

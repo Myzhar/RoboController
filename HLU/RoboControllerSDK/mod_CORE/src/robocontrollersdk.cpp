@@ -274,45 +274,41 @@ void RoboControllerSDK::onTcpReadyRead()
     {
         QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
 
-        qint64 bytes = mTcpSocket->bytesAvailable();
+        qint64 bytesAvailable = mTcpSocket->bytesAvailable();
 
         if( mNextTcpBlockSize==0) // No incomplete blocks received before
         {
-            if ( bytes < (qint64)sizeof(quint16))
+            if ( bytesAvailable < (qint64)sizeof(quint16))
             {
                 //qDebug() << Q_FUNC_INFO << tr("No more TCP Data available");
                 break;
             }
-            
-            /*quint16 val16 = 0x0000;
-            while( val16 != TCP_START_VAL ) // TODO: VERIFICARE!!!
-            {
-                in >> val16;                              
-            }*/
 
+            // >>>>> Searching for the start word
             int count = 0;
             quint16 val16;
-            in >> val16;
 
-            // TODO: FARE UGUALE A QUELLO DEL SERVER
-            while( val16 != TCP_START_VAL ) // TODO verify if this works!
+            do
             {
-                count++;
-                if(count == bytes)
+                in >> val16;
+
+                if(count == bytesAvailable)
                 {
                     qCritical() << Q_FUNC_INFO << tr("Read %1 bytes not founding TCP_START_VAL.")
-                                   .arg(bytes);
+                                   .arg(bytesAvailable);
                     return;
                 }
-                in >> val16;
-            }
+                count++;
 
+            }
+            while( val16 != TCP_START_VAL ); // TODO verify if this works!
+            // <<<<< Searching for the start word
 
             // Datagram dimension
             in >> mNextTcpBlockSize; // Updated only if we are parsing a new block
         }
         
-        if ( bytes < mNextTcpBlockSize)
+        if ( bytesAvailable < mNextTcpBlockSize)
         {
             qDebug() << Q_FUNC_INFO << tr("Received incomplete TCP Block... waiting for the missing data");
             break;
@@ -902,7 +898,8 @@ void RoboControllerSDK::sendBlockTCP(quint16 msgCode, QVector<quint16> &data )
         mLastServerReqTime = time;
 
         QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-        qDebug() << tr("%1 - Sent msg #%2 over TCP").arg(timeStr).arg(mMsgCounter);
+        //qDebug() << tr("%1 - Sent msg #%2 over TCP").arg(timeStr).arg(mMsgCounter).arg(msgCode);;
+        qDebug() << tr("%1 - Sent msg #%2 (Code: %3) over TCP").arg(timeStr).arg(mMsgCounter).arg(msgCode);
     }
     mConnMutex.unlock();
 
@@ -1312,6 +1309,8 @@ void RoboControllerSDK::getRobotConfigurationFromEeprom( )
 
     sendBlockTCP( CMD_RD_MULTI_REG, data );
     // <<<<< Robot Configuration Data
+
+    msleep( 250 );
 
     // >>>>> Robot Configuration Bits
     data.clear();

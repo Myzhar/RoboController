@@ -11,6 +11,12 @@
 #include <robocontrollersdk.h>
 #include <qwebcamclient.h>
 
+#ifndef android
+#include "qglopencvwidget.h"
+#else
+//TODO add OpenCV Widget without OpenGL
+#endif
+
 // >>>>> INI names
 #ifdef ANDROID
 #define INI_FOLDER "RobotGUI"
@@ -50,6 +56,7 @@ private slots:
     void onNewMotorSpeeds(double,double);
     void onNewRobotConfiguration( RobotConfiguration& robConf );
     void onNewBatteryValue( double battVal);    
+    void onNewBoardStatus(BoardStatus& status);
 
     void on_actionRobot_Configuration_triggered();
 
@@ -99,13 +106,19 @@ private:
     float mMaxMotorSpeed; /*!< Max linear speed for each motor */
 
     int mSpeedSendTimer; /*!< Timer to read Joypad position and send related speed to Robot */
-    int mSpeedReqTimer; /*!< Timer to request speeds of the motors to Server */
+    int mFastUpdateTimer; /*!< Timer to request speeds of the motors to Server */
     int mStatusReqTimer; /*!< Timer to request status of the robot to server */
 
     float mJoyMotSx; /*!< Value of the joypad related to left motor */
     float mJoyMotDx; /*!< Valut of the joypad realted to right motor */
 
     bool mNewImageAvailable; /*!< Used to retrieve image from WebcamServer */
+
+#ifndef android
+    QGlOpenCVWidget* mOpenCVWidget;
+#else
+    // TODO QOpenCVWidget* mOpenCVWidget;
+#endif
 };
 
 #endif // CMAINWINDOW_H

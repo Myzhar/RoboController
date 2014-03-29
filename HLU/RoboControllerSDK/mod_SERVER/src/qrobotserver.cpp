@@ -465,7 +465,7 @@ void QRobotServer::onTcpReadyRead()
     QDataStream in(mTcpSocket);
     in.setVersion(QDataStream::Qt_5_2);
 
-    int headerSize = 3; // [blockSize][msgIdx][msgCode]
+    int headerSize = 4; // [start_word][blockSize][msgIdx][msgCode]
 
     mNextTcpBlockSize=0;
     quint16 msgCode;
@@ -489,6 +489,7 @@ void QRobotServer::onTcpReadyRead()
                 in >> val16;
             }*/
 
+            // >>>>> Searching for the start word
             int count = 0;
             quint16 val16;
             //in >> val16;
@@ -507,6 +508,7 @@ void QRobotServer::onTcpReadyRead()
 
             }
             while( val16 != TCP_START_VAL ); // TODO verify if this works!
+            // <<<<< Searching for the start word
 
             // Datagram dimension
             in >> mNextTcpBlockSize; // Updated only if we are parsing a new block
@@ -573,7 +575,7 @@ void QRobotServer::onTcpReadyRead()
 
             readRegReply[0] = (quint16)startAddr;
             readRegReply[1] = (quint16)nReg;
-            memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) ); // TODO Verificare!!!
+            memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) );
 
             if( !commOk )
             {
@@ -600,6 +602,8 @@ void QRobotServer::onTcpReadyRead()
 
                 QVector<quint16> vec;
                 sendBlockTCP( MSG_RC_NOT_FOUND, vec );
+
+                qCritical() << Q_FUNC_INFO << "CMD_WR_MULTI_REG - Board not connected!";
                 break;
             }
 
@@ -668,7 +672,7 @@ void QRobotServer::onTcpReadyRead()
 
 void QRobotServer::onUdpStatusReadyRead()
 {
-    int headerSize = 3; // [blockSize][msgIdx][msgCode]
+    int headerSize = 4; // [start_word][blockSize][msgIdx][msgCode]
 
     mNextUdpStatBlockSize=0;
     quint16 msgCode;
@@ -691,9 +695,9 @@ void QRobotServer::onUdpStatusReadyRead()
         QDataStream in( buffer );
         in.setVersion(QDataStream::Qt_5_2);
 
-        while( !in.atEnd() )
+        //while( !in.atEnd() )
         {
-            QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
+            //QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
 
             if( mNextUdpStatBlockSize==0) // No incomplete blocks received before
             {
@@ -799,7 +803,7 @@ void QRobotServer::onUdpStatusReadyRead()
 
                 readRegReply[0] = (quint16)startAddr;
                 readRegReply[1] = (quint16)nReg;
-                memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) ); // TODO Verificare!!!
+                memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) );
 
                 if( !commOk )
                 {
@@ -924,7 +928,7 @@ void QRobotServer::onUdpStatusReadyRead()
 
 void QRobotServer::onUdpControlReadyRead()
 {
-    int headerSize = 3; // [blockSize][msgIdx][msgCode]
+    int headerSize = 4; // [start_word][blockSize][msgIdx][msgCode]
 
     mNextUdpCmdBlockSize=0;
     quint16 msgCode;
@@ -947,9 +951,9 @@ void QRobotServer::onUdpControlReadyRead()
         QDataStream in( buffer );
         in.setVersion(QDataStream::Qt_5_2);
 
-        while( !in.atEnd() )
+        //while( !in.atEnd() )
         {
-            QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
+            //QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
 
             if( mNextUdpCmdBlockSize==0) // No incomplete blocks received before
             {
@@ -959,7 +963,7 @@ void QRobotServer::onUdpControlReadyRead()
                     break;
                 }
 
-                int count = 0;
+                /*int count = 0;
                 while( mNextUdpCmdBlockSize == 0 )
                 {
                     // Datagram dimension
@@ -974,12 +978,33 @@ void QRobotServer::onUdpControlReadyRead()
                                        .arg(datagramSize).arg(st);
                         return;
                     }
+                }*/
+
+                int count = 0;
+                quint16 val16;
+                in >> val16;
+
+                while( val16 != UDP_START_VAL ) // TODO verify if this works!
+                {
+                    count++;
+                    if(count == datagramSize)
+                    {
+                        QDataStream::Status st = in.status();
+
+                        qCritical() << Q_FUNC_INFO << tr("Read %1 bytes not founding UDP_START_VAL. Stream status: %2")
+                                       .arg(datagramSize).arg(st);
+                        return;
+                    }
+                    in >> val16;
                 }
+
+                // Datagram dimension
+                in >> mNextUdpCmdBlockSize; // Updated only if we are parsing a new block
             }
 
             if( datagramSize < mNextUdpCmdBlockSize )
             {
-                qDebug() << Q_FUNC_INFO << tr("Received incomplete UDP Status Block... waiting for the missing data");
+                qDebug() << Q_FUNC_INFO << tr("Received incomplete UDP Control Block... waiting for the missing data");
                 break;
             }
 
@@ -1004,8 +1029,7 @@ void QRobotServer::onUdpControlReadyRead()
                     // TODO: LEGGERE I BYTE RIMANENTI
                     mUdpControlSocket->read( mNextUdpCmdBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
 
-                    QVector<quint16> vec;
-                    qCritical() << tr("RoboController board is not connected");
+                    qCritical() << Q_FUNC_INFO << "CMD_WR_MULTI_REG - Board not connected!";
                     break;
                 }
 
@@ -1132,7 +1156,7 @@ void QRobotServer::readSpeedsAndSend( QHostAddress addr )
 
     readRegReply[0] = (quint16)startAddr;
     readRegReply[1] = (quint16)nReg;
-    memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) ); // TODO Verificare!!!
+    memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) );
 
     if( commOk )
         sendStatusBlockUDP( addr, MSG_READ_REPLY, readRegReply );
