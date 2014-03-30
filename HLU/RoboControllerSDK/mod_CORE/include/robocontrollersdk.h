@@ -96,7 +96,7 @@ public:
      * @note This function works only when @ref mMotorCtrlMode is
      *       equal to @ref mcDirectPWM, else it does nothing
      */
-    void setMotorPWM( quint16 motorIdx, int pwm );
+    void setMotorPWM( quint16 motorIdx, int pwm ); // Tested
 
     /** @brief Sets the PWMs of both motors
      *
@@ -193,7 +193,7 @@ public:
     /** @brief Disables the Communication Watchdog
      *         WatchDog if active stops motors if communication is lost
      */
-    void disableWatchdog();
+    void disableWatchdog(); // Tested
 
     /** @brief Enables the Communication Watchdog
      *         WatchDog if active stops motors if communication is lost
@@ -207,7 +207,7 @@ public:
      *         The reply is received with /ref newWatchdogValue
      *         signal
      */
-    void getWatchdogTime( );
+    void getWatchdogTime( ); // Tested
 
 
 

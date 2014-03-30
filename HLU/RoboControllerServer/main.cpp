@@ -5,6 +5,8 @@
 #include <qrobotserver.h>
 #include <qwebcamserver.h>
 
+#include <QTime>
+
 using namespace roboctrl;
 
 class MyApplication : public QCoreApplication
@@ -52,16 +54,29 @@ int main(int argc, char *argv[])
     try
     {
         QRobotServer* server = new QRobotServer(14560, 14550, 14555, 14500, test, NULL);
-        if( server->isRunning() )
+
+        QTime time;
+        time.start();
+        while( !server->isRunning() )
         {
-            qDebug() << QObject::tr("Control Server has been correctly started.");
+            if( time.elapsed() > 1000 )
+            {
+                qDebug() << QObject::tr("Control Server not ready after one second. Verify System status.");
+                exit( EXIT_FAILURE );
+            }
         }
 
-        /*QWebcamServer* webcamServer = new QWebcamServer(0, 55554, 55555, 512, 5, NULL );
-        if( webcamServer->isRunning() )
+        QWebcamServer* webcamServer = new QWebcamServer(0, 55554, 55555, 512, 5, NULL );
+        time.restart();
+
+        while( !webcamServer->isRunning() )
         {
-            qDebug() << QObject::tr("Webcam Server has been correctly started.");
-        }//*/
+            if( time.elapsed() > 1000 )
+            {
+                qDebug() << QObject::tr("Webcam Server not ready after one second. Verify System status.");
+                exit( EXIT_FAILURE );
+            }
+        }
     }
     catch(roboctrl::RcException &e)
     {

@@ -17,11 +17,10 @@ private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
     void testBoardStatus_RW();
-    void testWatchdog();
     void testMotorSpeedRobotStopped_R();
     void testMotorPWMRobotStopped_R();
+    void testWatchdog();
     void testMotorPWM_RW();
-
 
 public slots:
     void onNewBoardStatus(BoardStatus& status);
@@ -43,6 +42,7 @@ private:
 
     quint64 mWdTime;
 };
+
 
 RoboTestUnitTest::RoboTestUnitTest()
 {
@@ -150,80 +150,6 @@ void RoboTestUnitTest::testBoardStatus_RW()
     QVERIFY( mBoardStatus.wdEnable == false );
 }
 
-void RoboTestUnitTest::testWatchdog()
-{
-    // >>>>> Disable All
-    mBoardStatus.accelRampEnable=false;
-    mBoardStatus.pidEnable=false;
-    mBoardStatus.saveToEeprom=false;
-    mBoardStatus.wdEnable=false;
-
-    bool ok = false;
-    try
-    {
-        ok = mRoboCtrl->setBoardStatus(mBoardStatus);
-    }
-    catch( RcException &e )
-    {
-        QFAIL( "setBoardStatus: TCP Message did not reach destination");
-    }
-    QVERIFY( ok==true );
-    // <<<<< Disable All
-
-
-    QTest::qSleep(250);
-
-    mReplyReceived = false;
-    mRoboCtrl->getBoardStatus();
-    QTRY_VERIFY(mReplyReceived);
-
-    QVERIFY( mBoardStatus.accelRampEnable == false );
-    QVERIFY( mBoardStatus.pidEnable == false );
-    QVERIFY( mBoardStatus.saveToEeprom == false );
-    QVERIFY( mBoardStatus.wdEnable == false );
-
-    QTest::qSleep(250);
-
-    mReplyReceived = false;
-    mRoboCtrl->getWatchdogTime();
-    QTRY_VERIFY(mReplyReceived);
-
-    quint64 newWd = mWdTime+100;
-
-    mRoboCtrl->enableWatchdog( newWd ); // TODO verificare perche mBoardStatusValid non è valido!!!
-
-    QTest::qSleep(250);
-
-    mReplyReceived = false;
-    mRoboCtrl->getBoardStatus();
-    QTRY_VERIFY(mReplyReceived);
-
-    QVERIFY( mBoardStatus.accelRampEnable == false );
-    QVERIFY( mBoardStatus.pidEnable == false );
-    QVERIFY( mBoardStatus.saveToEeprom == false );
-    QVERIFY( mBoardStatus.wdEnable == true );
-
-    mReplyReceived = false;
-    mRoboCtrl->getWatchdogTime();
-    QTRY_VERIFY(mReplyReceived);
-
-    QVERIFY2( mWdTime == newWd, "Watchdog Time setting failed" );
-
-    QTest::qSleep(250);
-
-    mRoboCtrl->setMotorPWM( 0, 1000 );
-    mRoboCtrl->setMotorPWM( 1, 1000 );
-    QTest::qSleep(500);
-
-    QTest::qSleep( mWdTime + 250 ); // The motors should be stoppedby Watchdog
-
-    mReplyReceived = false;
-    mRoboCtrl->getMotorSpeeds( );
-    QTRY_VERIFY(mReplyReceived);
-    QVERIFY2( mMotorSpeeds[0]==0.0, "Motor 0 speed is not null" );
-    QVERIFY2( mMotorSpeeds[1]==0.0, "Motor 1 speed is not null" );
-}
-
 void RoboTestUnitTest::testMotorSpeedRobotStopped_R()
 {
     mReplyReceived = false;
@@ -251,23 +177,119 @@ void RoboTestUnitTest::testMotorSpeedRobotStopped_R()
 
 void RoboTestUnitTest::testMotorPWMRobotStopped_R()
 {
+    for( int i=0; i<2; i++ )
+    {
+        mReplyReceived = false;
+        mRoboCtrl->getMotorPWM( i );
+        QTRY_VERIFY(mReplyReceived);
+        QVERIFY2( mMotorPWMs[i]==0, tr("Motor 0 PWM is not null - Val:  %1").arg(mMotorPWMs[i]).toStdString().c_str() );
+
+        QTest::qSleep(250);
+    }
+}
+
+void RoboTestUnitTest::testWatchdog()
+{
+    // >>>>> Disable All
+    mBoardStatus.accelRampEnable=false;
+    mBoardStatus.pidEnable=false;
+    mBoardStatus.saveToEeprom=false;
+    mBoardStatus.wdEnable=false;
+
+    bool ok = false;
+    try
+    {
+        ok = mRoboCtrl->setBoardStatus(mBoardStatus);
+    }
+    catch( RcException &e )
+    {
+        QFAIL( "setBoardStatus: TCP Message did not reach destination");
+    }
+    QVERIFY( ok==true );
+    // <<<<< Disable All
+
+    QTest::qSleep(250);
+
+    // >>>>> Test Board Status
     mReplyReceived = false;
-    mRoboCtrl->getMotorPWM( 0 );
+    mRoboCtrl->getBoardStatus();
     QTRY_VERIFY(mReplyReceived);
-    QVERIFY2( mMotorPWMs[0]==0, "Motor 0 PWM is not null" );
+
+    QVERIFY( mBoardStatus.accelRampEnable == false );
+    QVERIFY( mBoardStatus.pidEnable == false );
+    QVERIFY( mBoardStatus.saveToEeprom == false );
+    QVERIFY( mBoardStatus.wdEnable == false );
+    // <<<<< Test Board Status
 
     QTest::qSleep(250);
 
     mReplyReceived = false;
-    mRoboCtrl->getMotorPWM( 1 );
+    mRoboCtrl->getWatchdogTime();
     QTRY_VERIFY(mReplyReceived);
-    QVERIFY2( mMotorPWMs[1]==0, "Motor 1 PWM is not null" );
 
+    quint64 newWd = mWdTime-100;
+
+    mRoboCtrl->enableWatchdog( newWd );
     QTest::qSleep(250);
+
+    mReplyReceived = false;
+    mRoboCtrl->getBoardStatus();
+    QTRY_VERIFY(mReplyReceived);
+
+    QVERIFY( mBoardStatus.accelRampEnable == false );
+    QVERIFY( mBoardStatus.pidEnable == false );
+    QVERIFY( mBoardStatus.saveToEeprom == false );
+    QVERIFY( mBoardStatus.wdEnable == true );
+
+    mReplyReceived = false;
+    mRoboCtrl->getWatchdogTime();
+    QTRY_VERIFY(mReplyReceived);
+
+    QVERIFY2( mWdTime == newWd, "Watchdog Time setting failed" );
+    QTest::qSleep(250);
+
+    mRoboCtrl->enableWatchdog( 500 );
+    QTest::qSleep(250);
+
+    /*mRoboCtrl->setMotorPWM( 0, 1000 );
+    mRoboCtrl->setMotorPWM( 1, 1000 );
+    QTest::qSleep(500);
+
+    QTest::qSleep( 750 ); // The motors should be stoppedby Watchdog
+
+    mReplyReceived = false;
+    mRoboCtrl->getMotorSpeeds( );
+    QTRY_VERIFY(mReplyReceived);
+    QVERIFY2( mMotorSpeeds[0]==0.0, "Motor 0 speed is not null" );
+    QVERIFY2( mMotorSpeeds[1]==0.0, "Motor 1 speed is not null" );*/
+
+    mRoboCtrl->disableWatchdog();
+    QTest::qSleep(250);
+
+    // >>>>> Disable All
+    mBoardStatus.accelRampEnable=false;
+    mBoardStatus.pidEnable=false;
+    mBoardStatus.saveToEeprom=false;
+    mBoardStatus.wdEnable=false;
+
+    ok = false;
+    try
+    {
+        ok = mRoboCtrl->setBoardStatus(mBoardStatus);
+    }
+    catch( RcException &e )
+    {
+        QFAIL( "setBoardStatus: TCP Message did not reach destination");
+    }
+    QVERIFY( ok==true );
+    // <<<<< Disable All
 }
 
 void RoboTestUnitTest::testMotorPWM_RW()
 {
+    mRoboCtrl->getRobotControl();
+    QTest::qSleep(250);
+
     // >>>>> Disable PID
     mBoardStatus.accelRampEnable=false;
     mBoardStatus.pidEnable=false;
@@ -286,7 +308,7 @@ void RoboTestUnitTest::testMotorPWM_RW()
     QVERIFY( ok==true );
     // <<<<< Disable PID
 
-    mRoboCtrl->getRobotControl();
+
 
     for( int i=0; i<2; i++ )
     {
@@ -347,6 +369,9 @@ void RoboTestUnitTest::testMotorPWM_RW()
         QVERIFY2( qAbs(mMotorSpeeds[i])<0.02, tr("Motor %1 has not been stopped - speed: %2").arg(i).arg(mMotorSpeeds[i]).toStdString().c_str() );
         QTest::qSleep(500);
     }
+
+    mRoboCtrl->releaseRobotControl();
+    QTest::qSleep(250);
 }
 
 void RoboTestUnitTest::onNewBoardStatus(BoardStatus& status)

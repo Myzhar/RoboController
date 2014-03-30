@@ -113,8 +113,8 @@ private:
     int mStatusReqTimer; /*!< Timer to request status of the robot to server */
     int mFrameReqTimer; /*!< Timer to request frame to Webcam server */
 
-    float mJoyMotSx; /*!< Value of the joypad related to left motor */
-    float mJoyMotDx; /*!< Valut of the joypad realted to right motor */
+    float mJoyMot[2]; /*!< Values of the joypad */
+    float mLastJoyMot[2]; /*!< Last used values of the joypad */
 
     bool mNewImageAvailable; /*!< Used to retrieve image from WebcamServer */
 

@@ -545,6 +545,8 @@ void CMainWindow::onSdkServerConnected()
         mRcComm->getMotorPidGains( 1 );
         mRcComm->getBoardStatus();
         //mRcComm->getRobotConfigurationFromEeprom();
+
+        mRcComm->getRobotControl();
     }
     catch( roboctrl::RcException &e)
     {
@@ -555,6 +557,9 @@ void CMainWindow::onSdkServerConnected()
 
 void CMainWindow::onSdkServerDisconnected()
 {
+    /*if(mRcComm)
+        mRcComm->releaseRobotControl();*/
+
     disconnectServer();
 
     // TODO ui->actionConfig_File_to_EEPROM->setEnabled( false );
@@ -574,6 +579,8 @@ void CMainWindow::on_action_Disconnect_triggered()
 
 void CMainWindow::disconnectServer()
 {
+    mRcComm->releaseRobotControl();
+
     if(mRcComm)
         delete mRcComm;
     mRcComm = NULL;

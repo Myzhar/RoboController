@@ -25,4 +25,6 @@ include($$ROBOCONTROLLERSDKPATH/mod_CORE/RoboControllerSDK_CORE.pri)        # CO
 SOURCES += tst_robotestunittest.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
+HEADERS +=
+
 

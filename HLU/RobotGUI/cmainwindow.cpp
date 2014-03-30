@@ -160,6 +160,7 @@ CMainWindow::CMainWindow(QWidget *parent) :
     mStatusBattLevelProgr = new QProgressBar(ui->statusBar);
     ui->statusBar->addWidget( mStatusBattLevelProgr);
     mStatusBattLevelProgr->setTextVisible(false);
+    mStatusBattLevelProgr->setRange(0,100);
     // <<<<< Status Bar
 
     // >>>>> Fonts
@@ -244,40 +245,53 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         if(!mRoboCtrl)
             return;
 
-        qDebug() << Q_FUNC_INFO <<  "mSpeedSendTimer";
+        //qDebug() << Q_FUNC_INFO <<  "mSpeedSendTimer";
 
         float scale = ui->widget_joypad->getMaxAbsAxisValue();
 
         if(mPidEnabled)
         {
-            mJoyMotSx = mJoyMotSx/scale*mMaxMotorSpeed;
-            mJoyMotDx = mJoyMotDx/scale*mMaxMotorSpeed;
-
-            try
+            if( mJoyMot[0] != mLastJoyMot[0] || mJoyMot[1] != mLastJoyMot[1] )
             {
-                //mRoboCtrl->setMotorSpeed(0, motSx);
-                //mRoboCtrl->setMotorSpeed(1, motDx);
+                double speed0 = mJoyMot[0]/scale*mMaxMotorSpeed;
+                double speed1 = mJoyMot[1]/scale*mMaxMotorSpeed;
 
-                mRoboCtrl->setMotorSpeeds( mJoyMotSx, mJoyMotDx );
+                try
+                {
 
-                mSpeedRequested = true; // Must be set because setMotorSpeeds replies on Status UDP with the speeds of the motors
-            }
-            catch( RcException &e)
-            {
-                qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+                    {
+                        mRoboCtrl->setMotorSpeeds( speed0, speed1 );
+                        mLastJoyMot[0] = mJoyMot[0];
+                        mLastJoyMot[1] = mJoyMot[1];
+                    }
+
+                    mSpeedRequested = true; // Must be set because setMotorSpeeds replies on Status UDP with the speeds of the motors
+                }
+                catch( RcException &e)
+                {
+                    qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
+                }
             }
 
             //qDebug() << tr("Motor speeds: (%1,%2)").arg(motSx).arg(motDx);
         }
         else
         {
-            mJoyMotSx = mJoyMotSx/scale*2047.0f;
-            mJoyMotDx = mJoyMotDx/scale*2047.0f;
-
             try
             {
-                mRoboCtrl->setMotorPWM( 0, (int)(mJoyMotSx+0.5f) );
-                mRoboCtrl->setMotorPWM( 1, (int)(mJoyMotDx+0.5f));
+                if( mJoyMot[0] != mLastJoyMot[0] )
+                {
+                    int speed = (int)(mJoyMot[0]/scale*2047.0f+0.5f);
+                    mRoboCtrl->setMotorPWM( 0, speed );
+                    mLastJoyMot[0] = mJoyMot[0];
+                }
+
+                if( mJoyMot[1] != mLastJoyMot[1] )
+                {
+                    int speed = (int)(mJoyMot[1]/scale*2047.0f+0.5f);
+                    mRoboCtrl->setMotorPWM( 1, speed );
+                    mLastJoyMot[1] = mJoyMot[1];
+                }
             }
             catch( RcException &e)
             {
@@ -292,19 +306,17 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         if( !mWebcamClient )
             return;
 
-        qDebug() << Q_FUNC_INFO <<  "mFrameReqTimer";
+        //qDebug() << Q_FUNC_INFO <<  "mFrameReqTimer";
 
         if( mWebcamClient!=NULL && mNewImageAvailable   )
         {
-            if( mWebcamClient )
-            {
-                mNewImageAvailable = false;
-                cv::Mat frame = mWebcamClient->getLastFrame();
-                //cv::imshow( "Received Frame", frame );
+
+            mNewImageAvailable = false;
+            cv::Mat frame = mWebcamClient->getLastFrame();
+            //cv::imshow( "Received Frame", frame );
 #ifndef ANDROID
-                mOpenCVWidget->showImage(frame);
+            mOpenCVWidget->showImage(frame);
 #endif
-            }
         }
     }
     else if( event->timerId() == mStatusReqTimer )
@@ -312,11 +324,12 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         if(!mRoboCtrl)
             return;
 
-        qDebug() << Q_FUNC_INFO <<  "mStatusReqTimer";
+        //qDebug() << Q_FUNC_INFO <<  "mStatusReqTimer";
 
         try
         {
             mRoboCtrl->getBatteryChargeValue();
+            mRoboCtrl->getBoardStatus();
         }
         catch( RcException &e)
         {
@@ -388,6 +401,12 @@ void CMainWindow::onConnectButtonClicked()
         mIniSettings->setValue( ROB_UDP_STAT_PORT_LISTEN, mRobUdpStatusPortListen );
         mIniSettings->setValue( ROB_UDP_CTRL_PORT, mRobUdpControlPort );
         mIniSettings->sync();
+
+        mJoyMot[0] = 0.0;
+        mJoyMot[1] = 0.0;
+
+        mLastJoyMot[0] = 0.0;
+        mLastJoyMot[1] = 0.0;
     }
     catch( RcException &e)
     {
@@ -404,6 +423,8 @@ void CMainWindow::onConnectButtonClicked()
              this, SLOT(onNewRobotConfiguration(RobotConfiguration&)) );
     connect( mRoboCtrl, SIGNAL(newBatteryValue(double)),
              this, SLOT(onNewBatteryValue(double)) );
+    connect( mRoboCtrl, SIGNAL(newBoardStatus(BoardStatus&)),
+             this, SLOT(onNewBoardStatus(BoardStatus&)) );
     // <<<<< Signals/Slots connections
 
     // >>>>> Setting last PID state
@@ -545,14 +566,16 @@ void CMainWindow::onNewMotorSpeed( quint16 mot, double speed )
         ui->lcdNumber_fw_speed->display("------");
         ui->lcdNumber_rot_speed->display("------");
     }
+
+    QApplication::processEvents( QEventLoop::AllEvents, 10 );
 }
 
 void CMainWindow::onNewJoypadValues(float x, float y)
 {
-    qDebug() << tr("Joypad: (%1,%2)").arg(x).arg(y);
+    //qDebug() << tr("Joypad: (%1,%2)").arg(x).arg(y);
 
-    mJoyMotSx = y - x;
-    mJoyMotDx = y + x;
+    mJoyMot[0] = y - x;
+    mJoyMot[1] = y + x;
 }
 
 void CMainWindow::onNewBoardStatus(BoardStatus& status)
@@ -563,25 +586,25 @@ void CMainWindow::onNewBoardStatus(BoardStatus& status)
     if(status.pidEnable)
         pal.setColor( QPalette::Window, Qt::green );
     else
-        pal.setColor( QPalette::Window, Qt::green );
+        pal.setColor( QPalette::Window, Qt::red );
     ui->widget_PID_status->setPalette( pal );
 
     if(status.accelRampEnable)
         pal.setColor( QPalette::Window, Qt::green );
     else
-        pal.setColor( QPalette::Window, Qt::green );
+        pal.setColor( QPalette::Window, Qt::red );
     ui->widget_ramp_status->setPalette( pal );
 
     if(status.saveToEeprom)
         pal.setColor( QPalette::Window, Qt::green );
     else
-        pal.setColor( QPalette::Window, Qt::green );
+        pal.setColor( QPalette::Window, Qt::red );
     ui->widget_save_EEPROM_status->setPalette( pal );
 
     if(status.wdEnable)
         pal.setColor( QPalette::Window, Qt::green );
     else
-        pal.setColor( QPalette::Window, Qt::green );
+        pal.setColor( QPalette::Window, Qt::red );
     ui->widget_WD_status->setPalette( pal );
 }
 
@@ -597,7 +620,7 @@ void CMainWindow::on_actionPidEnabled_triggered()
 
     BoardStatus status;
 
-    status.accelRampEnable = mPidEnabled;
+    status.accelRampEnable = false;
     status.pidEnable = mPidEnabled;
     status.saveToEeprom = true;
     status.wdEnable = true;
@@ -682,7 +705,7 @@ void CMainWindow::onNewRobotConfiguration( RobotConfiguration& robConf )
         startTimers();
     }
 
-    mStatusBattLevelProgr->setRange( mRoboConf.MinChargedBatteryLevel, mRoboConf.MaxChargedBatteryLevel );
+    //mStatusBattLevelProgr->setRange( mRoboConf.MinChargedBatteryLevel, mRoboConf.MaxChargedBatteryLevel );
 }
 
 void CMainWindow::onNewBatteryValue( double battVal )
@@ -691,12 +714,9 @@ void CMainWindow::onNewBatteryValue( double battVal )
                             .arg( battVal, 5,'f', 2, ' ' )
                             .arg( (double)(mRoboConf.MaxChargedBatteryLevel)/100.0f, 5,'f', 2, ' ' ));
 
-    mStatusBattLevelProgr->setValue( (int)(battVal*100.0) );
+    double perc = 100*((battVal-(mRoboConf.MinChargedBatteryLevel/100)))/((mRoboConf.MaxChargedBatteryLevel/100)-(mRoboConf.MinChargedBatteryLevel/100));
 
-    double min = mStatusBattLevelProgr->minimum();
-    double max = mStatusBattLevelProgr->maximum();
-
-    double perc = (max-min)/(battVal*100.0);
+    mStatusBattLevelProgr->setValue(perc);
 
     mStatusBattLevelProgr->setProperty("defaultStyleSheet",
                                        mStatusBattLevelProgr->styleSheet());
@@ -720,16 +740,7 @@ void CMainWindow::onNewBatteryValue( double battVal )
 
 void CMainWindow::onNewImage()
 {
-    // TODO: Perché non viene mai chiamato!?!??!
-
-    qDebug() << tr("New Image");
-
     mNewImageAvailable = true;
-    // cv::Mat frame = mWebcamClient->getLastFrame();
-
-    //cv::imshow( "Received Frame", frame );
-
-    //cv::waitKey(1);
 }
 
 void CMainWindow::on_actionBattery_Calibration_triggered()

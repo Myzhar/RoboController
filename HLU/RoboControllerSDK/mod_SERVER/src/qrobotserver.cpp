@@ -678,9 +678,7 @@ void QRobotServer::onUdpStatusReadyRead()
     quint16 msgCode;
 
     while( mUdpStatusSocket->hasPendingDatagrams() ) // Receiving data while there is data available
-    {
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
-
+    {        
         QByteArray buffer( mUdpStatusSocket->pendingDatagramSize(), 0 );
         qint64 datagramSize = mUdpStatusSocket->pendingDatagramSize();
 
@@ -881,6 +879,8 @@ void QRobotServer::onUdpStatusReadyRead()
                     mControllerClientIp = addr.toString();
                     QVector<quint16> vec;
                     sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_OK, vec ); // Robot control taken
+
+                    qDebug() << tr("The client %1 has taken the control of the robot").arg(addr.toString());
                 }
                 else
                 {
@@ -892,12 +892,12 @@ void QRobotServer::onUdpStatusReadyRead()
 
             case CMD_REL_ROBOT_CTRL:
             {
-                //qDebug() << tr("UDP Status Received msg #%1: CMD_LEAVE_ROBOT_CTRL (%2)").arg(msgIdx).arg(msgCode);
-
                 mControllerClientIp = "";
 
                 QVector<quint16> vec;
                 sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_RELEASED, vec ); // Robot control released
+
+                qDebug() << tr("The client %1 has released the control of the robot").arg(addr.toString());
 
                 break;
             }
@@ -923,6 +923,9 @@ void QRobotServer::onUdpStatusReadyRead()
 
             mNextUdpStatBlockSize = 0;
         }
+
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 1 );
+
     }
 }
 
@@ -935,8 +938,6 @@ void QRobotServer::onUdpControlReadyRead()
 
     while( mUdpControlSocket->hasPendingDatagrams() ) // Receiving data while there is data available
     {
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
-
         QByteArray buffer( mUdpControlSocket->pendingDatagramSize(), 0 );
         qint64 datagramSize = mUdpControlSocket->pendingDatagramSize();
 
@@ -1101,6 +1102,8 @@ void QRobotServer::onUdpControlReadyRead()
 
             mNextUdpCmdBlockSize = 0;
         }
+
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
     }
 }
 

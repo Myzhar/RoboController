@@ -220,7 +220,7 @@ void QWebcamClient::processPendingDatagrams()
 
                 //cv::waitKey( 1 );
                 //QCoreApplication::processEvents( QEventLoop::AllEvents, 50 );
-                qDebug() << tr( "Frame #%1 ready" ).arg((int)id);
+                //qDebug() << tr( "Frame #%1 ready" ).arg((int)id);
             }
             else
                 qDebug() << tr( "Frame #%1 error: Wrong encoding" ).arg((int)id);
@@ -230,11 +230,10 @@ void QWebcamClient::processPendingDatagrams()
 
 cv::Mat QWebcamClient::getLastFrame()
 {
-    qDebug() << Q_FUNC_INFO;
+    //qDebug() << Q_FUNC_INFO;
 
     //mImgMutex.lock();
     {
-
         return mLastCompleteFrame;
     }
     //mImgMutex.unlock();

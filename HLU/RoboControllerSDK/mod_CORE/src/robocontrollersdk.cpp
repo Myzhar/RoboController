@@ -1076,9 +1076,11 @@ void RoboControllerSDK::getBoardStatus()
     data << (quint16)WORD_STATUSBIT1;
     data << 1;
 
+    mBoardStatusValid = false;
+
     sendBlockTCP( CMD_RD_MULTI_REG, data );
 
-    mBoardStatusValid = false;
+
 }
 
 bool RoboControllerSDK::setBoardStatus( BoardStatus &status )
@@ -1427,12 +1429,18 @@ void RoboControllerSDK::setRobotConfiguration( RobotConfiguration& roboConfig )
 
 void RoboControllerSDK::getRobotControl()
 {
+    if(!mUdpStatusSocket)
+        return;
+
     QVector<quint16> vec;
     sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_GET_ROBOT_CTRL, vec, true );
 }
 
 void RoboControllerSDK::releaseRobotControl()
 {
+    if(!mUdpStatusSocket)
+        return;
+
     QVector<quint16> vec;
     sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_REL_ROBOT_CTRL, vec, true );
 }
@@ -1503,7 +1511,8 @@ void RoboControllerSDK::getWatchdogTime( )
     data << (quint16)WORD_COMWATCHDOG_TIME;
     data << 1;
 
-    sendBlockTCP( CMD_RD_MULTI_REG, data );
+    if( sendBlockTCP( CMD_RD_MULTI_REG, data ) )
+        qDebug() << tr("Motors wathdog has been enabled");
 }
 
 void RoboControllerSDK::disableWatchdog( )
@@ -1518,7 +1527,13 @@ void RoboControllerSDK::disableWatchdog( )
     }
     mBoardStatus.wdEnable = false;
 
-    setBoardStatus( mBoardStatus );
+    if( setBoardStatus( mBoardStatus ) )
+    {
+        mWatchDogEnable = false;
+        qDebug() << tr("Motors wathdog has been disabled");
+    }
+    else
+        qDebug() << tr("Warning: Motors wathdog has not been disabled");
 }
 
 void RoboControllerSDK::saveRobotConfigurationToEeprom( )
@@ -1560,7 +1575,7 @@ void RoboControllerSDK::saveRobotConfigurationToEeprom( )
     if(mRobotConfig.EncoderPosition)
         statusVal |= FLG_STATUSBI2_EEPROM_ENCODER_POSITION;
     if(mRobotConfig.MotorEnableLevel)
-        statusVal |= FLG_STATUSBI2_EEPROM_ENCODER_POSITION;
+        statusVal |= FLG_EEPROM_OUTPUT_DRIVER_ENABLE_POLARITY;
 
     data << statusVal;
 
@@ -1574,7 +1589,7 @@ void RoboControllerSDK::onUdpTestTimerTimeout()
     pingData << (quint16)WORD_ADDRESS_SLAVE;
     pingData << 1; // Only one register
 
-    qDebug() << tr("Ping UDP");
+    // qDebug() << tr("Ping UDP");
 
     sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, pingData, true );
 }
