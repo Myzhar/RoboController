@@ -149,6 +149,7 @@ QString RoboControllerSDK::findServer(quint16 udpSendPort/*=14550*/ , quint64 ud
     out << (quint16)blockSize;
 
     udp->writeDatagram( block, QHostAddress::Broadcast, udpSendPort);
+    udp->flush();
     // <<<<< sendCommand( udp, CMD_SERVER_PING_REQ, vec  );
 
     msleep( 500 );
@@ -876,7 +877,7 @@ void RoboControllerSDK::sendBlockUDP( QUdpSocket *socket, QHostAddress addr, qui
         qint64 time = QDateTime::currentDateTime().toMSecsSinceEpoch();
         mLastServerReqTime = time;
 
-        QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
+        //QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
         //qDebug() << tr("%1 - Sent msg #%2 (Code: %3) over UDP").arg(timeStr).arg(mMsgCounter).arg(msgCode);
     }
     mConnMutex.unlock();
@@ -1456,7 +1457,7 @@ void RoboControllerSDK::getBatteryChargeValue()
 
 void RoboControllerSDK::setBatteryCalibrationParams( AnalogCalibValue valueType, double curChargeVal)
 {
-    quint16 charVal = (quint16)(curChargeVal*100.0);
+    quint16 charVal = (quint16)(curChargeVal*1000.0);
 
     QVector<quint16> data;
     data << (quint16)WORD_VAL_TAR_FS;

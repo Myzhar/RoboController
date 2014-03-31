@@ -17,6 +17,7 @@ DEFINES += ROBOCONTROLLERSDK_LIBRARY
 
 include($$ROBOCONTROLLERSDKPATH/mod_CORE/RoboControllerSDK_CORE.pri) # Core module
 include($$ROBOCONTROLLERSDKPATH/mod_GUI/RoboControllerSDK_GUI.pri) # GUI module
+include($$ROBOCONTROLLERSDKPATH/mod_EXTERN/RoboControllerSDK_EXTERN.pri) # EXTERN module
 
 INCLUDEPATH += \
         ../common/3rdparty/qcustomplot/include/ \
@@ -26,14 +27,12 @@ SOURCES += \
         main.cpp\
         cmainwindow.cpp \        
         cselectipdlg.cpp \
-        ../common/3rdparty/qcustomplot/src/qcustomplot.cpp \
         cconfiginidialog.cpp
 
 HEADERS  += \
     cmainwindow.h \    
     macros.h \
     cselectipdlg.h \
-    ../common/3rdparty/qcustomplot/include/qcustomplot.h \
     cconfiginidialog.h
 
 FORMS    += \

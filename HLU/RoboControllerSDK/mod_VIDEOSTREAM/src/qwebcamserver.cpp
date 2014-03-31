@@ -105,7 +105,9 @@ void QWebcamServer::sendFragmentedData( QByteArray data, char fragID )
 
         for( int i=0; i<(int)mClientIpList.size(); i++ )
         {
-            if( -1==mUdpSocketSender->writeDatagram( buffer, QHostAddress(mClientIpList[i]), mSendPort ) )
+            int res = mUdpSocketSender->writeDatagram( buffer, QHostAddress(mClientIpList[i]), mSendPort );
+            mUdpSocketSender->flush();
+            if( -1==res )
             {
                 qDebug() << tr("Frame #%3: Missed fragment %1/%2 to Client %4")
                             .arg(i).arg(numFrag).arg((unsigned int)fragID).arg(mClientIpList[i]);
@@ -216,11 +218,13 @@ void QWebcamServer::onReadyRead()
             if( mClientIpList.contains( senderIP.toString() ) )
             {
                 mUdpSocketSender->writeDatagram( MSG_CONN_ACCEPTED.toLocal8Bit().constData(), MSG_CONN_ACCEPTED.size(), senderIP, mSendPort );
+                mUdpSocketSender->flush();
                 qDebug() << tr("Client %1 already connected").arg( senderIP.toString() );
             }
             else if(mClientIpList.size()<mMaxClientCount)
             {
-                if(MSG_CONN_ACCEPTED.size()==mUdpSocketSender->writeDatagram( MSG_CONN_ACCEPTED.toLocal8Bit().constData(), MSG_CONN_ACCEPTED.size(), senderIP, mSendPort ))
+                int res = mUdpSocketSender->writeDatagram( MSG_CONN_ACCEPTED.toLocal8Bit().constData(), MSG_CONN_ACCEPTED.size(), senderIP, mSendPort );
+                if(MSG_CONN_ACCEPTED.size()==res)
                 {
                     mClientIpList.push_back( senderIP.toString() );
                     qDebug() << tr("Client %1 connected").arg( senderIP.toString() );
@@ -232,6 +236,7 @@ void QWebcamServer::onReadyRead()
             else
             {
                 mUdpSocketSender->writeDatagram( MSG_CONN_REFUSED.toLocal8Bit().constData(), MSG_CONN_REFUSED.size(), senderIP, mSendPort );
+                mUdpSocketSender->flush();
                 qDebug() << tr("Client %1 refused, too much client connected").arg( senderIP.toString() );
             }
         }

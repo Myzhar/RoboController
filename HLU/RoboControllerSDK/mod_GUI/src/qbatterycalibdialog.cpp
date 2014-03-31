@@ -45,7 +45,7 @@ void QBatteryCalibDialog::on_pushButton_set_lower_clicked()
         return;
     }
 
-    mRobCom->setBatteryCalibrationParams( CalLow, val*100.0 );
+    mRobCom->setBatteryCalibrationParams( CalLow, val );
 }
 
 
@@ -61,7 +61,7 @@ void QBatteryCalibDialog::on_pushButton_set_upper_clicked()
         return;
     }
 
-    mRobCom->setBatteryCalibrationParams( CalHigh, val*100.0 );
+    mRobCom->setBatteryCalibrationParams( CalHigh, val );
 }
 
 }

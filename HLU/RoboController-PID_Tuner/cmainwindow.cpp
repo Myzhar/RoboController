@@ -44,10 +44,10 @@ CMainWindow::CMainWindow(QWidget *parent) :
     ui->widget_plot->graph(1)->setPen( pen1 );
     ui->widget_plot->graph(2)->setPen( pen2 );
 
-    ui->widget_plot->setupFullAxesBox();
+    ui->widget_plot->axisRect()->setupFullAxesBox();
 
-    ui->widget_plot->setRangeDrag(Qt::Horizontal | Qt::Vertical);
-    ui->widget_plot->setRangeZoom(Qt::Horizontal | Qt::Vertical);
+    ui->widget_plot->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
+    ui->widget_plot->axisRect()->setRangeZoom(Qt::Horizontal | Qt::Vertical);
 
     ui->widget_plot->legend->setVisible(true);
     ui->widget_plot->legend->setFont(QFont("Helvetica",8));
