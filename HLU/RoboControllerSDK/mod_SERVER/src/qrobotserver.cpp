@@ -2,11 +2,11 @@
 
 #include <QtNetwork/QtNetwork>
 
-#include <modbus.h>
-#include <modbus-private.h>
+#include "modbus.h"
+#include "modbus-private.h"
 #include <QSerialPort>
 #include <QSerialPortInfo>
-#include <loghandler.h>
+#include "loghandler.h"
 #include <errno.h>
 #include <QCoreApplication>
 #include <QMutex>

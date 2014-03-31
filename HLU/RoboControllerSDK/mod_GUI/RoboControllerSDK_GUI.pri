@@ -3,6 +3,8 @@ message(Added GUI module)
 QT += gui opengl
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+CONFIG += gui
+
 DEFINES += SDK_PATH=\\\"$$ROBOCONTROLLERSDKPATH\\\"
 DEFINES += RES_PATH=\\\"/mod_GUI/res/gui-resources.rcc\\\"
 

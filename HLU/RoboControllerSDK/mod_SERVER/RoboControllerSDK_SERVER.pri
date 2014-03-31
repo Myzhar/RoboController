@@ -2,7 +2,7 @@ message(Added SERVER module)
 
 QT += network serialport
 
-CONFIG += rcserver
+CONFIG += server
 
 SOURCES += \
         $$ROBOCONTROLLERSDKPATH/mod_SERVER/src/qrobotserver.cpp
