@@ -20,36 +20,36 @@
 #include "limits.h"
 
 // Macro per la semplificazione della lettura del codice
-#define _RAMPA                  PID->Rampa
-#define _STEP_RAMPA             PID->RampaStep
-#define _SETPOINT               PID->Setpoint
-#define _INTEGRALE              PID->Integrale
+//#define _RAMPA                  PID->Rampa
+//#define _STEP_RAMPA             PID->RampaStep
+//#define _SETPOINT               PID->Setpoint
+//#define _INTEGRALE              PID->Integrale
 
-#define _KP                     PID->Kp
-#define _KI                     PID->Ki
-#define _KD                     PID->Kd
+//#define _KP                     PID->Kp
+//#define _KI                     PID->Ki
+//#define _KD                     PID->Kd
 
-#define _CONTR_INTEGRALE        PID->ContributoIntegrale
-#define _CONTR_PROPORZIONALE    PID->ContributoProporzionale
-#define _CONTR_DERIVATIVO       PID->ContributoDerivativo
+//#define _CONTR_INTEGRALE        PID->ContributoIntegrale
+//#define _CONTR_PROPORZIONALE    PID->ContributoProporzionale
+//#define _CONTR_DERIVATIVO       PID->ContributoDerivativo
 
-#define _ERRORE                 PID->Errore
-#define _ERRORE_PRECEDENTE      PID->OldError1
-#define _ERRORE_PRE_PRECEDENTE  PID->OldError2
+//#define _ERRORE                 PID->Errore
+//#define _ERRORE_PRECEDENTE      PID->OldError1
+//#define _ERRORE_PRE_PRECEDENTE  PID->OldError2
 
-#define _SOMMATORIA             PID->Sommatoria
-#define _OUT_PREC               PID->OldContrValue
+//#define _SOMMATORIA             PID->Sommatoria
+//#define _OUT_PREC               PID->OldContrValue
 
 //#define _VALORE_ATTUALE         PID->Current
 
-#define _COMPONENTE_FEEDFORWARD PID->ComponenteFeedForward
-#define _OUT                    PID->OutPid
+//#define _COMPONENTE_FEEDFORWARD PID->ComponenteFeedForward
+//#define _OUT                    PID->OutPid
 
 
-#define _MAX_RPM                MOTORE->I_MotorRpmMax
-#define _MIN_RPM                MOTORE->I_MotorRpmMin
+//#define _MAX_RPM                MOTORE->I_MotorRpmMax
+//#define _MIN_RPM                MOTORE->I_MotorRpmMin
 
-#define _AXELSPEED              MOTORE->I_MotorAxelSpeed
+//#define _AXELSPEED              MOTORE->I_MotorAxelSpeed
 
 void Pid1(void)
 {   //__builtin_disi(0x3FFF); //disable interrupts up to priority 6 for n cycles
@@ -126,8 +126,8 @@ void Pid2(void)
 }
 
 void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
-{   long    L_ScaledSetpoint=_SETPOINT; // Dato da mantenere/raggiungere ( velocità di crociera ) moltiplicato per 1000
-    long    L_ScaledProcesso=_AXELSPEED; // Dato istantaneo ( velocità istantanea ) moltiplicato per 1000
+{   long    L_ScaledSetpoint=PID->Setpoint; // Dato da mantenere/raggiungere ( velocità di crociera ) moltiplicato per 1000
+    long    L_ScaledProcesso=MOTORE->I_MotorAxelSpeed; // Dato istantaneo ( velocità istantanea ) moltiplicato per 1000
 
 //    __builtin_disi(0x3FFF); /* disable interrupts, vedere pg 181 di MPLAB_XC16_C_Compiler_UG_52081.pdf */
 
@@ -162,7 +162,7 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
     int saturazione; // Indica se il controllo è in saturazione.
                      // Da usare per l'anti-windup
 
-    if( ( _OUT_PREC == 4095 ) || _OUT_PREC == 1 ) // Il controllo è saturo
+    if( ( PID->OldContrValue == 4095 ) || PID->OldContrValue == 1 ) // Il controllo è saturo
         saturazione = 1;
     else
         saturazione = 0;
@@ -171,140 +171,134 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
     // Tende a raggiungere il valore di SetPoint in base all'ampiezza dello Step.
     if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_EEPROM_RAMP_EN)
     {   //  Modalità rampa
-        if (_RAMPA < L_ScaledSetpoint)
+        if (PID->Rampa < L_ScaledSetpoint)
         {   // Rampa in salita
 
-            if( (_RAMPA > -DEAD_ZONE) && (_RAMPA < DEAD_ZONE))
+            if( (PID->Rampa > -DEAD_ZONE) && (PID->Rampa < DEAD_ZONE))
             {   //  Se _RAMPA cade nell'interno di +/- DEAD_ZONE
                 //  Salto all'esterno.
-                _RAMPA = DEAD_ZONE;
+                PID->Rampa = DEAD_ZONE;
             }
 
-            _RAMPA += _STEP_RAMPA;
-            if ( _RAMPA > L_ScaledSetpoint)
-                _RAMPA =  L_ScaledSetpoint;
-            if ( _RAMPA > _MAX_RPM)
-                _RAMPA =  _MAX_RPM;
+            PID->Rampa += PID->RampaStep;
+            if ( PID->Rampa > L_ScaledSetpoint)
+                PID->Rampa =  L_ScaledSetpoint;
+            if ( PID->Rampa > MOTORE->I_MotorRpmMax)
+                PID->Rampa =  MOTORE->I_MotorRpmMax;
         }
 
 
-        if (_RAMPA > L_ScaledSetpoint)
+        if (PID->Rampa > L_ScaledSetpoint)
         {   //  Rampa in discesa
 
 
-            if( (_RAMPA > -DEAD_ZONE) && (_RAMPA < DEAD_ZONE))
+            if( (PID->Rampa > -DEAD_ZONE) && (PID->Rampa < DEAD_ZONE))
             {   //  Se _RAMPA cade nell'interno di +/- DEAD_ZONE
                 //  Salto all'esterno.
-                _RAMPA = -DEAD_ZONE;
+                PID->Rampa = -DEAD_ZONE;
 
             }
 
-            _RAMPA -= _STEP_RAMPA;
-            if ( _RAMPA < L_ScaledSetpoint)
-                _RAMPA =  L_ScaledSetpoint;
-            if ( _RAMPA < _MIN_RPM)
-                _RAMPA =  _MIN_RPM;
+            PID->Rampa -= PID->RampaStep;
+            if ( PID->Rampa < L_ScaledSetpoint)
+                PID->Rampa =  L_ScaledSetpoint;
+            if ( PID->Rampa < MOTORE->I_MotorRpmMin)
+                PID->Rampa =  MOTORE->I_MotorRpmMin;
         }
     }
     else
     {   // Modalità senza rampa
 
         // Verifico limiti del setpoint in modalità senza rampa
-        if (L_ScaledSetpoint >  _MAX_RPM)
-            L_ScaledSetpoint =  _MAX_RPM;
+        if (L_ScaledSetpoint >  MOTORE->I_MotorRpmMax)
+            L_ScaledSetpoint =  MOTORE->I_MotorRpmMax;
 
-        if (L_ScaledSetpoint < _MIN_RPM) 
-            L_ScaledSetpoint = _MIN_RPM;
+        if (L_ScaledSetpoint < MOTORE->I_MotorRpmMin)
+            L_ScaledSetpoint = MOTORE->I_MotorRpmMin;
 
         if ((L_ScaledSetpoint < DEAD_ZONE) & (L_ScaledSetpoint > -DEAD_ZONE))
             L_ScaledSetpoint = 0;
 
-        _RAMPA = L_ScaledSetpoint;
+        PID->Rampa = L_ScaledSetpoint;
     }
 
-    _ERRORE = (_RAMPA - L_ScaledProcesso);       // calcolo errore tra il setpoint e il Current
-    long int resc_ERRORE = __builtin_mulss((int)_ERRORE, rescaleFact);
+    PID->Errore = (PID->Rampa - L_ScaledProcesso);       // calcolo errore tra il setpoint e il Current
+    long int resc_ERRORE = __builtin_mulss((int)PID->Errore, rescaleFact);
     
-//    _COMPONENTE_FEEDFORWARD = resc_ERRORE * 2;
-//    if (_COMPONENTE_FEEDFORWARD >  2045 )
-//        _COMPONENTE_FEEDFORWARD =  2045;    // limiti componente feed forward
+//    PID->ComponenteFeedForward = resc_ERRORE * 2;
+//    if (PID->ComponenteFeedForward >  2045 )
+//        PID->ComponenteFeedForward =  2045;    // limiti componente feed forward
 //
-//    if (_COMPONENTE_FEEDFORWARD < -2045 )
-//        _COMPONENTE_FEEDFORWARD = -2045;
+//    if (PID->ComponenteFeedForward < -2045 )
+//        PID->ComponenteFeedForward = -2045;
 
     // Y[n] = Y[n-1] + P*(X[n] - X[n-1] ) + I*X[n] + D*(X[n] - 2*X[n-1] + X[n-2])
 
     // CONTRIBUTO PROPORZIONALE
-    _CONTR_PROPORZIONALE = _KP * (resc_ERRORE - _ERRORE_PRECEDENTE );
+    PID->ContributoProporzionale = PID->Kp * (resc_ERRORE - PID->OldError1 );
 
     // CONTRIBUTO INTEGRALE
     if( saturazione == 1 || // Controllo saturo -> Anti-WindUp
-        _KI == 0 )          // Nessun contributo integrale
-        _CONTR_INTEGRALE = 0;
+        PID->Ki == 0 )          // Nessun contributo integrale
+        PID->ContributoIntegrale = 0;
     else
-        _CONTR_INTEGRALE = _KI * resc_ERRORE;
+        PID->ContributoIntegrale = PID->Ki * resc_ERRORE;
 
     // CONTRIBUTO DERIVATIVO
-    if( _KD == 0 ) // Nessun contributo derivativo
-        _CONTR_DERIVATIVO = 0;
+    if( PID->Kd == 0 ) // Nessun contributo derivativo
+        PID->ContributoDerivativo = 0;
     else
-        _CONTR_DERIVATIVO = _KD * ( resc_ERRORE - 2 *_ERRORE_PRECEDENTE + _ERRORE_PRE_PRECEDENTE);
+        PID->ContributoDerivativo = PID->Kd * ( resc_ERRORE - 2 *PID->OldError1 + PID->OldError2);
 
     // Aggiornamento errori
-    _ERRORE_PRE_PRECEDENTE = _ERRORE_PRECEDENTE;
-    _ERRORE_PRECEDENTE = resc_ERRORE;
+    PID->OldError2 = PID->OldError1;
+    PID->OldError1 = resc_ERRORE;
 
     // Ora che è differenziale ci va il "+=" by Walt
-    _SOMMATORIA += (_CONTR_PROPORZIONALE + _CONTR_INTEGRALE + _CONTR_DERIVATIVO);    // sommatoria errori
+    PID->Sommatoria += (PID->ContributoProporzionale + PID->ContributoIntegrale + PID->ContributoDerivativo);    // sommatoria errori
 
-    if (_SOMMATORIA > (LONG_MAX - 1000) )
-        _SOMMATORIA =  LONG_MAX; // limiti pwm
+    if (PID->Sommatoria > (LONG_MAX - 1000) )
+        PID->Sommatoria =  LONG_MAX; // limiti pwm
 
-    if (_SOMMATORIA < (LONG_MIN + 1000) )
-        _SOMMATORIA = LONG_MIN;
+    if (PID->Sommatoria < (LONG_MIN + 1000) )
+        PID->Sommatoria = LONG_MIN;
 
-    if (_RAMPA == 0 )
+    if (PID->Rampa == 0 )
     {
-        _OUT=2048;
-        _INTEGRALE=0;
-        _RAMPA = 0;
+        PID->OutPid=2048;
+        PID->Integrale=0;
+        PID->Rampa = 0;
     }
     else
     {   // sommatore per il calcolo del reale PWM da inviare al motore
-        //_OUT = 2048 + (_COMPONENTE_FEEDFORWARD + _SOMMATORIA/1000);
-        _OUT = 2048 + _SOMMATORIA/(100*rescaleFact);
+        //_OUT = 2048 + (PID->ComponenteFeedForward + _SOMMATORIA/1000);
+        PID->OutPid = 2048 + PID->Sommatoria/(100*rescaleFact);
     }
 
-    if (_OUT > 4095) _OUT  = 4095;
-    if (_OUT < 1) _OUT = 1;
+    if (PID->OutPid > 4095) PID->OutPid  = 4095;
+    if (PID->OutPid < 1) PID->OutPid = 1;
 
-    _OUT_PREC = _OUT;
+    PID->OldContrValue = PID->OutPid;
 
 //    __builtin_disi(0x0000); /* enable interrupts, vedere pg 181 di MPLAB_XC16_C_Compiler_UG_52081.pdf */
 }
 
 void PidInit(volatile Pid_t *PID, volatile Motor_t *MOTORE)
-{   // _RAMPA
-    _STEP_RAMPA = 0;
-    //_SETPOINT
-    _INTEGRALE = 0;
+{   PID->RampaStep = 0;
+    PID->Integrale = 0;
+    PID->ContributoIntegrale = 0;
+    PID->ContributoProporzionale = 0;
+    PID->ContributoDerivativo = 0;
 
-    //_KP
-    //_KI
-    //_KD
-    _CONTR_INTEGRALE = 0;
-    _CONTR_PROPORZIONALE = 0;
-    _CONTR_DERIVATIVO = 0;
+    PID->Errore = 0;
+    PID->OldError1 = 0;
+    PID->OldError2 = 0;
 
-    _ERRORE = 0;
-    _ERRORE_PRECEDENTE = 0;
-    _ERRORE_PRE_PRECEDENTE = 0;
+    PID->Sommatoria = 0;
+    PID->OldContrValue = 0;
 
-    _SOMMATORIA = 0;
-    _OUT_PREC = 0;
-
-    _COMPONENTE_FEEDFORWARD = 0;
-    _OUT = 0;
+    //PID->ComponenteFeedForward = 0;
+    PID->OutPid = 0;
     //_MAX_RPM
     //_MIN_RPM
     //_AXELSPEED
