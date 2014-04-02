@@ -2,8 +2,10 @@ message(Added EXTERN module)
 
 #######################################################################################
 # LIBMODBUS
-CONFIG(rcserver) {
+CONFIG(server) {
     message(Building with LibModBus support)
+
+    CONFIG += libmodbus
 
     SOURCES += \
                 $$ROBOCONTROLLERSDKPATH/mod_EXTERN/libmodbus-3.0.1/src/modbus.c \
@@ -37,6 +39,8 @@ CONFIG(rcserver) {
 CONFIG(opencv)
 {
     message(Building with OpenCV support)
+
+    QT       += printsupport
 
     INCLUDEPATH += \
                 $$ROBOCONTROLLERSDKPATH/mod_EXTERN/opencv-2.4.8/include
@@ -87,5 +91,22 @@ CONFIG(opencv)
     }
 }
 #######################################################################################
+
+#######################################################################################
+# LIB_QCUSTOMPLOT
+CONFIG(gui) {
+    message(Building with QCustomPlot support)
+
+    CONFIG += qcustomplot
+
+    INCLUDEPATH += \
+                $$ROBOCONTROLLERSDKPATH/mod_EXTERN/qcustomplot-1.2.0/include
+
+    HEADERS += \
+                $$ROBOCONTROLLERSDKPATH/mod_EXTERN/qcustomplot-1.2.0/include/qcustomplot.h
+
+    SOURCES += \
+                $$ROBOCONTROLLERSDKPATH/mod_EXTERN/qcustomplot-1.2.0/src/qcustomplot.cpp
+}
 
 message($$CONFIG)

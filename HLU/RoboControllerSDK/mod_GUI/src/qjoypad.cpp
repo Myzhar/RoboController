@@ -42,7 +42,7 @@ void QJoypad::setJoypadValues( float x, float y )
 
     static float oldX=0.0f,oldY=0.0f;
 
-    if( fabs(x-oldX)<10.0f || fabs(y-oldY)<10.0f )
+    if( fabs(x-oldX)<20.0f || fabs(y-oldY)<20.0f )
         return;
 
     oldX = x; oldY = y;

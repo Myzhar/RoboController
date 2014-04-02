@@ -1,5 +1,7 @@
 QT += network
 
+CONFIG += videostream
+
 CONFIG(opencv) {
     message(Added VIDEOSTREAM module)
     

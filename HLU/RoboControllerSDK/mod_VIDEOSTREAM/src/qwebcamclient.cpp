@@ -31,6 +31,7 @@ QWebcamClient::~QWebcamClient()
         mUdpSocketSend->writeDatagram( &cmd,
                                        QHostAddress(mServerIp),
                                        mSendPort );
+        mUdpSocketSend->flush();
 
         delete mUdpSocketSend;
     }
@@ -49,6 +50,7 @@ void QWebcamClient::disconnectServer()
         mUdpSocketSend->writeDatagram( &cmd,
                                        QHostAddress(mServerIp),
                                        mListenPort );
+        mUdpSocketSend->flush();
 
         delete mUdpSocketSend;
         mUdpSocketSend = NULL;
@@ -88,10 +90,12 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
     else
     {
         char cmd = CMD_ADD_CLIENT;
-        if( -1==mUdpSocketSend->writeDatagram( &cmd,
-                                               QHostAddress(mServerIp),
-                                               //QHostAddress::Broadcast,
-                                               mSendPort ) )
+        int res = mUdpSocketSend->writeDatagram( &cmd,
+                                                 QHostAddress(mServerIp),
+                                                 //QHostAddress::Broadcast,
+                                                 mSendPort );
+        mUdpSocketSend->flush();
+        if( -1==res )
         {
             qDebug() << tr("Connection to server failed on port %2")
                         .arg(mSendPort);

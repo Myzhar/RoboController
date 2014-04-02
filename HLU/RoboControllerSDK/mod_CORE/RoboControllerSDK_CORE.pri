@@ -1,5 +1,7 @@
 message(Added CORE module)
 
+CONFIG += CORE
+
 SOURCES += \
     $$ROBOCONTROLLERSDKPATH/mod_CORE/src/robocontrollersdk.cpp \
     $$ROBOCONTROLLERSDKPATH/mod_CORE/src/exception.cpp
