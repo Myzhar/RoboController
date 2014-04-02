@@ -196,10 +196,14 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
             {
                 PID->Rampa = -DEAD_ZONE;
             }
-            else if( (PID->Rampa >= 0 && (PID->Rampa < DEAD_ZONE))
+            else if( (PID->Rampa >= 0) && (PID->Rampa < DEAD_ZONE))
             {
                 PID->Rampa = DEAD_ZONE;
             }
+            else if((PID->Rampa > -DEAD_ZONE) && (PID->Rampa < DEAD_ZONE))
+            { PidReset(PID, MOTORE);
+            }
+
 
             PID->Rampa -= PID->RampaStep;
             if ( PID->Rampa < L_ScaledSetpoint)
@@ -219,7 +223,9 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
             L_ScaledSetpoint = MOTORE->I_MotorRpmMin;
 
         if ((L_ScaledSetpoint < DEAD_ZONE) & (L_ScaledSetpoint > -DEAD_ZONE))
-            L_ScaledSetpoint = 0;
+        {   L_ScaledSetpoint = 0;
+            PidReset(PID, MOTORE);  // All'interno della banda morta resetto il PID
+        }
 
         PID->Rampa = L_ScaledSetpoint;
     }
@@ -285,7 +291,7 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
 //    __builtin_disi(0x0000); /* enable interrupts, vedere pg 181 di MPLAB_XC16_C_Compiler_UG_52081.pdf */
 }
 
-void PidInit(volatile Pid_t *PID, volatile Motor_t *MOTORE)
+void PidReset(volatile Pid_t *PID, volatile Motor_t *MOTORE)
 {   PID->RampaStep = 0;
     PID->Integrale = 0;
     PID->ContributoIntegrale = 0;
@@ -299,10 +305,5 @@ void PidInit(volatile Pid_t *PID, volatile Motor_t *MOTORE)
     PID->Sommatoria = 0;
     PID->OldContrValue = 0;
 
-    //PID->ComponenteFeedForward = 0;
     PID->OutPid = 0;
-    //_MAX_RPM
-    //_MIN_RPM
-    //_AXELSPEED
-
 }

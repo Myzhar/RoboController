@@ -285,7 +285,7 @@ void Pid2(void);
 //void Pid_M1(void);
 //void Pid_M2(void);
 //void Pid(volatile Pid_t *PID);
-void PidInit(volatile Pid_t *PID, volatile Motor_t *MOTORE);
+void PidReset(volatile Pid_t *PID, volatile Motor_t *MOTORE);
 void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE);
 //void change_prescaler(volatile unsigned int *ICM, volatile Motor_t *Motore);
 void InitMotorStructure();

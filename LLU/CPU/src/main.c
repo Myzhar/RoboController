@@ -212,11 +212,11 @@ void GestioneSetpoint(void)
     if(VarModbus[INDICE_STATUSBIT1] & FLG_STATUSBI1_PID_EN)
     {   //Funzionamento in modalità PID
         
-        if(OLD_INDICE_STATUSBIT1 == 1) // Esco dalla modalità PID e passo a quella PWM
+        if(OLD_INDICE_STATUSBIT1 == 1) // Esco dalla modalità PWM e passo a quella PID
         {   OLD_INDICE_STATUSBIT1 = 0;
             // Disattivo il PID
-            PidInit(&PID1, &Motore1);
-            PidInit(&PID2, &Motore2);
+            PidReset(&PID1, &Motore1);
+            PidReset(&PID2, &Motore2);
         }
 
         /* **************************************************************** */
@@ -234,8 +234,8 @@ void GestioneSetpoint(void)
         if(OLD_INDICE_STATUSBIT1 == 0) // Esco dalla modalità PID e passo a quella PWM
         {   OLD_INDICE_STATUSBIT1 = 1;
             // Disattivo il PID
-            PidInit(&PID1, &Motore1);
-            PidInit(&PID2, &Motore2);
+            PidReset(&PID1, &Motore1);
+            PidReset(&PID2, &Motore2);
         }
 
         // In modalità PWM il dato delle word INDICE_PWM_CHx lo mando direttamente 
