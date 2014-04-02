@@ -192,11 +192,13 @@ void Pid(volatile Pid_t *PID, volatile Motor_t *MOTORE)
         {   //  Rampa in discesa
 
 
-            if( (PID->Rampa > -DEAD_ZONE) && (PID->Rampa < DEAD_ZONE))
-            {   //  Se _RAMPA cade nell'interno di +/- DEAD_ZONE
-                //  Salto all'esterno.
+            if( (PID->Rampa > -DEAD_ZONE) && (PID->Rampa < 0))
+            {
                 PID->Rampa = -DEAD_ZONE;
-
+            }
+            else if( (PID->Rampa >= 0 && (PID->Rampa < DEAD_ZONE))
+            {
+                PID->Rampa = DEAD_ZONE;
             }
 
             PID->Rampa -= PID->RampaStep;
