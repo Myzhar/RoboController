@@ -1,3 +1,13 @@
 ####################################################
 # LLU ignore files
 ####################################################
+
+####################################################
+# MPLABX 
+####################################################
+
+#LLU/RoboController/nbproject/Makefile-* 
+#LLU/RoboController/nbproject/Package-* 
+#LLU/RoboController/nbproject/private 
+#LLU/RoboController/nbproject/private/*
+#/.project
