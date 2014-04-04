@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/icon">
         <file>images/MyzharBot_favicon_64x64.png</file>
+        <file>images/MyzharBot_favicon_512x512.png</file>
     </qresource>
 </RCC>

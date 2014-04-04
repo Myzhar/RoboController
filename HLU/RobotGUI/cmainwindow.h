@@ -11,11 +11,11 @@
 #include <robocontrollersdk.h>
 #include <qwebcamclient.h>
 
-#ifndef android
+/*#ifndef android
 #include "qglopencvwidget.h"
 #else
 //TODO add OpenCV Widget without OpenGL
-#endif
+#endif*/
 
 // >>>>> INI names
 #ifdef ANDROID
@@ -118,11 +118,13 @@ private:
 
     bool mNewImageAvailable; /*!< Used to retrieve image from WebcamServer */
 
-#ifndef android
+    cv::Mat mDefaultBgImg; /*!< Default background image */
+
+/*#ifndef android
     QGlOpenCVWidget* mOpenCVWidget;
 #else
     // TODO QOpenCVWidget* mOpenCVWidget;
-#endif
+#endif*/
 };
 
 #endif // CMAINWINDOW_H

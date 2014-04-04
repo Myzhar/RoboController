@@ -22,19 +22,19 @@ HEADERS += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qjoypad.h \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qrobotconfigdialog.h \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qbatterycalibdialog.h \
-            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qscreentools.h \
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qscreentools.h
 
-android {
-            message(Android GUI)
-} else {
-    CONFIG(opencv) {
-        HEADERS += \
-            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qglopencvwidget.h
-
-        SOURCES += \
-            $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qglopencvwidget.cpp
-    }
-}
+#android {
+#            message(Android GUI)
+#} else {
+#    CONFIG(opencv) {
+#        HEADERS += \
+#            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qglopencvwidget.h
+#
+#        SOURCES += \
+#            $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qglopencvwidget.cpp
+#    }
+#}
 
 FORMS    += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/ui/qrobotconfigdialog.ui \
@@ -44,5 +44,11 @@ RESOURCES += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/res/joypad.qrc
 
 CONFIG(opencv) {
-    #TODO: ADD OpenGL Widget for Qt
+    SOURCES += \
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qopencvscene.cpp \
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qrobotguiview.cpp
+
+    HEADERS += \
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qopencvscene.h \
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qrobotguiview.h
 }

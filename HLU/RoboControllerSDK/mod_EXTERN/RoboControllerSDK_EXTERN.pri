@@ -68,6 +68,7 @@ CONFIG(opencv)
             $$OPENCV_LIB_PATH/libopencv_highgui.a \
             $$OPENCV_LIB_PATH/libopencv_androidcamera.a \
             $$OPENCV_LIB_PATH/libopencv_core.a \
+            $$OPENCV_LIB_PATH/libopencv_imgproc.a \
             $$OPENCV_LIB_PATH/libIlmImf.a \
             $$OPENCV_LIB_PATH/liblibjpeg.a \
             $$OPENCV_LIB_PATH/liblibpng.a \

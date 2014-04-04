@@ -14,6 +14,7 @@
 #include "qrobotconfigdialog.h"
 #include "qbatterycalibdialog.h"
 #include "qcommon.h"
+#include "opencvtools.h"
 
 #define DEFAULT_IP "127.0.0.1"
 #define DEFAULT_TCP_PORT 14500
@@ -33,10 +34,10 @@ CMainWindow::CMainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    mOpenCVWidget = NULL;
+    //mOpenCVWidget = NULL;
 
     // >>>>> Video Widget
-#ifdef ANDROID
+/*#ifdef ANDROID
     //TODO add widget OpenCV not OpenGL
 #else
     mOpenCVWidget = new QGlOpenCVWidget( this );
@@ -47,7 +48,7 @@ CMainWindow::CMainWindow(QWidget *parent) :
     ui->widget_video_container->layout()->setContentsMargins(0,0,0,0);
     ui->widget_video_container->layout()->addWidget(mOpenCVWidget);
 
-#endif
+#endif*/
     // <<<<< Video Widget
 
     // >>>>> Board Status Widgets
@@ -212,6 +213,10 @@ CMainWindow::CMainWindow(QWidget *parent) :
     mRobotConfigValid = false;
 
     mNewImageAvailable = false;
+
+    QImage img( ":/icon/images/MyzharBot_favicon_512x512.png" );
+    mDefaultBgImg = OpenCVTools::QImageToCvMat( img, true );
+    ui->widget_video_container->scene()->setBgImage( mDefaultBgImg );
 }
 
 CMainWindow::~CMainWindow()
@@ -314,9 +319,10 @@ void CMainWindow::timerEvent( QTimerEvent* event )
             mNewImageAvailable = false;
             cv::Mat frame = mWebcamClient->getLastFrame();
             //cv::imshow( "Received Frame", frame );
-#ifndef ANDROID
+/*#ifndef ANDROID
             mOpenCVWidget->showImage(frame);
-#endif
+#endif*/
+            ui->widget_video_container->scene()->setBgImage( frame );
         }
     }
     else if( event->timerId() == mStatusReqTimer )
@@ -363,6 +369,9 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
     int jw = COMMON->mScreen.cvtMm2Px(30); // Joypad sized 3 cm
     ui->widget_joypad->setFixedWidth( jw );
     ui->widget_joypad->setFixedHeight( jw );
+
+    if(!mDefaultBgImg.empty())
+        ui->widget_video_container->fitInView(QRectF(0,0, mDefaultBgImg.cols, mDefaultBgImg.rows), Qt::KeepAspectRatio );
 }
 
 void CMainWindow::onFindServerButtonClicked()
