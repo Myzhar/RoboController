@@ -66,7 +66,8 @@ int main(int argc, char *argv[])
             }
         }
 
-        QWebcamServer* webcamServer = new QWebcamServer(0, 55554, 55555, 1536, 5, NULL );
+        QWebcamServer* webcamServer = new QWebcamServer(0, 55554, 55555, 1500, 5, NULL );
+        
         time.restart();
 
         while( !webcamServer->isRunning() )

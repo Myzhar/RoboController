@@ -50,6 +50,7 @@ QWebcamServer::QWebcamServer(int camIdx, int sendPort,
         // Starting!
         start();
     }
+
 }
 
 QWebcamServer::~QWebcamServer()
@@ -167,13 +168,14 @@ void QWebcamServer::run()
             // <--- UDP Sending
         }
 
-#ifndef ARM_NO_GUI
+#ifdef win32
         if( !frame.empty() )
         {
-            cv::imshow( "Frame Raw", frame );
+            cv::imshow( "Frame", frame );
             cv::waitKey(1);
+            qDebug() << "frame";
         }
-#endif        
+#endif
 
         QCoreApplication::processEvents( QEventLoop::AllEvents, 20 );
 
@@ -231,7 +233,7 @@ void QWebcamServer::onReadyRead()
                 }
                 else
                     qDebug() << tr("Unable to accept client %1 - Error: %2").arg( senderIP.toString() )
-                                                                                  .arg(mUdpSocketSender->errorString() ) ;
+                                .arg(mUdpSocketSender->errorString() ) ;
             }
             else
             {
