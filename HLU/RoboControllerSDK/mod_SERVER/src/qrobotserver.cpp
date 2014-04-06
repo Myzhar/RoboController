@@ -483,12 +483,6 @@ void QRobotServer::onTcpReadyRead()
                 break;
             }
 
-            /*quint16 val16 = 0x0000;
-            while( val16 != TCP_START_VAL ) // TODO: VERIFICARE!!!
-            {
-                in >> val16;
-            }*/
-
             // >>>>> Searching for the start word
             int count = 0;
             quint16 val16;
@@ -507,7 +501,7 @@ void QRobotServer::onTcpReadyRead()
                 count++;
 
             }
-            while( val16 != TCP_START_VAL ); // TODO verify if this works!
+            while( val16 != TCP_START_VAL );
             // <<<<< Searching for the start word
 
             // Datagram dimension
@@ -678,7 +672,7 @@ void QRobotServer::onUdpStatusReadyRead()
     quint16 msgCode;
 
     while( mUdpStatusSocket->hasPendingDatagrams() ) // Receiving data while there is data available
-    {        
+    {
         QByteArray buffer( mUdpStatusSocket->pendingDatagramSize(), 0 );
         qint64 datagramSize = mUdpStatusSocket->pendingDatagramSize();
 
@@ -725,7 +719,7 @@ void QRobotServer::onUdpStatusReadyRead()
                 quint16 val16;
                 in >> val16;
 
-                while( val16 != UDP_START_VAL ) // TODO verify if this works!
+                while( val16 != UDP_START_VAL )
                 {
                     count++;
                     if(count == datagramSize)
@@ -873,6 +867,7 @@ void QRobotServer::onUdpStatusReadyRead()
             case CMD_GET_ROBOT_CTRL:
             {
                 //qDebug() << tr("UDP Status Received msg #%1: CMD_GET_ROBOT_CTRL (%2)").arg(msgIdx).arg(msgCode);
+                mControlTimeoutTimerId = startTimer( SVR_CONTROL_UDP_TIMEOUT );
 
                 if( mControllerClientIp.isEmpty() || mControllerClientIp==addr.toString() )
                 {
@@ -892,12 +887,7 @@ void QRobotServer::onUdpStatusReadyRead()
 
             case CMD_REL_ROBOT_CTRL:
             {
-                mControllerClientIp = "";
-
-                QVector<quint16> vec;
-                sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_RELEASED, vec ); // Robot control released
-
-                qDebug() << tr("The client %1 has released the control of the robot").arg(addr.toString());
+                releaseControl();
 
                 break;
             }
@@ -985,7 +975,7 @@ void QRobotServer::onUdpControlReadyRead()
                 quint16 val16;
                 in >> val16;
 
-                while( val16 != UDP_START_VAL ) // TODO verify if this works!
+                while( val16 != UDP_START_VAL )
                 {
                     count++;
                     if(count == datagramSize)
@@ -1023,6 +1013,7 @@ void QRobotServer::onUdpControlReadyRead()
             {
             case CMD_WR_MULTI_REG:
             {
+                mControlTimeoutTimerId = startTimer( SVR_CONTROL_UDP_TIMEOUT );
                 //qDebug() << tr("UDP Control Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
 
                 if( !mBoardConnected )
@@ -1309,6 +1300,12 @@ void QRobotServer::timerEvent(QTimerEvent *event)
             //qDebug() << "Ping Ok";
         }
     }
+    else if(event->timerId() == mControlTimeoutTimerId )
+    {
+        qDebug() << tr("Control timeout. Elapsed %1 seconds since last control command").arg( SVR_CONTROL_UDP_TIMEOUT);
+
+        releaseControl();
+    }
 }
 
 void QRobotServer::run()
@@ -1318,6 +1315,22 @@ void QRobotServer::run()
     exec();
 
     qDebug() << tr("QRobotServer thread finished");
+}
+
+
+void QRobotServer::releaseControl( )
+{
+    killTimer( mControlTimeoutTimerId );
+
+    if(!mControllerClientIp.isEmpty())
+    {
+        QVector<quint16> vec;
+        sendStatusBlockUDP( QHostAddress(mControllerClientIp), MSG_ROBOT_CTRL_RELEASED, vec ); // Robot control released
+
+        qDebug() << tr("The client %1 has released the control of the robot").arg(mControllerClientIp);
+    }
+
+    mControllerClientIp = "";
 }
 
 }

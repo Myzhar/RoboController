@@ -257,6 +257,8 @@ void RoboControllerSDK::connectToUdpServers()
 
     connect( &mUdpPingTimer, SIGNAL(timeout()),
              this, SLOT(onUdpTestTimerTimeout()) );
+    connect( &mUdpControlDisconnectTimer, SIGNAL(timeout()),
+             this, SLOT(onControlTimerTimeout()) );
 
     mUdpPingTimer.start(UDP_PING_TIME_MSEC);
 
@@ -321,7 +323,7 @@ void RoboControllerSDK::onTcpReadyRead()
                 count++;
 
             }
-            while( val16 != TCP_START_VAL ); // TODO verify if this works!
+            while( val16 != TCP_START_VAL );
             // <<<<< Searching for the start word
 
             // Datagram dimension
@@ -462,7 +464,7 @@ void RoboControllerSDK::onUdpStatusReadyRead()
                 quint16 val16;
                 in >> val16;
 
-                while( val16 != UDP_START_VAL ) // TODO verify if this works!
+                while( val16 != UDP_START_VAL )
                 {
                     count++;
                     if(count == datagramSize)
@@ -1424,14 +1426,15 @@ void RoboControllerSDK::saveRobotConfigurationToIni( QString iniFile )
 void RoboControllerSDK::setRobotConfiguration( RobotConfiguration& roboConfig )
 {
     memcpy( &mRobotConfig, &roboConfig, sizeof(RobotConfiguration) );
-
-    // TODO Send RobotConfiguration to RoboController!!!!!!!!!
 }
 
 void RoboControllerSDK::getRobotControl()
 {
+    // TODO Add a timer to release Robot Control if UDP Ping are not received for 5 seconds!
     if(!mUdpStatusSocket)
         return;
+
+    mUdpControlDisconnectTimer.start( CONTROL_UDP_TIMEOUT );
 
     QVector<quint16> vec;
     sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_GET_ROBOT_CTRL, vec, true );
@@ -1593,6 +1596,15 @@ void RoboControllerSDK::onUdpTestTimerTimeout()
     // qDebug() << tr("Ping UDP");
 
     sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, pingData, true );
+}
+
+void RoboControllerSDK::onControlTimerTimeout()
+{
+    mUdpControlDisconnectTimer.stop();
+
+    releaseRobotControl();
+
+    qDebug() << tr("Robot Control automatically released for timeout. Elapsed at least %1 msec since last command.").arg(CONTROL_UDP_TIMEOUT);
 }
 
 

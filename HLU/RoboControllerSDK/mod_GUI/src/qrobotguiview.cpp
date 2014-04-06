@@ -1,7 +1,6 @@
 #include "qrobotguiview.h"
 #include <QDebug>
 
-
 #ifndef QT_NO_OPENGL
 #include <QGLWidget>
 #endif
@@ -34,6 +33,8 @@ void QRobotGUIView::mousePressEvent(QMouseEvent *event)
     mLastPos = mBnDownPos;
 
     qDebug() << tr("Mouse pressed %1 %2").arg(mBnDownPos.x() ).arg(mBnDownPos.y() );
+
+    mScene->buttonDown( mBnDownPos );
 }
 
 void QRobotGUIView::mouseReleaseEvent(QMouseEvent *event)

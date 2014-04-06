@@ -37,7 +37,7 @@ CMainWindow::CMainWindow(QWidget *parent) :
     //mOpenCVWidget = NULL;
 
     // >>>>> Video Widget
-/*#ifdef ANDROID
+    /*#ifdef ANDROID
     //TODO add widget OpenCV not OpenGL
 #else
     mOpenCVWidget = new QGlOpenCVWidget( this );
@@ -256,13 +256,21 @@ void CMainWindow::timerEvent( QTimerEvent* event )
 
         if(mPidEnabled)
         {
-            if( mJoyMot[0] != mLastJoyMot[0] || mJoyMot[1] != mLastJoyMot[1] )
+            try
             {
-                double speed0 = mJoyMot[0]/scale*mMaxMotorSpeed;
-                double speed1 = mJoyMot[1]/scale*mMaxMotorSpeed;
-
-                try
+                // If the robot was stopped its good to try to take the control again
+                if(mLastJoyMot[0]==0.0 || mLastJoyMot[1]==0.0)
                 {
+                    // >>>>> Taking robot control
+                    mRoboCtrl->getRobotControl();
+                    // <<<<< Taking robot control
+                }
+
+                if( mJoyMot[0] != mLastJoyMot[0] || mJoyMot[1] != mLastJoyMot[1] )
+                {
+                    double speed0 = mJoyMot[0]/scale*mMaxMotorSpeed;
+                    double speed1 = mJoyMot[1]/scale*mMaxMotorSpeed;
+
 
                     {
                         mRoboCtrl->setMotorSpeeds( speed0, speed1 );
@@ -272,10 +280,11 @@ void CMainWindow::timerEvent( QTimerEvent* event )
 
                     mSpeedRequested = true; // Must be set because setMotorSpeeds replies on Status UDP with the speeds of the motors
                 }
-                catch( RcException &e)
-                {
-                    qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
-                }
+
+            }
+            catch( RcException &e)
+            {
+                qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
             }
 
             //qDebug() << tr("Motor speeds: (%1,%2)").arg(motSx).arg(motDx);
@@ -284,6 +293,14 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         {
             try
             {
+                // If the robot was stopped its good to try to take the control again
+                if(mLastJoyMot[0]==0.0 || mLastJoyMot[1]==0.0)
+                {
+                    // >>>>> Taking robot control
+                    mRoboCtrl->getRobotControl();
+                    // <<<<< Taking robot control
+                }
+
                 if( mJoyMot[0] != mLastJoyMot[0] )
                 {
                     int speed = (int)(mJoyMot[0]/scale*2047.0f+0.5f);
@@ -318,11 +335,15 @@ void CMainWindow::timerEvent( QTimerEvent* event )
 
             mNewImageAvailable = false;
             cv::Mat frame = mWebcamClient->getLastFrame();
-            //cv::imshow( "Received Frame", frame );
-/*#ifndef ANDROID
-            mOpenCVWidget->showImage(frame);
-#endif*/
+
             ui->widget_video_container->scene()->setBgImage( frame );
+
+            if( mDefaultBgImg.rows!=frame.rows || mDefaultBgImg.cols!=frame.cols  )
+            {
+                mDefaultBgImg = frame;
+                ui->widget_video_container->fitInView(QRectF(0,0, frame.cols, frame.rows),
+                                                      Qt::KeepAspectRatio );
+            }
         }
     }
     else if( event->timerId() == mStatusReqTimer )
@@ -370,8 +391,12 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
     ui->widget_joypad->setFixedWidth( jw );
     ui->widget_joypad->setFixedHeight( jw );
 
-    if(!mDefaultBgImg.empty())
-        ui->widget_video_container->fitInView(QRectF(0,0, mDefaultBgImg.cols, mDefaultBgImg.rows), Qt::KeepAspectRatio );
+    if( !mDefaultBgImg.empty() )
+        ui->widget_video_container->fitInView( QRectF(0,0, mDefaultBgImg.cols, mDefaultBgImg.rows ),
+                                               Qt::KeepAspectRatio );
+
+    ui->widget_video_container->scene()->setJoypadSize( QSize(jw,jw),
+                                                        QSize(jw/2,jw/2) );
 }
 
 void CMainWindow::onFindServerButtonClicked()
@@ -439,7 +464,7 @@ void CMainWindow::onConnectButtonClicked()
     // >>>>> Setting last PID state
     BoardStatus status;
 
-    status.accelRampEnable = mPidEnabled;
+    status.accelRampEnable = false;
     status.pidEnable = mPidEnabled;
     status.saveToEeprom = true;
     status.wdEnable = true;
@@ -723,7 +748,10 @@ void CMainWindow::onNewBatteryValue( double battVal )
                             .arg( battVal, 5,'f', 2, ' ' )
                             .arg( (double)(mRoboConf.MaxChargedBatteryLevel)/100.0f, 5,'f', 2, ' ' ));
 
-    double perc = 100*((battVal-(mRoboConf.MinChargedBatteryLevel/100)))/((mRoboConf.MaxChargedBatteryLevel/100)-(mRoboConf.MinChargedBatteryLevel/100));
+    double perc = 100.0*(battVal-((double)mRoboConf.MinChargedBatteryLevel/100.0))/
+            ((double)(mRoboConf.MaxChargedBatteryLevel-mRoboConf.MinChargedBatteryLevel)/100.0);
+
+    //qDebug() << tr("Battery: %2V %1%").arg(perc).arg(battVal);
 
     mStatusBattLevelProgr->setValue(perc);
 

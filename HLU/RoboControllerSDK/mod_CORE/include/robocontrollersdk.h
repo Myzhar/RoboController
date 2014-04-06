@@ -13,8 +13,8 @@
 #define ROBOT_CONFIG_INI_FILE "./robotConfig.ini"
 
 #define SERVER_REPLY_TIMEOUT_MSEC 5000
-
 #define UDP_PING_TIME_MSEC 1000
+#define CONTROL_UDP_TIMEOUT 15000 // Control timeout after 15 sec
 
 namespace roboctrl
 {
@@ -188,8 +188,6 @@ public:
      */
     void setBatteryCalibrationParams( AnalogCalibValue valueType, double curChargeVal);
 
-    //TODO: Implementare getWatchDogTime e setWatchDogTime
-
     /** @brief Disables the Communication Watchdog
      *         WatchDog if active stops motors if communication is lost
      */
@@ -260,6 +258,9 @@ protected slots:
 
     /// Send Test ping to UDP Servers
     void onUdpTestTimerTimeout();
+
+    /// Called if a client that took control of the robot does not send command for @ref CONTROL_UDP_TIMEOUT msec
+    void onControlTimerTimeout();
 
     /// Ping Timer handler
     void onPingTimerTimeout();
@@ -340,6 +341,8 @@ private:
     bool mStopped; /**< Thread stopped */
     quint64 mWatchDogTimeMsec; /**< Board WatchDog Time in millisecond*/
     QTimer mPingTimer; /** Id of the ping timer. Ping is called with a time smaller of 10% than watchdog time to mantain the board active */
+    QTimer mUdpControlDisconnectTimer; ///< If a client does not send command to Control Server for @ref CONTROL_UDP_TIMEOUT millisecond, the server automatically release the exclusive control.
+
 
     bool            mWatchDogEnable;
     bool            mNewStatusBit1Received;

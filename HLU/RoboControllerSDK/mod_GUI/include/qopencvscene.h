@@ -18,6 +18,10 @@ public:
 public slots:
     /// Sets Background Image from OpenCV cv::Mat
     void setBgImage( cv::Mat& cvImg );
+    /// Sets dimension of the Joypad
+    void setJoypadSize( QSize bgSize, QSize padSize );
+    /// Draws the joypad at button down
+    void buttonDown(QPointF mBnDownPos );
 
 private:
     /// Converts cv::Mat to QImage
@@ -29,6 +33,9 @@ signals:
 
 private:    
     QGraphicsPixmapItem* mBgPixmapItem; ///< Background image
+
+    QGraphicsEllipseItem* mJoypadBgItem; ///< Background of the joypad
+    QGraphicsEllipseItem* mJoypadPadItem; ///< Pad of the joypad
 
 };
 

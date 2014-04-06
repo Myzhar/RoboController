@@ -15,6 +15,7 @@
 
 #define WORD_TEST_BOARD 0
 #define TEST_TIMER_INTERVAL 1000
+#define SVR_CONTROL_UDP_TIMEOUT 30000
 
 #define INITIAL_REPLY_BUFFER_SIZE 20
 
@@ -70,6 +71,8 @@ private:
 
     void readSpeedsAndSend(QHostAddress addr); ///< Called to send to client the speed of the robot after receiveing a command of movement
 
+    void releaseControl(); ///< Release the control of the robot
+
 protected:
     virtual void run() Q_DECL_OVERRIDE;
     virtual void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
@@ -100,6 +103,7 @@ private:
 
     int             mBoardTestTimerId; ///< Id of the test timer.
     int             mTcpClientCount; ///< Number of Clients connected on TCP
+    int             mControlTimeoutTimerId; ///< If a client does not send control command for @ref SVR_CONTROL_UDP_TIMEOUT
 
     QString         mControllerClientIp; ///< Ip address of the client that took control for driving the robot using @ref getRobotControl function
 
