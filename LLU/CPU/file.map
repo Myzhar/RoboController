@@ -1,4 +1,4 @@
-Microchip Technology Inc, vŽ]
+Microchip Technology Inc, vŽ9
 
 Tool Name:
   c:\program files (x86)\microchip\xc16\v1.21\bin\bin\..\bin/elf-ld.exe
@@ -146,10 +146,10 @@ section                    address   length (PC units)   length (bytes) (dec)
 .const                       0xe3a                0x2c            0x42  (66)
 .dinit                       0xe66                0x7a            0xb7  (183)
 .text                        0xee0               0x116           0x1a1  (417)
-_03803F0053369b1a           0x1000              0x1800          0x2400  (9216)
-.text                       0x2800              0x3bbe          0x599d  (22941)
+_03856F0053417841           0x1000              0x1800          0x2400  (9216)
+.text                       0x2800              0x3c08          0x5a0c  (23052)
 
-                     Total program memory used (bytes):         0x928e  (37518) 28%
+                     Total program memory used (bytes):         0x92fd  (37629) 28%
 
 
 Data Memory  [Origin = 0x800, Length = 0x4000]
@@ -159,11 +159,11 @@ section                    address      alignment gaps    total length  (dec)
 .nbss                        0x800                   0             0x2  (2)
 .bss                         0x802                   0          0x2406  (9222)
 .heap                       0x2c08                   0           0x200  (512)
-_0398254053369afc           0x4600                   0            0x40  (64)
+_039ED54053417835           0x4600                   0            0x40  (64)
 .data                       0x4640                   0            0x4e  (78)
 .bss                        0x468e                   0             0x2  (2)
-_0398272053369afc           0x4700                   0            0x80  (128)
-_0398290053369afc           0x4780                   0            0x80  (128)
+_039ED72053417835           0x4700                   0            0x80  (128)
+_039ED90053417835           0x4780                   0            0x80  (128)
 
                         Total data memory used (bytes):         0x2798  (10136) 61%
 
@@ -403,29 +403,29 @@ External Symbols in Program Memory (by address):
                   0x004c5c                  _Pid1
                   0x004cf8                  _Pid2
                   0x004d94                  _Pid
-                  0x005134                  _PidInit
-                  0x00519e                  _InitializationEEPROM
-                  0x0051ae                  _RestoreEEPROMData
-                  0x005698                  _InitADC
-                  0x005756                  _LeggiADC
-                  0x00581e                  _MediaADC
-                  0x0058c6                  _TaraturaAnalogiche
-                  0x005b08                  __DMA7Interrupt
-                  0x005b52                  _Usart1Setting
-                  0x005be2                  _Usart2Setting
-                  0x005c98                  _TxString
-                  0x005d24                  __DMA6Interrupt
-                  0x005d4a                  __U1ErrInterrupt
-                  0x005d68                  __U2ErrInterrupt
-                  0x005d86                  __U1RXInterrupt
-                  0x005e02                  __U2RXInterrupt
-                  0x005e80                  __U2TXInterrupt
-                  0x005ed4                  _Settings
-                  0x006148                  _ISR_Settings
-                  0x0061c0                  _InitMotorStructure
-                  0x006220                  _UpdateMotorStructure
-                  0x00632e                  _GestioneSicurezzaMotore
-                  0x006360                  _MotorControlEnable
+                  0x005186                  _PidReset
+                  0x0051e8                  _InitializationEEPROM
+                  0x0051f8                  _RestoreEEPROMData
+                  0x0056e2                  _InitADC
+                  0x0057a0                  _LeggiADC
+                  0x005868                  _MediaADC
+                  0x005910                  _TaraturaAnalogiche
+                  0x005b52                  __DMA7Interrupt
+                  0x005b9c                  _Usart1Setting
+                  0x005c2c                  _Usart2Setting
+                  0x005ce2                  _TxString
+                  0x005d6e                  __DMA6Interrupt
+                  0x005d94                  __U1ErrInterrupt
+                  0x005db2                  __U2ErrInterrupt
+                  0x005dd0                  __U1RXInterrupt
+                  0x005e4c                  __U2RXInterrupt
+                  0x005eca                  __U2TXInterrupt
+                  0x005f1e                  _Settings
+                  0x006192                  _ISR_Settings
+                  0x00620a                  _InitMotorStructure
+                  0x00626a                  _UpdateMotorStructure
+                  0x006378                  _GestioneSicurezzaMotore
+                  0x0063aa                  _MotorControlEnable
                   0xf80004                  __FGS.sec
 
 External Symbols in Program Memory (by name):
@@ -443,20 +443,20 @@ External Symbols in Program Memory (by name):
                   0x000f28                  _GestioneLed1ErrorCode
                   0x000f30                  _GestioneLed2ErrorCode
                   0x004672                  _GestioneSetpoint
-                  0x00632e                  _GestioneSicurezzaMotore
+                  0x006378                  _GestioneSicurezzaMotore
                   0x000f38                  _GestioneTimerSW
                   0x000f7e                  _GestioneWatchdog
                   0x003cce                  _GetNextAvailCount
                   0x003bb6                  _GetPageStatus
-                  0x006148                  _ISR_Settings
-                  0x005698                  _InitADC
-                  0x0061c0                  _InitMotorStructure
-                  0x00519e                  _InitializationEEPROM
+                  0x006192                  _ISR_Settings
+                  0x0056e2                  _InitADC
+                  0x00620a                  _InitMotorStructure
+                  0x0051e8                  _InitializationEEPROM
                   0x003b3c                  _InizializzaSeriale
-                  0x005756                  _LeggiADC
+                  0x0057a0                  _LeggiADC
                   0x0030e4                  _LeggiBit
                   0x002800                  _LeggiWord
-                  0x00581e                  _MediaADC
+                  0x005868                  _MediaADC
                   0x003aae                  _ModbusCheckCRC16
                   0x003a02                  _ModbusErroreResponse
                   0x00335e                  _ModbusReadBit
@@ -467,42 +467,42 @@ External Symbols in Program Memory (by name):
                   0x0038cc                  _ModbusWriteMultipleWords
                   0x003670                  _ModbusWriteSingleBit
                   0x00370e                  _ModbusWriteSingleWord
-                  0x006360                  _MotorControlEnable
+                  0x0063aa                  _MotorControlEnable
                   0x000de8                  _OpenMCPWM1
                   0x000e0e                  _OpenTimer1
                   0x003d7e                  _PackEE
                   0x004d94                  _Pid
                   0x004c5c                  _Pid1
                   0x004cf8                  _Pid2
-                  0x005134                  _PidInit
+                  0x005186                  _PidReset
                   0x000fc4                  _ReadPMHigh
                   0x000fc8                  _ReadPMLow
                   0x000e16                  _ReadUART1
                   0x000e28                  _ReadUART2
                   0x000f6e                  _ReloadTimerSW
-                  0x0051ae                  _RestoreEEPROMData
+                  0x0051f8                  _RestoreEEPROMData
                   0x003112                  _ScriviBit
                   0x002b30                  _ScriviWord
                   0x000df4                  _SetDCMCPWM1
                   0x000ee6                  _SetLedErrorCode
                   0x000e0a                  _SetMCPWM1DeadTimeGeneration
-                  0x005ed4                  _Settings
+                  0x005f1e                  _Settings
                   0x000e46                  _TabMaskBitIO
                   0x000e3e                  _TabMaskBitModbus
-                  0x0058c6                  _TaraturaAnalogiche
+                  0x005910                  _TaraturaAnalogiche
                   0x000e3a                  _Tcy
-                  0x005c98                  _TxString
+                  0x005ce2                  _TxString
                   0x000fcc                  _UnlockPM
                   0x003b6c                  _UnlockWrite
-                  0x006220                  _UpdateMotorStructure
-                  0x005b52                  _Usart1Setting
-                  0x005be2                  _Usart2Setting
+                  0x00626a                  _UpdateMotorStructure
+                  0x005b9c                  _Usart1Setting
+                  0x005c2c                  _Usart2Setting
                   0x000fe6                  _WritePMHigh
                   0x000fea                  _WritePMHighB
                   0x000fee                  _WritePMLow
                   0x000ff2                  _WritePMLowB
-                  0x005d24                  __DMA6Interrupt
-                  0x005b08                  __DMA7Interrupt
+                  0x005d6e                  __DMA6Interrupt
+                  0x005b52                  __DMA7Interrupt
                   0x004c4c                  __DMACError
                   0xf80004                  __FGS.sec
                   0x00486a                  __IC1Interrupt
@@ -513,11 +513,11 @@ External Symbols in Program Memory (by name):
                   0x00474c                  __T1Interrupt
                   0x0047de                  __T2Interrupt
                   0x004824                  __T3Interrupt
-                  0x005d4a                  __U1ErrInterrupt
-                  0x005d86                  __U1RXInterrupt
-                  0x005d68                  __U2ErrInterrupt
-                  0x005e02                  __U2RXInterrupt
-                  0x005e80                  __U2TXInterrupt
+                  0x005d94                  __U1ErrInterrupt
+                  0x005dd0                  __U1RXInterrupt
+                  0x005db2                  __U2ErrInterrupt
+                  0x005e4c                  __U2RXInterrupt
+                  0x005eca                  __U2TXInterrupt
                   0x000564                  ___addsf3
                   0x000564                  ___addsf3x
                   0x000490                  ___divdi3
@@ -778,21 +778,21 @@ __FUID3
 .comment
  *(.comment)
 
-.debug_info       0x000000       0xb81c
+.debug_info       0x000000       0xb81d
  *(.debug_info)
  .debug_info      0x000000       0x157f build/Myzhar/production/src/adc.o
  .debug_info      0x00157f       0x1de6 build/Myzhar/production/src/main.o
  .debug_info      0x003365        0xb66 build/Myzhar/production/src/modbus.o
- .debug_info      0x003ecb        0xb09 build/Myzhar/production/src/pid.o
- .debug_info      0x0049d4       0x3541 build/Myzhar/production/src/settings.o
- .debug_info      0x007f15        0x1e0 build/Myzhar/production/src/sw_timer.o
- .debug_info      0x0080f5       0x1910 build/Myzhar/production/src/uart.o
- .debug_info      0x009a05        0x580 build/Myzhar/production/src/Eeprom.o
- .debug_info      0x009f85        0x633 build/Myzhar/production/src/Alarm.o
- .debug_info      0x00a5b8        0x32a build/Myzhar/production/src/Led.o
- .debug_info      0x00a8e2        0x5ee build/Myzhar/production/src/motor.o
- .debug_info      0x00aed0        0x8b0 build/Myzhar/production/src/DEE_Emulation_16-bit.o
- .debug_info      0x00b780         0x9c build/Myzhar/production/src/Flash_Operations.o
+ .debug_info      0x003ecb        0xb0a build/Myzhar/production/src/pid.o
+ .debug_info      0x0049d5       0x3541 build/Myzhar/production/src/settings.o
+ .debug_info      0x007f16        0x1e0 build/Myzhar/production/src/sw_timer.o
+ .debug_info      0x0080f6       0x1910 build/Myzhar/production/src/uart.o
+ .debug_info      0x009a06        0x580 build/Myzhar/production/src/Eeprom.o
+ .debug_info      0x009f86        0x633 build/Myzhar/production/src/Alarm.o
+ .debug_info      0x00a5b9        0x32a build/Myzhar/production/src/Led.o
+ .debug_info      0x00a8e3        0x5ee build/Myzhar/production/src/motor.o
+ .debug_info      0x00aed1        0x8b0 build/Myzhar/production/src/DEE_Emulation_16-bit.o
+ .debug_info      0x00b781         0x9c build/Myzhar/production/src/Flash_Operations.o
  *(.gnu.linkonce.wi.*)
 
 .debug_abbrev     0x000000        0xf76
@@ -811,21 +811,21 @@ __FUID3
  .debug_abbrev    0x000da0        0x1c2 build/Myzhar/production/src/DEE_Emulation_16-bit.o
  .debug_abbrev    0x000f62         0x14 build/Myzhar/production/src/Flash_Operations.o
 
-.debug_line       0x000000       0x436d
+.debug_line       0x000000       0x438d
  *(.debug_line)
  .debug_line      0x000000        0x562 build/Myzhar/production/src/adc.o
  .debug_line      0x000562        0x836 build/Myzhar/production/src/main.o
  .debug_line      0x000d98       0x10cf build/Myzhar/production/src/modbus.o
- .debug_line      0x001e67        0x450 build/Myzhar/production/src/pid.o
- .debug_line      0x0022b7        0x4db build/Myzhar/production/src/settings.o
- .debug_line      0x002792         0x9d build/Myzhar/production/src/sw_timer.o
- .debug_line      0x00282f        0x62f build/Myzhar/production/src/uart.o
- .debug_line      0x002e5e        0x656 build/Myzhar/production/src/Eeprom.o
- .debug_line      0x0034b4         0xb1 build/Myzhar/production/src/Alarm.o
- .debug_line      0x003565         0xe4 build/Myzhar/production/src/Led.o
- .debug_line      0x003649        0x2a7 build/Myzhar/production/src/motor.o
- .debug_line      0x0038f0        0xa22 build/Myzhar/production/src/DEE_Emulation_16-bit.o
- .debug_line      0x004312         0x5b build/Myzhar/production/src/Flash_Operations.o
+ .debug_line      0x001e67        0x470 build/Myzhar/production/src/pid.o
+ .debug_line      0x0022d7        0x4db build/Myzhar/production/src/settings.o
+ .debug_line      0x0027b2         0x9d build/Myzhar/production/src/sw_timer.o
+ .debug_line      0x00284f        0x62f build/Myzhar/production/src/uart.o
+ .debug_line      0x002e7e        0x656 build/Myzhar/production/src/Eeprom.o
+ .debug_line      0x0034d4         0xb1 build/Myzhar/production/src/Alarm.o
+ .debug_line      0x003585         0xe4 build/Myzhar/production/src/Led.o
+ .debug_line      0x003669        0x2a7 build/Myzhar/production/src/motor.o
+ .debug_line      0x003910        0xa22 build/Myzhar/production/src/DEE_Emulation_16-bit.o
+ .debug_line      0x004332         0x5b build/Myzhar/production/src/Flash_Operations.o
 
 .debug_frame      0x000000        0x560
  *(.debug_frame)
@@ -862,7 +862,7 @@ __FUID3
  *(.debug_macinfo)
 
 .debug_pubnames
-                  0x000000        0xa98
+                  0x000000        0xa99
  *(.debug_pubnames)
  .debug_pubnames
                   0x000000         0x62 build/Myzhar/production/src/adc.o
@@ -871,23 +871,23 @@ __FUID3
  .debug_pubnames
                   0x0005eb        0x157 build/Myzhar/production/src/modbus.o
  .debug_pubnames
-                  0x000742         0x38 build/Myzhar/production/src/pid.o
+                  0x000742         0x39 build/Myzhar/production/src/pid.o
  .debug_pubnames
-                  0x00077a         0x30 build/Myzhar/production/src/settings.o
+                  0x00077b         0x30 build/Myzhar/production/src/settings.o
  .debug_pubnames
-                  0x0007aa         0x38 build/Myzhar/production/src/sw_timer.o
+                  0x0007ab         0x38 build/Myzhar/production/src/sw_timer.o
  .debug_pubnames
-                  0x0007e2         0xb7 build/Myzhar/production/src/uart.o
+                  0x0007e3         0xb7 build/Myzhar/production/src/uart.o
  .debug_pubnames
-                  0x000899         0x41 build/Myzhar/production/src/Eeprom.o
+                  0x00089a         0x41 build/Myzhar/production/src/Eeprom.o
  .debug_pubnames
-                  0x0008da         0x27 build/Myzhar/production/src/Alarm.o
+                  0x0008db         0x27 build/Myzhar/production/src/Alarm.o
  .debug_pubnames
-                  0x000901         0x6e build/Myzhar/production/src/Led.o
+                  0x000902         0x6e build/Myzhar/production/src/Led.o
  .debug_pubnames
-                  0x00096f         0x75 build/Myzhar/production/src/motor.o
+                  0x000970         0x75 build/Myzhar/production/src/motor.o
  .debug_pubnames
-                  0x0009e4         0xb4 build/Myzhar/production/src/DEE_Emulation_16-bit.o
+                  0x0009e5         0xb4 build/Myzhar/production/src/DEE_Emulation_16-bit.o
 
 .debug_ranges
  *(.debug_ranges)
@@ -941,7 +941,7 @@ __FUID3
                   0x000024          0x4 LONG 0x4824 DEFINED (__T3Interrupt)?ABSOLUTE (__T3Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000026          0x4 LONG 0x0 DEFINED (__SPI1ErrInterrupt)?ABSOLUTE (__SPI1ErrInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000028          0x4 LONG 0x0 DEFINED (__SPI1Interrupt)?ABSOLUTE (__SPI1Interrupt):ABSOLUTE (__DefaultInterrupt)
-                  0x00002a          0x4 LONG 0x5d86 DEFINED (__U1RXInterrupt)?ABSOLUTE (__U1RXInterrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x00002a          0x4 LONG 0x5dd0 DEFINED (__U1RXInterrupt)?ABSOLUTE (__U1RXInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x00002c          0x4 LONG 0x0 DEFINED (__U1TXInterrupt)?ABSOLUTE (__U1TXInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x00002e          0x4 LONG 0x0 DEFINED (__ADC1Interrupt)?ABSOLUTE (__ADC1Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000030          0x4 LONG 0x0 DEFINED (__DMA1Interrupt)?ABSOLUTE (__DMA1Interrupt):ABSOLUTE (__DefaultInterrupt)
@@ -960,8 +960,8 @@ __FUID3
                   0x00004a          0x4 LONG 0x0 DEFINED (__T4Interrupt)?ABSOLUTE (__T4Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x00004c          0x4 LONG 0x0 DEFINED (__T5Interrupt)?ABSOLUTE (__T5Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x00004e          0x4 LONG 0x0 DEFINED (__INT2Interrupt)?ABSOLUTE (__INT2Interrupt):ABSOLUTE (__DefaultInterrupt)
-                  0x000050          0x4 LONG 0x5e02 DEFINED (__U2RXInterrupt)?ABSOLUTE (__U2RXInterrupt):ABSOLUTE (__DefaultInterrupt)
-                  0x000052          0x4 LONG 0x5e80 DEFINED (__U2TXInterrupt)?ABSOLUTE (__U2TXInterrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x000050          0x4 LONG 0x5e4c DEFINED (__U2RXInterrupt)?ABSOLUTE (__U2RXInterrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x000052          0x4 LONG 0x5eca DEFINED (__U2TXInterrupt)?ABSOLUTE (__U2TXInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000054          0x4 LONG 0x0 DEFINED (__SPI2ErrInterrupt)?ABSOLUTE (__SPI2ErrInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000056          0x4 LONG 0x0 DEFINED (__SPI2Interrupt)?ABSOLUTE (__SPI2Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000058          0x4 LONG 0x0 DEFINED (__C1RxRdyInterrupt)?ABSOLUTE (__C1RxRdyInterrupt):ABSOLUTE (__DefaultInterrupt)
@@ -995,11 +995,11 @@ __FUID3
                   0x000090          0x4 LONG 0x0 DEFINED (__RTCCInterrupt)?ABSOLUTE (__RTCCInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000092          0x4 LONG 0x0 DEFINED (__FLTA1Interrupt)?ABSOLUTE (__FLTA1Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000094          0x4 LONG 0x0 DEFINED (__Interrupt64)?ABSOLUTE (__Interrupt64):ABSOLUTE (__DefaultInterrupt)
-                  0x000096          0x4 LONG 0x5d4a DEFINED (__U1ErrInterrupt)?ABSOLUTE (__U1ErrInterrupt):ABSOLUTE (__DefaultInterrupt)
-                  0x000098          0x4 LONG 0x5d68 DEFINED (__U2ErrInterrupt)?ABSOLUTE (__U2ErrInterrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x000096          0x4 LONG 0x5d94 DEFINED (__U1ErrInterrupt)?ABSOLUTE (__U1ErrInterrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x000098          0x4 LONG 0x5db2 DEFINED (__U2ErrInterrupt)?ABSOLUTE (__U2ErrInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x00009a          0x4 LONG 0x0 DEFINED (__CRCInterrupt)?ABSOLUTE (__CRCInterrupt):ABSOLUTE (__DefaultInterrupt)
-                  0x00009c          0x4 LONG 0x5d24 DEFINED (__DMA6Interrupt)?ABSOLUTE (__DMA6Interrupt):ABSOLUTE (__DefaultInterrupt)
-                  0x00009e          0x4 LONG 0x5b08 DEFINED (__DMA7Interrupt)?ABSOLUTE (__DMA7Interrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x00009c          0x4 LONG 0x5d6e DEFINED (__DMA6Interrupt)?ABSOLUTE (__DMA6Interrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x00009e          0x4 LONG 0x5b52 DEFINED (__DMA7Interrupt)?ABSOLUTE (__DMA7Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x0000a0          0x4 LONG 0x0 DEFINED (__C1TxReqInterrupt)?ABSOLUTE (__C1TxReqInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x0000a2          0x4 LONG 0x0 DEFINED (__Interrupt71)?ABSOLUTE (__Interrupt71):ABSOLUTE (__DefaultInterrupt)
                   0x0000a4          0x4 LONG 0x0 DEFINED (__Interrupt72)?ABSOLUTE (__Interrupt72):ABSOLUTE (__DefaultInterrupt)
@@ -1069,7 +1069,7 @@ __FUID3
                   0x000124          0x4 LONG 0x4824 DEFINED (__AltT3Interrupt)?ABSOLUTE (__AltT3Interrupt):DEFINED (__T3Interrupt)?ABSOLUTE (__T3Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000126          0x4 LONG 0x0 DEFINED (__AltSPI1ErrInterrupt)?ABSOLUTE (__AltSPI1ErrInterrupt):DEFINED (__SPI1ErrInterrupt)?ABSOLUTE (__SPI1ErrInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000128          0x4 LONG 0x0 DEFINED (__AltSPI1Interrupt)?ABSOLUTE (__AltSPI1Interrupt):DEFINED (__SPI1Interrupt)?ABSOLUTE (__SPI1Interrupt):ABSOLUTE (__DefaultInterrupt)
-                  0x00012a          0x4 LONG 0x5d86 DEFINED (__AltU1RXInterrupt)?ABSOLUTE (__AltU1RXInterrupt):DEFINED (__U1RXInterrupt)?ABSOLUTE (__U1RXInterrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x00012a          0x4 LONG 0x5dd0 DEFINED (__AltU1RXInterrupt)?ABSOLUTE (__AltU1RXInterrupt):DEFINED (__U1RXInterrupt)?ABSOLUTE (__U1RXInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x00012c          0x4 LONG 0x0 DEFINED (__AltU1TXInterrupt)?ABSOLUTE (__AltU1TXInterrupt):DEFINED (__U1TXInterrupt)?ABSOLUTE (__U1TXInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x00012e          0x4 LONG 0x0 DEFINED (__AltADC1Interrupt)?ABSOLUTE (__AltADC1Interrupt):DEFINED (__ADC1Interrupt)?ABSOLUTE (__ADC1Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000130          0x4 LONG 0x0 DEFINED (__AltDMA1Interrupt)?ABSOLUTE (__AltDMA1Interrupt):DEFINED (__DMA1Interrupt)?ABSOLUTE (__DMA1Interrupt):ABSOLUTE (__DefaultInterrupt)
@@ -1088,8 +1088,8 @@ __FUID3
                   0x00014a          0x4 LONG 0x0 DEFINED (__AltT4Interrupt)?ABSOLUTE (__AltT4Interrupt):DEFINED (__T4Interrupt)?ABSOLUTE (__T4Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x00014c          0x4 LONG 0x0 DEFINED (__AltT5Interrupt)?ABSOLUTE (__AltT5Interrupt):DEFINED (__T5Interrupt)?ABSOLUTE (__T5Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x00014e          0x4 LONG 0x0 DEFINED (__AltINT2Interrupt)?ABSOLUTE (__AltINT2Interrupt):DEFINED (__INT2Interrupt)?ABSOLUTE (__INT2Interrupt):ABSOLUTE (__DefaultInterrupt)
-                  0x000150          0x4 LONG 0x5e02 DEFINED (__AltU2RXInterrupt)?ABSOLUTE (__AltU2RXInterrupt):DEFINED (__U2RXInterrupt)?ABSOLUTE (__U2RXInterrupt):ABSOLUTE (__DefaultInterrupt)
-                  0x000152          0x4 LONG 0x5e80 DEFINED (__AltU2TXInterrupt)?ABSOLUTE (__AltU2TXInterrupt):DEFINED (__U2TXInterrupt)?ABSOLUTE (__U2TXInterrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x000150          0x4 LONG 0x5e4c DEFINED (__AltU2RXInterrupt)?ABSOLUTE (__AltU2RXInterrupt):DEFINED (__U2RXInterrupt)?ABSOLUTE (__U2RXInterrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x000152          0x4 LONG 0x5eca DEFINED (__AltU2TXInterrupt)?ABSOLUTE (__AltU2TXInterrupt):DEFINED (__U2TXInterrupt)?ABSOLUTE (__U2TXInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000154          0x4 LONG 0x0 DEFINED (__AltSPI2ErrInterrupt)?ABSOLUTE (__AltSPI2ErrInterrupt):DEFINED (__SPI2ErrInterrupt)?ABSOLUTE (__SPI2ErrInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000156          0x4 LONG 0x0 DEFINED (__AltSPI2Interrupt)?ABSOLUTE (__AltSPI2Interrupt):DEFINED (__SPI2Interrupt)?ABSOLUTE (__SPI2Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000158          0x4 LONG 0x0 DEFINED (__AltC1RxRdyInterrupt)?ABSOLUTE (__AltC1RxRdyInterrupt):DEFINED (__C1RxRdyInterrupt)?ABSOLUTE (__C1RxRdyInterrupt):ABSOLUTE (__DefaultInterrupt)
@@ -1123,11 +1123,11 @@ __FUID3
                   0x000190          0x4 LONG 0x0 DEFINED (__AltRTCCInterrupt)?ABSOLUTE (__AltRTCCInterrupt):DEFINED (__RTCCInterrupt)?ABSOLUTE (__RTCCInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000192          0x4 LONG 0x0 DEFINED (__AltFLTA1Interrupt)?ABSOLUTE (__AltFLTA1Interrupt):DEFINED (__FLTA1Interrupt)?ABSOLUTE (__FLTA1Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x000194          0x4 LONG 0x0 DEFINED (__AltInterrupt64)?ABSOLUTE (__AltInterrupt64):DEFINED (__Interrupt64)?ABSOLUTE (__Interrupt64):ABSOLUTE (__DefaultInterrupt)
-                  0x000196          0x4 LONG 0x5d4a DEFINED (__AltU1ErrInterrupt)?ABSOLUTE (__AltU1ErrInterrupt):DEFINED (__U1ErrInterrupt)?ABSOLUTE (__U1ErrInterrupt):ABSOLUTE (__DefaultInterrupt)
-                  0x000198          0x4 LONG 0x5d68 DEFINED (__AltU2ErrInterrupt)?ABSOLUTE (__AltU2ErrInterrupt):DEFINED (__U2ErrInterrupt)?ABSOLUTE (__U2ErrInterrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x000196          0x4 LONG 0x5d94 DEFINED (__AltU1ErrInterrupt)?ABSOLUTE (__AltU1ErrInterrupt):DEFINED (__U1ErrInterrupt)?ABSOLUTE (__U1ErrInterrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x000198          0x4 LONG 0x5db2 DEFINED (__AltU2ErrInterrupt)?ABSOLUTE (__AltU2ErrInterrupt):DEFINED (__U2ErrInterrupt)?ABSOLUTE (__U2ErrInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x00019a          0x4 LONG 0x0 DEFINED (__AltCRCInterrupt)?ABSOLUTE (__AltCRCInterrupt):DEFINED (__CRCInterrupt)?ABSOLUTE (__CRCInterrupt):ABSOLUTE (__DefaultInterrupt)
-                  0x00019c          0x4 LONG 0x5d24 DEFINED (__AltDMA6Interrupt)?ABSOLUTE (__AltDMA6Interrupt):DEFINED (__DMA6Interrupt)?ABSOLUTE (__DMA6Interrupt):ABSOLUTE (__DefaultInterrupt)
-                  0x00019e          0x4 LONG 0x5b08 DEFINED (__AltDMA7Interrupt)?ABSOLUTE (__AltDMA7Interrupt):DEFINED (__DMA7Interrupt)?ABSOLUTE (__DMA7Interrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x00019c          0x4 LONG 0x5d6e DEFINED (__AltDMA6Interrupt)?ABSOLUTE (__AltDMA6Interrupt):DEFINED (__DMA6Interrupt)?ABSOLUTE (__DMA6Interrupt):ABSOLUTE (__DefaultInterrupt)
+                  0x00019e          0x4 LONG 0x5b52 DEFINED (__AltDMA7Interrupt)?ABSOLUTE (__AltDMA7Interrupt):DEFINED (__DMA7Interrupt)?ABSOLUTE (__DMA7Interrupt):ABSOLUTE (__DefaultInterrupt)
                   0x0001a0          0x4 LONG 0x0 DEFINED (__AltC1TxReqInterrupt)?ABSOLUTE (__AltC1TxReqInterrupt):DEFINED (__C1TxReqInterrupt)?ABSOLUTE (__C1TxReqInterrupt):ABSOLUTE (__DefaultInterrupt)
                   0x0001a2          0x4 LONG 0x0 DEFINED (__AltInterrupt71)?ABSOLUTE (__AltInterrupt71):DEFINED (__Interrupt71)?ABSOLUTE (__Interrupt71):ABSOLUTE (__DefaultInterrupt)
                   0x0001a4          0x4 LONG 0x0 DEFINED (__AltInterrupt72)?ABSOLUTE (__AltInterrupt72):DEFINED (__Interrupt72)?ABSOLUTE (__Interrupt72):ABSOLUTE (__DefaultInterrupt)
@@ -2388,21 +2388,21 @@ __c30_signature
  __c30_signature
                   0x000c82          0x6 c:/program files (x86)/microchip/xc16/v1.21/bin/bin/../../lib\libpic30-elf.a(data_init_standard.o)
 
-_0398272053369afc
+_039ED72053417835
                     0x4700         0x80
- _0398272053369afc
+ _039ED72053417835
                     0x4700         0x80 build/Myzhar/production/src/main.o
                     0x4700                  _DmaAdc_A
 
-_0398290053369afc
+_039ED90053417835
                     0x4780         0x80
- _0398290053369afc
+ _039ED90053417835
                     0x4780         0x80 build/Myzhar/production/src/main.o
                     0x4780                  _DmaAdc_B
 
-_0398254053369afc
+_039ED54053417835
                     0x4600         0x40
- _0398254053369afc
+ _039ED54053417835
                     0x4600         0x40 build/Myzhar/production/src/main.o
                     0x4600                  _Uart1TxBuff
 
@@ -2477,9 +2477,9 @@ _0398254053369afc
 .heap               0x2c08        0x200
  .heap              0x2c08        0x200 heap
 
-_03803F0053369b1a
+_03856F0053417841
                     0x9000       0x1800 load address 0x001000  
- _03803F0053369b1a
+ _03856F0053417841
                     0x9000       0x1800 build/Myzhar/production/src/DEE_Emulation_16-bit.o
                     0x9000                  _emulationPages
 
@@ -2489,7 +2489,7 @@ _03803F0053369b1a
                     0x8e3e                  _TabMaskBitModbus
                     0x8e46                  _TabMaskBitIO
 
-.text             0x002800       0x3bbe
+.text             0x002800       0x3c08
  .text            0x002800       0x136c build/Myzhar/production/src/modbus.o
                   0x002800                  _LeggiWord
                   0x002b30                  _ScriviWord
@@ -2531,38 +2531,38 @@ _03803F0053369b1a
                   0x004c2c                  __OscillatorFail
                   0x004c3c                  __MathError
                   0x004c4c                  __DMACError
- .text            0x004c5c        0x542 build/Myzhar/production/src/pid.o
+ .text            0x004c5c        0x58c build/Myzhar/production/src/pid.o
                   0x004c5c                  _Pid1
                   0x004cf8                  _Pid2
                   0x004d94                  _Pid
-                  0x005134                  _PidInit
- .text            0x00519e        0x4fa build/Myzhar/production/src/Eeprom.o
-                  0x00519e                  _InitializationEEPROM
-                  0x0051ae                  _RestoreEEPROMData
- .text            0x005698        0x4ba build/Myzhar/production/src/adc.o
-                  0x005698                  _InitADC
-                  0x005756                  _LeggiADC
-                  0x00581e                  _MediaADC
-                  0x0058c6                  _TaraturaAnalogiche
-                  0x005b08                  __DMA7Interrupt
- .text            0x005b52        0x382 build/Myzhar/production/src/uart.o
-                  0x005b52                  _Usart1Setting
-                  0x005be2                  _Usart2Setting
-                  0x005c98                  _TxString
-                  0x005d24                  __DMA6Interrupt
-                  0x005d4a                  __U1ErrInterrupt
-                  0x005d68                  __U2ErrInterrupt
-                  0x005d86                  __U1RXInterrupt
-                  0x005e02                  __U2RXInterrupt
-                  0x005e80                  __U2TXInterrupt
- .text            0x005ed4        0x2ec build/Myzhar/production/src/settings.o
-                  0x005ed4                  _Settings
-                  0x006148                  _ISR_Settings
- .text            0x0061c0        0x1fe build/Myzhar/production/src/motor.o
-                  0x0061c0                  _InitMotorStructure
-                  0x006220                  _UpdateMotorStructure
-                  0x00632e                  _GestioneSicurezzaMotore
-                  0x006360                  _MotorControlEnable
+                  0x005186                  _PidReset
+ .text            0x0051e8        0x4fa build/Myzhar/production/src/Eeprom.o
+                  0x0051e8                  _InitializationEEPROM
+                  0x0051f8                  _RestoreEEPROMData
+ .text            0x0056e2        0x4ba build/Myzhar/production/src/adc.o
+                  0x0056e2                  _InitADC
+                  0x0057a0                  _LeggiADC
+                  0x005868                  _MediaADC
+                  0x005910                  _TaraturaAnalogiche
+                  0x005b52                  __DMA7Interrupt
+ .text            0x005b9c        0x382 build/Myzhar/production/src/uart.o
+                  0x005b9c                  _Usart1Setting
+                  0x005c2c                  _Usart2Setting
+                  0x005ce2                  _TxString
+                  0x005d6e                  __DMA6Interrupt
+                  0x005d94                  __U1ErrInterrupt
+                  0x005db2                  __U2ErrInterrupt
+                  0x005dd0                  __U1RXInterrupt
+                  0x005e4c                  __U2RXInterrupt
+                  0x005eca                  __U2TXInterrupt
+ .text            0x005f1e        0x2ec build/Myzhar/production/src/settings.o
+                  0x005f1e                  _Settings
+                  0x006192                  _ISR_Settings
+ .text            0x00620a        0x1fe build/Myzhar/production/src/motor.o
+                  0x00620a                  _InitMotorStructure
+                  0x00626a                  _UpdateMotorStructure
+                  0x006378                  _GestioneSicurezzaMotore
+                  0x0063aa                  _MotorControlEnable
 
 .dinit            0x000e66         0x7a
  .dinit           0x000e66         0x7a data_init
@@ -2846,7 +2846,7 @@ _Pid1                                             build/Myzhar/production/src/pi
                                                   build/Myzhar/production/src/main.o
 _Pid2                                             build/Myzhar/production/src/pid.o
                                                   build/Myzhar/production/src/main.o
-_PidInit                                          build/Myzhar/production/src/pid.o
+_PidReset                                         build/Myzhar/production/src/pid.o
                                                   build/Myzhar/production/src/main.o
 _QEI1CONbits                                      build/Myzhar/production/src/settings.o
                                                   build/Myzhar/production/src/main.o

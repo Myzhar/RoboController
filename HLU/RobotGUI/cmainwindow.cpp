@@ -286,8 +286,6 @@ void CMainWindow::timerEvent( QTimerEvent* event )
             {
                 qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
             }
-
-            //qDebug() << tr("Motor speeds: (%1,%2)").arg(motSx).arg(motDx);
         }
         else
         {
@@ -319,8 +317,6 @@ void CMainWindow::timerEvent( QTimerEvent* event )
             {
                 qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
             }
-
-            //qDebug() << tr("Motor PWMs: (%1,%2)").arg(motSx).arg(motDx);
         }
     }
     else if( event->timerId() == mFrameReqTimer )
@@ -608,8 +604,8 @@ void CMainWindow::onNewJoypadValues(float x, float y)
 {
     //qDebug() << tr("Joypad: (%1,%2)").arg(x).arg(y);
 
-    mJoyMot[0] = y - x;
-    mJoyMot[1] = y + x;
+    mJoyMot[0] = y + x; // Left Motor
+    mJoyMot[1] = y - x; // Right Motor
 }
 
 void CMainWindow::onNewBoardStatus(BoardStatus& status)
