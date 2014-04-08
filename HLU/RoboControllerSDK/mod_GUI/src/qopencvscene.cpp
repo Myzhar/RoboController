@@ -8,7 +8,25 @@ QOpenCVScene::QOpenCVScene(QObject *parent) :
     QGraphicsScene(parent),
     mBgPixmapItem(NULL)
 {
-    setBackgroundBrush( QBrush(QColor(50,50,50)));
+    setBackgroundBrush( QBrush(QColor(100,100,100)));
+
+    /*mJoypadBgItem = new QGraphicsEllipseItem(QRectF(0,0,100,100));
+    mJoypadPadItem = new QGraphicsEllipseItem(QRectF(50,50,50,50));*/
+
+    mJoypadBgItem = new QGraphicsPixmapItem( QPixmap(":/joypad/images/joystick_background.png") );
+    mJoypadBgItem->setOffset( -50, -50);
+
+    mJoypadThumbItem = new QGraphicsPixmapItem( QPixmap(":/joypad/images/joystick_thumb.png") );
+    mJoypadThumbItem->setOffset( -25, -25 );
+
+    addItem(mJoypadBgItem);
+    addItem(mJoypadThumbItem);
+
+    mJoypadBgItem->setVisible(false);
+    mJoypadThumbItem->setVisible(false);
+
+    mJoypadBgItem->setZValue(1);
+    mJoypadThumbItem->setZValue(2);
 }
 
 void QOpenCVScene::setBgImage( cv::Mat& cvImg )
@@ -30,30 +48,36 @@ void QOpenCVScene::setBgImage( cv::Mat& cvImg )
     update();
 }
 
-void QOpenCVScene::setJoypadSize( QSize bgSize, QSize padSize )
+void QOpenCVScene::setJoypadSize( QSize bgSize, QSize thumbSize )
 {
-    /*QRectF rect = mJoypadBgItem->rect();
-    mJoypadBgItem->setRect( rect.x()+(rect.width()-bgSize.width())/2,
-                            rect.y()+(rect.height()-bgSize.height())/2,
-                            bgSize.width(), bgSize.height() );
+    double origW = mJoypadBgItem->pixmap().size().width();
+    double scale = bgSize.width()/origW;
 
-    rect = mJoypadPadItem->rect();
-    mJoypadPadItem->setRect( rect.x()+(rect.width()-padSize.width())/2,
-                             rect.y()+(rect.height()-padSize.height())/2,
-                             padSize.width(), padSize.height() );*/
-    mJoypadBgItem = new QGraphicsEllipseItem(QRectF(0,0,100,100));
-    mJoypadPadItem = new QGraphicsEllipseItem(QRectF(35,35,30,30));
-    addItem(mJoypadBgItem);
-    addItem(mJoypadPadItem);
+    mJoypadBgItem->setScale(scale);
+    mJoypadBgItem->setOffset(-bgSize.width()/2,-bgSize.height()/2);
 
+    mJoypadThumbItem->setScale(scale);
+    mJoypadThumbItem->setOffset(-thumbSize.width()/2,-thumbSize.height()/2);
 }
 
 void QOpenCVScene::buttonDown( QPointF mBnDownPos )
 {
-    mJoypadBgItem->setPos( mBnDownPos.x()-mJoypadBgItem->rect().width()/2,
-                           mBnDownPos.y()-mJoypadBgItem->rect().height()/2);
+    mJoypadBgItem->setPos(mBnDownPos);
+    mJoypadThumbItem->setPos(mBnDownPos);
 
-    addItem( mJoypadBgItem );
+    mJoypadBgItem->setVisible(true);
+    mJoypadThumbItem->setVisible(true);
+}
+
+void QOpenCVScene::buttonUp( )
+{
+    mJoypadBgItem->setVisible(false);
+    mJoypadThumbItem->setVisible(false);
+}
+
+void QOpenCVScene::mouseMove(QPointF mMousePos )
+{
+    mJoypadThumbItem->setPos(mMousePos);
 }
 
 QImage QOpenCVScene::cvMatToQImage( const cv::Mat &inMat )

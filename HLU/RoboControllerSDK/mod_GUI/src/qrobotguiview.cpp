@@ -32,23 +32,21 @@ void QRobotGUIView::mousePressEvent(QMouseEvent *event)
     mBnDownPos = event->pos();
     mLastPos = mBnDownPos;
 
-    qDebug() << tr("Mouse pressed %1 %2").arg(mBnDownPos.x() ).arg(mBnDownPos.y() );
+    QPointF posScene = mapToScene( mBnDownPos );
 
-    mScene->buttonDown( mBnDownPos );
+    mScene->buttonDown( posScene );
 }
 
 void QRobotGUIView::mouseReleaseEvent(QMouseEvent *event)
 {
-    qDebug() << tr("Mouse released %1 %2").arg(event->pos().x() ).arg(event->pos().y() );
+    mScene->buttonUp();
 }
 
 void QRobotGUIView::mouseMoveEvent(QMouseEvent *event)
 {
-    if( qAbs(mLastPos.x()-event->x())>=MIN_MOUSE_STEP ||
-            qAbs(mLastPos.y()-event->y())>=MIN_MOUSE_STEP)
-    {
-        qDebug() << tr("Mouse moved %1 %2").arg(event->pos().x() ).arg(event->pos().y() );
-        mLastPos = event->pos();
-    }
+    mLastPos = event->pos();
+
+    QPointF posScene = mapToScene( mLastPos );
+    mScene->mouseMove( posScene );
 }
 

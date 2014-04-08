@@ -391,6 +391,7 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
         ui->widget_video_container->fitInView( QRectF(0,0, mDefaultBgImg.cols, mDefaultBgImg.rows ),
                                                Qt::KeepAspectRatio );
 
+
     ui->widget_video_container->scene()->setJoypadSize( QSize(jw,jw),
                                                         QSize(jw/2,jw/2) );
 }
@@ -545,6 +546,9 @@ void CMainWindow::onNewMotorSpeeds( double speed0, double speed1 )
 {
     if(mRobotConfigValid)
     {
+        /*if( speed0==0 && speed1==0 )
+            mRoboCtrl->setMotorSpeeds(0,0);*/
+
         mMotorSpeedLeft = speed0;
         mMotorSpeedLeftValid = true;
         mMotorSpeedRight = speed1;
