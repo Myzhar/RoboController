@@ -207,6 +207,8 @@ CMainWindow::CMainWindow(QWidget *parent) :
 
     connect( ui->widget_joypad, SIGNAL(newJoypadValues(float,float)),
              this, SLOT(onNewJoypadValues(float,float)) );
+    connect( ui->widget_video_container, SIGNAL(newJoypadValues(float,float)),
+             this, SLOT(onNewJoypadValues(float,float)) );
 
     mMaxMotorSpeed = 2.0f; // m/sec
     mOpenRobotConfig = false;
@@ -392,8 +394,8 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
                                                Qt::KeepAspectRatio );
 
 
-    ui->widget_video_container->scene()->setJoypadSize( QSize(jw,jw),
-                                                        QSize(jw/2,jw/2) );
+    ui->widget_video_container->setJoypadSize( QSize(jw,jw),
+                                               QSize(jw/2,jw/2) );
 }
 
 void CMainWindow::onFindServerButtonClicked()
@@ -750,6 +752,8 @@ void CMainWindow::onNewBatteryValue( double battVal )
 
     double perc = 100.0*(battVal-((double)mRoboConf.MinChargedBatteryLevel/100.0))/
             ((double)(mRoboConf.MaxChargedBatteryLevel-mRoboConf.MinChargedBatteryLevel)/100.0);
+
+    perc = qMin( perc, 100.0 );
 
     //qDebug() << tr("Battery: %2V %1%").arg(perc).arg(battVal);
 

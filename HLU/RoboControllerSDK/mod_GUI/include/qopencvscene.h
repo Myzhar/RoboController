@@ -27,6 +27,7 @@ public slots:
     /// Moves the Thumb over the Joypad
     void mouseMove(QPointF mMousePos );
 
+
 private:
     /// Converts cv::Mat to QImage
     QImage  cvMatToQImage( const cv::Mat &inMat );

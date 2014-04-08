@@ -1,6 +1,8 @@
 #include "qopencvscene.h"
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
+#include <QGraphicsView>
+#include <QList>
 
 #include <opencv2/highgui/highgui.hpp>
 
@@ -45,13 +47,21 @@ void QOpenCVScene::setBgImage( cv::Mat& cvImg )
 
     setSceneRect( 0,0, cvImg.cols, cvImg.rows );
 
-    update();
+    /*QList<QGraphicsView*> viewList = views();
+
+    foreach (QGraphicsView* view, viewList)
+    {
+        view->fitInView( mBgPixmapItem, Qt::KeepAspectRatio );
+    }
+
+
+    update();*/
 }
 
 void QOpenCVScene::setJoypadSize( QSize bgSize, QSize thumbSize )
 {
     double origW = mJoypadBgItem->pixmap().size().width();
-    double scale = bgSize.width()/origW;
+    double scale = origW/bgSize.width();
 
     mJoypadBgItem->setScale(scale);
     mJoypadBgItem->setOffset(-bgSize.width()/2,-bgSize.height()/2);
@@ -79,6 +89,7 @@ void QOpenCVScene::mouseMove(QPointF mMousePos )
 {
     mJoypadThumbItem->setPos(mMousePos);
 }
+
 
 QImage QOpenCVScene::cvMatToQImage( const cv::Mat &inMat )
 {
