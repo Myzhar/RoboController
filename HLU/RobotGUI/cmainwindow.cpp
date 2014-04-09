@@ -530,7 +530,7 @@ void CMainWindow::onConnectButtonClicked()
     mPushButtonFindServer->setEnabled(false);
     mPushButtonConnect->setEnabled(false);
 
-#ifndef ANDROID
+//#ifndef ANDROID
     // >>>>> Webcam Client
     QCoreApplication::processEvents( QEventLoop::AllEvents, 500 );
 
@@ -539,7 +539,7 @@ void CMainWindow::onConnectButtonClicked()
     connect( mWebcamClient, SIGNAL(newImageReceived()),
              this, SLOT(onNewImage()) );
     // <<<<< Webcam Client */
-#endif
+//#endif
 
     startTimers();
 }
