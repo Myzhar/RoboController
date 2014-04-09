@@ -61,13 +61,13 @@ void QOpenCVScene::setBgImage( cv::Mat& cvImg )
 void QOpenCVScene::setJoypadSize( QSize bgSize, QSize thumbSize )
 {
     double origW = mJoypadBgItem->pixmap().size().width();
-    double scale = origW/bgSize.width();
+    double scale = bgSize.width()/origW;
 
+    mJoypadBgItem->setOffset(-bgSize.width()/(2*scale),-bgSize.height()/(2*scale));
     mJoypadBgItem->setScale(scale);
-    mJoypadBgItem->setOffset(-bgSize.width()/2,-bgSize.height()/2);
 
+    mJoypadThumbItem->setOffset(-thumbSize.width()/(2*scale),-thumbSize.height()/(2*scale));
     mJoypadThumbItem->setScale(scale);
-    mJoypadThumbItem->setOffset(-thumbSize.width()/2,-thumbSize.height()/2);
 }
 
 void QOpenCVScene::buttonDown( QPointF mBnDownPos )

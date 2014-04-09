@@ -81,9 +81,9 @@ void QRobotGUIView::mouseMoveEvent(QMouseEvent *event)
         double x = mMaxJoypadMove*qCos(alpha);
         double y = mMaxJoypadMove*qSin(alpha);*/
 
-        double scale = mMaxJoypadMove/rho;
-        x = (posScene.x()-centerPosScene.x())*scale;
-        y = (posScene.y()-centerPosScene.y())*scale;
+        double ratio = mMaxJoypadMove/rho;
+        x = (posScene.x()-centerPosScene.x())*ratio;
+        y = (posScene.y()-centerPosScene.y())*ratio;
 
         posScene.setX( centerPosScene.x() + x );
         posScene.setY( centerPosScene.y() + y );
