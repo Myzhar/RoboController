@@ -46,21 +46,12 @@ void QOpenCVScene::setBgImage( cv::Mat& cvImg )
         mBgPixmapItem->setPixmap( cvMatToQPixmap(cvImg) );
 
     setSceneRect( 0,0, cvImg.cols, cvImg.rows );
-
-    /*QList<QGraphicsView*> viewList = views();
-
-    foreach (QGraphicsView* view, viewList)
-    {
-        view->fitInView( mBgPixmapItem, Qt::KeepAspectRatio );
-    }
-
-
-    update();*/
 }
 
 void QOpenCVScene::setJoypadSize( QSize bgSize, QSize thumbSize )
-{
-    double origW = mJoypadBgItem->pixmap().size().width();
+{    
+    double origW = mJoypadBgItem->pixmap().width();
+
     double scale = bgSize.width()/origW;
 
     mJoypadBgItem->setOffset(-bgSize.width()/(2*scale),-bgSize.height()/(2*scale));
@@ -71,7 +62,7 @@ void QOpenCVScene::setJoypadSize( QSize bgSize, QSize thumbSize )
 }
 
 void QOpenCVScene::buttonDown( QPointF mBnDownPos )
-{
+{       
     mJoypadBgItem->setPos(mBnDownPos);
     mJoypadThumbItem->setPos(mBnDownPos);
 

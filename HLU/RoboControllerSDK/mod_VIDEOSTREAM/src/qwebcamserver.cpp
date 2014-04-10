@@ -104,14 +104,14 @@ void QWebcamServer::sendFragmentedData( QByteArray data, char fragID )
             stream << val;
         }
 
-        for( int i=0; i<(int)mClientIpList.size(); i++ )
+        for( int c=0; c<(int)mClientIpList.size(); c++ )
         {
-            int res = mUdpSocketSender->writeDatagram( buffer, QHostAddress(mClientIpList[i]), mSendPort );
+            int res = mUdpSocketSender->writeDatagram( buffer, QHostAddress(mClientIpList[c]), mSendPort );
             mUdpSocketSender->flush();
             if( -1==res )
             {
                 qDebug() << tr("Frame #%3: Missed fragment %1/%2 to Client %4")
-                            .arg(i).arg(numFrag).arg((unsigned int)fragID).arg(mClientIpList[i]);
+                            .arg(i).arg(numFrag).arg((unsigned int)fragID).arg(mClientIpList[c]);
             }
         }
     }

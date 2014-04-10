@@ -34,6 +34,21 @@ void QRobotGUIView::setJoypadSize( QSize bgSize, QSize thumbSize )
 
     mMaxJoypadMove = maxPos;
 
+    // >>>>> Let's keep the size of the Joypad constant
+    if( transform().isScaling() )
+    {
+        qreal scale = transform().m11();
+        bgSize.scale( bgSize.width()/scale, bgSize.height()/scale,
+                      Qt::KeepAspectRatio );
+        thumbSize.scale( thumbSize.width()/scale, thumbSize.height()/scale,
+                      Qt::KeepAspectRatio );
+
+        mMaxJoypadMove /= scale;
+
+        //qDebug() << scale;
+    }
+    // <<<<< Let's keep the size of the Joypad constant
+
     mScene->setJoypadSize( bgSize, thumbSize );
 }
 
@@ -46,14 +61,14 @@ void QRobotGUIView::mousePressEvent(QMouseEvent *event)
 
     mScene->buttonDown( posScene );
 
-    qDebug() << Q_FUNC_INFO;
+    //qDebug() << Q_FUNC_INFO;
 }
 
 void QRobotGUIView::mouseReleaseEvent(QMouseEvent *event)
 {
     mScene->buttonUp();
 
-    qDebug() << Q_FUNC_INFO;
+    //qDebug() << Q_FUNC_INFO;
 }
 
 //void QRobotGUIView::resizeEvent(QResizeEvent * ev)
@@ -70,7 +85,7 @@ void QRobotGUIView::mouseMoveEvent(QMouseEvent *event)
 
     // >>>>> Let's keep the thumb inside the Joypad area
     double rho = qSqrt( (centerPosScene.x()-posScene.x())*(centerPosScene.x()-posScene.x()) +
-            (centerPosScene.y()-posScene.y())*(centerPosScene.y()-posScene.y()) );
+                        (centerPosScene.y()-posScene.y())*(centerPosScene.y()-posScene.y()) );
 
     double x = posScene.x()-centerPosScene.x();
     double y = posScene.y()-centerPosScene.y();

@@ -42,7 +42,6 @@ private:
     QGraphicsEllipseItem* mJoypadPadItem; ///< Pad of the joypad*/
     QGraphicsPixmapItem* mJoypadBgItem;
     QGraphicsPixmapItem* mJoypadThumbItem;
-
 };
 
 #endif // QOPENCVSCENE_H
