@@ -106,14 +106,19 @@ void QWebcamServer::sendFragmentedData( QByteArray data, char fragID )
 
         for( int c=0; c<(int)mClientIpList.size(); c++ )
         {
-            int res = mUdpSocketSender->writeDatagram( buffer, QHostAddress(mClientIpList[c]), mSendPort );
+            int res = mUdpSocketSender->writeDatagram( buffer,
+                                                       /*QHostAddress::Broadcast*/QHostAddress(mClientIpList[c]),
+                                                       mSendPort );
             mUdpSocketSender->flush();
             if( -1==res )
             {
-                qDebug() << tr("Frame #%3: Missed fragment %1/%2 to Client %4")
-                            .arg(i).arg(numFrag).arg((unsigned int)fragID).arg(mClientIpList[c]);
+                /*qDebug() << tr("Frame #%3: Missed fragment %1/%2 to Client %4")
+                            .arg(i).arg(numFrag).arg((quint8)fragID).arg(mClientIpList[c]);*/
+                qDebug() << tr("Frame #%3: Missed fragment %1/%2 to Broadcast")
+                                            .arg(i).arg(numFrag).arg((quint8)fragID);
             }
         }
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 1 );
     }
 
     //    qDebug() << tr("Sent frame #%1 - size: %2 bytes").arg((int)fragID).arg(data.size() );
@@ -127,7 +132,7 @@ void QWebcamServer::run()
     params.push_back(CV_IMWRITE_JPEG_QUALITY);
     params.push_back(75);
 
-    int frameCount = 0;
+    quint8 frameCount = 0;
 
     qDebug() << tr("Webcam Server Thread started");
 
@@ -163,23 +168,22 @@ void QWebcamServer::run()
             QByteArray fullDatagram;
             fullDatagram.setRawData( (char*)compressed.data(), compressed.size() );
 
-
-            sendFragmentedData( fullDatagram, (uchar)(frameCount%255) );
+            sendFragmentedData( fullDatagram, frameCount );
             // <--- UDP Sending
         }
 
-#ifdef win32
+#ifdef WIN32
         if( !frame.empty() )
         {
             cv::imshow( "Frame", frame );
-            cv::waitKey(1);
-            qDebug() << "frame";
+            //cv::waitKey(1);
+            //qDebug() << "frame";
         }
 #endif
 
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 20 );
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 50 );
 
-        int wait = 40 - chrono.elapsed(); // 25 fps
+        int wait = 100 - chrono.elapsed(); // 10 fps
         if( wait>0 )
             msleep(wait);
 

@@ -395,6 +395,9 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
 
     ui->widget_video_container->setJoypadSize( QSize(jw,jw),
                                                QSize(jw/2,jw/2) );
+
+    ui->widget_video_container->scene()->addWidget( ui->lcdNumber_fw_speed );
+    ui->widget_video_container->scene()->addWidget( ui->lcdNumber_rot_speed );
 }
 
 void CMainWindow::onFindServerButtonClicked()
@@ -531,6 +534,7 @@ void CMainWindow::onConnectButtonClicked()
 
     // >>>>> Webcam Client
     QCoreApplication::processEvents( QEventLoop::AllEvents, 1500 );
+    QThread::msleep(500);
 
     mWebcamClient = new QWebcamClient( mRobIpAddress, 55554, 55555, this );
 
@@ -678,10 +682,17 @@ void CMainWindow::stopTimers()
 
 void CMainWindow::startTimers()
 {
+#ifndef ANDROID
     mSpeedSendTimer = this->startTimer( 30, Qt::PreciseTimer );
     mSpeedsReqTimer = this->startTimer( 50, Qt::PreciseTimer );
     mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
     mFrameReqTimer = this->startTimer( 100, Qt::PreciseTimer );
+#else
+    mSpeedSendTimer = this->startTimer( 50, Qt::PreciseTimer );
+    mSpeedsReqTimer = this->startTimer( 150, Qt::PreciseTimer );
+    mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
+    mFrameReqTimer = this->startTimer( 200, Qt::PreciseTimer );
+#endif
 }
 
 void CMainWindow::on_actionRobot_Configuration_triggered()
