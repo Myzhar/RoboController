@@ -1,5 +1,6 @@
 #include "qrobotguiview.h"
 #include <QDebug>
+#include <QtCore>
 
 #ifndef QT_NO_OPENGL
 #include <QGLWidget>
@@ -27,28 +28,89 @@ QRobotGUIView::QRobotGUIView(QWidget *parent) :
     setScene( mScene );
 }
 
+void QRobotGUIView::setJoypadSize( QSize bgSize, QSize thumbSize )
+{
+    double maxPos = (bgSize.width()-thumbSize.width()/2)/2;
+
+    mMaxJoypadMove = maxPos;
+
+    // >>>>> Let's keep the size of the Joypad constant
+    if( transform().isScaling() )
+    {
+        qreal scale = transform().m11();
+        bgSize.scale( bgSize.width()/scale, bgSize.height()/scale,
+                      Qt::KeepAspectRatio );
+        thumbSize.scale( thumbSize.width()/scale, thumbSize.height()/scale,
+                      Qt::KeepAspectRatio );
+
+        mMaxJoypadMove /= scale;
+
+        //qDebug() << scale;
+    }
+    // <<<<< Let's keep the size of the Joypad constant
+
+    mScene->setJoypadSize( bgSize, thumbSize );
+}
+
 void QRobotGUIView::mousePressEvent(QMouseEvent *event)
 {
     mBnDownPos = event->pos();
     mLastPos = mBnDownPos;
 
-    qDebug() << tr("Mouse pressed %1 %2").arg(mBnDownPos.x() ).arg(mBnDownPos.y() );
+    QPointF posScene = mapToScene( mBnDownPos );
 
-    mScene->buttonDown( mBnDownPos );
+    mScene->buttonDown( posScene );
+
+    //qDebug() << Q_FUNC_INFO;
 }
 
 void QRobotGUIView::mouseReleaseEvent(QMouseEvent *event)
 {
-    qDebug() << tr("Mouse released %1 %2").arg(event->pos().x() ).arg(event->pos().y() );
+    mScene->buttonUp();
+
+    //qDebug() << Q_FUNC_INFO;
 }
+
+//void QRobotGUIView::resizeEvent(QResizeEvent * ev)
+//{
+
+//}
 
 void QRobotGUIView::mouseMoveEvent(QMouseEvent *event)
 {
-    if( qAbs(mLastPos.x()-event->x())>=MIN_MOUSE_STEP ||
-            qAbs(mLastPos.y()-event->y())>=MIN_MOUSE_STEP)
+    mLastPos = event->pos();
+
+    QPointF posScene = mapToScene( mLastPos );
+    QPointF centerPosScene = mapToScene( mBnDownPos );
+
+    // >>>>> Let's keep the thumb inside the Joypad area
+    double rho = qSqrt( (centerPosScene.x()-posScene.x())*(centerPosScene.x()-posScene.x()) +
+                        (centerPosScene.y()-posScene.y())*(centerPosScene.y()-posScene.y()) );
+
+    double x = posScene.x()-centerPosScene.x();
+    double y = posScene.y()-centerPosScene.y();
+
+    if( rho>mMaxJoypadMove )
     {
-        qDebug() << tr("Mouse moved %1 %2").arg(event->pos().x() ).arg(event->pos().y() );
-        mLastPos = event->pos();
+        /*double alpha = qAtan2( posScene.y()- centerPosScene.y(), posScene.x()- centerPosScene.x() );
+        double x = mMaxJoypadMove*qCos(alpha);
+        double y = mMaxJoypadMove*qSin(alpha);*/
+
+        double ratio = mMaxJoypadMove/rho;
+        x = (posScene.x()-centerPosScene.x())*ratio;
+        y = (posScene.y()-centerPosScene.y())*ratio;
+
+        posScene.setX( centerPosScene.x() + x );
+        posScene.setY( centerPosScene.y() + y );
     }
+    // <<<<< Let's keep the thumb inside the Joypad area
+
+    mScene->mouseMove( posScene );
+
+    float joyX = (float)x/(float)mMaxJoypadMove*100.0f;
+    float joyY = (float)y/(float)mMaxJoypadMove*100.0f;
+
+    emit newJoypadValues(joyX, joyY);
 }
+
 

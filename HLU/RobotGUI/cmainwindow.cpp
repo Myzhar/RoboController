@@ -207,6 +207,8 @@ CMainWindow::CMainWindow(QWidget *parent) :
 
     connect( ui->widget_joypad, SIGNAL(newJoypadValues(float,float)),
              this, SLOT(onNewJoypadValues(float,float)) );
+    connect( ui->widget_video_container, SIGNAL(newJoypadValues(float,float)),
+             this, SLOT(onNewJoypadValues(float,float)) );
 
     mMaxMotorSpeed = 2.0f; // m/sec
     mOpenRobotConfig = false;
@@ -286,8 +288,6 @@ void CMainWindow::timerEvent( QTimerEvent* event )
             {
                 qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
             }
-
-            //qDebug() << tr("Motor speeds: (%1,%2)").arg(motSx).arg(motDx);
         }
         else
         {
@@ -319,8 +319,6 @@ void CMainWindow::timerEvent( QTimerEvent* event )
             {
                 qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
             }
-
-            //qDebug() << tr("Motor PWMs: (%1,%2)").arg(motSx).arg(motDx);
         }
     }
     else if( event->timerId() == mFrameReqTimer )
@@ -395,8 +393,11 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
         ui->widget_video_container->fitInView( QRectF(0,0, mDefaultBgImg.cols, mDefaultBgImg.rows ),
                                                Qt::KeepAspectRatio );
 
-    ui->widget_video_container->scene()->setJoypadSize( QSize(jw,jw),
-                                                        QSize(jw/2,jw/2) );
+    ui->widget_video_container->setJoypadSize( QSize(jw,jw),
+                                               QSize(jw/2,jw/2) );
+
+    ui->widget_video_container->scene()->addWidget( ui->lcdNumber_fw_speed );
+    ui->widget_video_container->scene()->addWidget( ui->lcdNumber_rot_speed );
 }
 
 void CMainWindow::onFindServerButtonClicked()
@@ -531,16 +532,15 @@ void CMainWindow::onConnectButtonClicked()
     mPushButtonFindServer->setEnabled(false);
     mPushButtonConnect->setEnabled(false);
 
-#ifndef ANDROID
     // >>>>> Webcam Client
-    QCoreApplication::processEvents( QEventLoop::AllEvents, 500 );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, 1500 );
+    QThread::msleep(500);
 
     mWebcamClient = new QWebcamClient( mRobIpAddress, 55554, 55555, this );
 
     connect( mWebcamClient, SIGNAL(newImageReceived()),
              this, SLOT(onNewImage()) );
     // <<<<< Webcam Client */
-#endif
 
     startTimers();
 }
@@ -549,6 +549,9 @@ void CMainWindow::onNewMotorSpeeds( double speed0, double speed1 )
 {
     if(mRobotConfigValid)
     {
+        /*if( speed0==0 && speed1==0 )
+            mRoboCtrl->setMotorSpeeds(0,0);*/
+
         mMotorSpeedLeft = speed0;
         mMotorSpeedLeftValid = true;
         mMotorSpeedRight = speed1;
@@ -608,8 +611,8 @@ void CMainWindow::onNewJoypadValues(float x, float y)
 {
     //qDebug() << tr("Joypad: (%1,%2)").arg(x).arg(y);
 
-    mJoyMot[0] = y - x;
-    mJoyMot[1] = y + x;
+    mJoyMot[0] = y + x; // Left Motor
+    mJoyMot[1] = y - x; // Right Motor
 }
 
 void CMainWindow::onNewBoardStatus(BoardStatus& status)
@@ -679,10 +682,17 @@ void CMainWindow::stopTimers()
 
 void CMainWindow::startTimers()
 {
+#ifndef ANDROID
     mSpeedSendTimer = this->startTimer( 30, Qt::PreciseTimer );
     mSpeedsReqTimer = this->startTimer( 50, Qt::PreciseTimer );
     mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
     mFrameReqTimer = this->startTimer( 100, Qt::PreciseTimer );
+#else
+    mSpeedSendTimer = this->startTimer( 50, Qt::PreciseTimer );
+    mSpeedsReqTimer = this->startTimer( 150, Qt::PreciseTimer );
+    mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
+    mFrameReqTimer = this->startTimer( 200, Qt::PreciseTimer );
+#endif
 }
 
 void CMainWindow::on_actionRobot_Configuration_triggered()
@@ -750,6 +760,8 @@ void CMainWindow::onNewBatteryValue( double battVal )
 
     double perc = 100.0*(battVal-((double)mRoboConf.MinChargedBatteryLevel/100.0))/
             ((double)(mRoboConf.MaxChargedBatteryLevel-mRoboConf.MinChargedBatteryLevel)/100.0);
+
+    perc = qMin( perc, 100.0 );
 
     //qDebug() << tr("Battery: %2V %1%").arg(perc).arg(battVal);
 

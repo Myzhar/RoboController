@@ -19,9 +19,13 @@ public slots:
     /// Sets Background Image from OpenCV cv::Mat
     void setBgImage( cv::Mat& cvImg );
     /// Sets dimension of the Joypad
-    void setJoypadSize( QSize bgSize, QSize padSize );
+    void setJoypadSize(QSize bgSize, QSize thumbSize );
     /// Draws the joypad at button down
     void buttonDown(QPointF mBnDownPos );
+    /// Hide the Joypad
+    void buttonUp();
+    /// Moves the Thumb over the Joypad
+    void mouseMove(QPointF mMousePos );
 
 private:
     /// Converts cv::Mat to QImage
@@ -34,9 +38,10 @@ signals:
 private:    
     QGraphicsPixmapItem* mBgPixmapItem; ///< Background image
 
-    QGraphicsEllipseItem* mJoypadBgItem; ///< Background of the joypad
-    QGraphicsEllipseItem* mJoypadPadItem; ///< Pad of the joypad
-
+    /*QGraphicsEllipseItem* mJoypadBgItem; ///< Background of the joypad
+    QGraphicsEllipseItem* mJoypadPadItem; ///< Pad of the joypad*/
+    QGraphicsPixmapItem* mJoypadBgItem;
+    QGraphicsPixmapItem* mJoypadThumbItem;
 };
 
 #endif // QOPENCVSCENE_H
