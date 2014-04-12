@@ -124,6 +124,8 @@ void QWebcamClient::processPendingDatagrams()
 {
     while(mUdpSocketListen->hasPendingDatagrams())
     {
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 50 );
+
         QByteArray datagram;
         datagram.resize( mUdpSocketListen->pendingDatagramSize() );
 
