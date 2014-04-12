@@ -8,7 +8,7 @@
 
 #include <opencv2/core/core.hpp>
 
-#define MIN_MOUSE_STEP 15
+#define JOY_MOVE_STEP 5 ///< The virtual joypad sends new speed values only if different from the latest of at less 5
 
 class QRobotGUIView : public QGraphicsView
 {
@@ -40,7 +40,10 @@ private:
 
     QOpenCVScene* mScene; ///< Default scene to be rendered
 
-    double mMaxJoypadMove; ///< MAx distance of the Thumb of the joypad from its center
+    double mMaxJoypadMove; ///< Max distance of the Thumb of the joypad from its center
+
+    double mLastJoyX; ///< Last Joypad X value in the range [-100,100]
+    double mLastJoyY; ///< Last Joypad Y value in the range [-100,100]
 };
 
 #endif // QROBOTGUIVIEW_H

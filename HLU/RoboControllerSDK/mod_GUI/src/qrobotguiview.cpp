@@ -26,6 +26,9 @@ QRobotGUIView::QRobotGUIView(QWidget *parent) :
     mScene = new QOpenCVScene();
 
     setScene( mScene );
+
+    mLastJoyX = 0.0;
+    mLastJoyY = 0.0;
 }
 
 void QRobotGUIView::setJoypadSize( QSize bgSize, QSize thumbSize )
@@ -41,7 +44,7 @@ void QRobotGUIView::setJoypadSize( QSize bgSize, QSize thumbSize )
         bgSize.scale( bgSize.width()/scale, bgSize.height()/scale,
                       Qt::KeepAspectRatio );
         thumbSize.scale( thumbSize.width()/scale, thumbSize.height()/scale,
-                      Qt::KeepAspectRatio );
+                         Qt::KeepAspectRatio );
 
         mMaxJoypadMove /= scale;
 
@@ -69,6 +72,11 @@ void QRobotGUIView::mouseReleaseEvent(QMouseEvent *event)
     mScene->buttonUp();
 
     //qDebug() << Q_FUNC_INFO;
+
+    emit newJoypadValues(0.0, 0.0);
+
+    mLastJoyX = 0.0;
+    mLastJoyY = 0.0;
 }
 
 //void QRobotGUIView::resizeEvent(QResizeEvent * ev)
@@ -97,8 +105,10 @@ void QRobotGUIView::mouseMoveEvent(QMouseEvent *event)
         double y = mMaxJoypadMove*qSin(alpha);*/
 
         double ratio = mMaxJoypadMove/rho;
-        x = (posScene.x()-centerPosScene.x())*ratio;
-        y = (posScene.y()-centerPosScene.y())*ratio;
+        //x = (posScene.x()-centerPosScene.x())*ratio;
+        //y = (posScene.y()-centerPosScene.y())*ratio;
+        x *= ratio;
+        y *= ratio;
 
         posScene.setX( centerPosScene.x() + x );
         posScene.setY( centerPosScene.y() + y );
@@ -110,7 +120,16 @@ void QRobotGUIView::mouseMoveEvent(QMouseEvent *event)
     float joyX = (float)x/(float)mMaxJoypadMove*100.0f;
     float joyY = (float)y/(float)mMaxJoypadMove*100.0f;
 
-    emit newJoypadValues(joyX, joyY);
+    float dX = qAbs(mLastJoyX-joyX);
+    float dY = qAbs(mLastJoyY-joyY);
+
+    if( dX>JOY_MOVE_STEP || dY>JOY_MOVE_STEP )
+    {
+        mLastJoyX = joyX;
+        mLastJoyY = joyY;
+
+        emit newJoypadValues(joyX, -joyY); // Remember that Y axis is inverted in Scene coordinates
+    }
 }
 
 
