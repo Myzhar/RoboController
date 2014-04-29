@@ -18,7 +18,8 @@ typedef enum
     excUdpNotConnected, /**< TCP Server not connected */
     excProtocolBadConfirmation,  /**< Received a connection confirmation when not requested */
     excCommunicationLost, /**< The server does not reply to requests */
-    excRoboControllerNotFound /**< The RoboController board does not communicate */
+    excRoboControllerNotFound, /**< The RoboController board does not communicate */
+    excNoWebcamFound /**< The Webcam server failed to connect to webcam */
 } RcExceptionType;
 
 /// A generic error exception that can be thrown by the application

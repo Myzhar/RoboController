@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2012-04-14T13:59:47
+# Project created by QtCreator 2014-04-29T12:05:17
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += testlib
 
 QT       -= gui
 
-TARGET = RobotTcpServer
+TARGET = RobotWebcamServer
 CONFIG   += console
 CONFIG   -= app_bundle
 
@@ -20,7 +20,7 @@ DEFINES += ROBOCONTROLLERSDK_LIBRARY
 
 include($$ROBOCONTROLLERSDKPATH/mod_CORE/RoboControllerSDK_CORE.pri)        # CORE module
 include($$ROBOCONTROLLERSDKPATH/mod_VISION/RoboControllerSDK_VISION.pri)    # VISION module
-include($$ROBOCONTROLLERSDKPATH/mod_SERVER/RoboControllerSDK_SERVER.pri)    # SERVER module
+include($$ROBOCONTROLLERSDKPATH/mod_VIDEOSTREAM/RoboControllerSDK_VIDEOSTREAM.pri)    # VIDEOSTREAM module
 include($$ROBOCONTROLLERSDKPATH/mod_EXTERN/RoboControllerSDK_EXTERN.pri)    # EXTERN module
 
 INCLUDEPATH += \
@@ -33,4 +33,5 @@ SOURCES +=  \
 
 HEADERS +=  \
             ../common/include/loghandler.h
+
 

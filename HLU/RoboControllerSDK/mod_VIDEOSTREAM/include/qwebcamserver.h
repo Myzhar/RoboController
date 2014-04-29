@@ -11,6 +11,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include "RoboControllerSDK_global.h"
+
 using namespace std;
 
 // ---> Server Command
@@ -28,7 +30,7 @@ class 	QWebcamServer : public QThread
 {
     Q_OBJECT
 public:
-    explicit QWebcamServer( int camIdx=0,
+    explicit QWebcamServer( int camIdx=-1,
                             int sendPort=55554,
                             int listenPort=55555,
                             int udpPacketSize=4096,

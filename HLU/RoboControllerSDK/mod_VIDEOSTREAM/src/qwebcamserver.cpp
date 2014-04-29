@@ -18,6 +18,11 @@ QWebcamServer::QWebcamServer(int camIdx, int sendPort,
     mUdpSocketSender(NULL),
     mUdpSocketReceiver(NULL)
 {
+    qDebug() << " ";
+    qDebug() << " Robot Webcam Server ";
+    qDebug() << "=====================";
+    qDebug() << " ";
+
     mStopped=true;
     mCamIdx=camIdx;
     mSendPort=sendPort;
@@ -49,6 +54,17 @@ QWebcamServer::QWebcamServer(int camIdx, int sendPort,
 
         // Starting!
         start();
+    }
+    else
+    {
+        QString err = tr("Failed starting webcam %1").arg(mCamIdx);
+        qCritical() << err;
+        qDebug() << "Server not started";
+        qDebug() << " ";
+
+        roboctrl::RcException exc(excNoWebcamFound, err.toStdString().c_str() );
+
+        throw exc;
     }
 
 }
