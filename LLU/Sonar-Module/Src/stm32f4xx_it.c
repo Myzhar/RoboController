@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    stm32f4xx_it.c
-  * @date    24/04/2014 15:35:29
+  * @date    28/04/2014 15:53:31
   * @brief   Interrupt Service Routines.
   ******************************************************************************
   *
@@ -38,6 +38,9 @@
 
 /* External variables --------------------------------------------------------*/
 
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim9;
 extern TIM_HandleTypeDef htim12;
 
 /******************************************************************************/
@@ -59,6 +62,33 @@ void TIM8_BRK_TIM12_IRQHandler(void)
 void SysTick_Handler(void)
 {
   HAL_IncTick();
+}
+
+/**
+* @brief This function handles TIM1 Break interrupt and TIM9 global interrupt.
+*/
+void TIM1_BRK_TIM9_IRQHandler(void)
+{
+  HAL_NVIC_ClearPendingIRQ(TIM1_BRK_TIM9_IRQn);
+  HAL_TIM_IRQHandler(&htim9);
+}
+
+/**
+* @brief This function handles TIM2 global interrupt.
+*/
+void TIM2_IRQHandler(void)
+{
+  HAL_NVIC_ClearPendingIRQ(TIM2_IRQn);
+  HAL_TIM_IRQHandler(&htim2);
+}
+
+/**
+* @brief This function handles TIM3 global interrupt.
+*/
+void TIM3_IRQHandler(void)
+{
+  HAL_NVIC_ClearPendingIRQ(TIM3_IRQn);
+  HAL_TIM_IRQHandler(&htim3);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

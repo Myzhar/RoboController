@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : main.c
-  * Date               : 24/04/2014 15:35:30
+  * Date               : 28/04/2014 15:53:33
   * Description        : Main program body
   ******************************************************************************
   *
@@ -36,8 +36,14 @@
 #include "stm32f4xx_hal.h"
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim9;
+TIM_HandleTypeDef htim10;
+TIM_HandleTypeDef htim11;
 TIM_HandleTypeDef htim12;
 TIM_HandleTypeDef htim13;
+TIM_HandleTypeDef htim14;
 
 /* USER CODE BEGIN 0 */
 
@@ -46,8 +52,14 @@ TIM_HandleTypeDef htim13;
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_TIM2_Init(void);
+static void MX_TIM3_Init(void);
+static void MX_TIM9_Init(void);
+static void MX_TIM10_Init(void);
+static void MX_TIM11_Init(void);
 static void MX_TIM12_Init(void);
 static void MX_TIM13_Init(void);
+static void MX_TIM14_Init(void);
 
 int main(void)
 {
@@ -65,13 +77,22 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
+  MX_TIM9_Init();
+  MX_TIM10_Init();
+  MX_TIM11_Init();
   MX_TIM12_Init();
   MX_TIM13_Init();
+  MX_TIM14_Init();
 
   /* USER CODE BEGIN 2 */
   HAL_GPIO_WritePin( GPIOD, GPIO_PIN_12, GPIO_PIN_SET );
   HAL_GPIO_WritePin( GPIOD, GPIO_PIN_14, GPIO_PIN_SET );
   HAL_TIM_IC_Start_IT( &htim12, TIM_CHANNEL_2 );
+  HAL_TIM_IC_Start_IT( &htim9, TIM_CHANNEL_2 );
+  HAL_TIM_IC_Start_IT( &htim2, TIM_CHANNEL_2 );
+  HAL_TIM_IC_Start_IT( &htim3, TIM_CHANNEL_2 );
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN 3 */
@@ -80,6 +101,9 @@ int main(void)
   {
 	  HAL_GPIO_TogglePin( GPIOD, GPIO_PIN_12 );
 	  HAL_TIM_PWM_Start( &htim13, TIM_CHANNEL_1 );
+	  HAL_TIM_PWM_Start( &htim14, TIM_CHANNEL_1 );
+	  HAL_TIM_PWM_Start( &htim11, TIM_CHANNEL_1 );
+	  HAL_TIM_PWM_Start( &htim10, TIM_CHANNEL_1 );
 	  
 	  HAL_Delay( 100 );	  
   }
@@ -109,6 +133,176 @@ static void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
   HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
+
+}
+
+/* TIM2 init function */
+void MX_TIM2_Init(void)
+{
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_IC_InitTypeDef sConfigIC;
+  TIM_SlaveConfigTypeDef sSlaveConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
+
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 83;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 65535;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim2);
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
+
+  HAL_TIM_IC_Init(&htim2);
+
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+  sConfigIC.ICFilter = 0;
+  HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1);
+
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
+  sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
+  HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_2);
+
+  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+  sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
+  sSlaveConfig.TriggerPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+  sSlaveConfig.TriggerFilter = 0;
+  HAL_TIM_SlaveConfigSynchronization(&htim2, &sSlaveConfig);
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
+
+}
+
+/* TIM3 init function */
+void MX_TIM3_Init(void)
+{
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_IC_InitTypeDef sConfigIC;
+  TIM_SlaveConfigTypeDef sSlaveConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
+
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 83;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 65535;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim3);
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig);
+
+  HAL_TIM_IC_Init(&htim3);
+
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+  sConfigIC.ICFilter = 0;
+  HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_1);
+
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
+  sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
+  HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_2);
+
+  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+  sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
+  sSlaveConfig.TriggerPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+  sSlaveConfig.TriggerFilter = 0;
+  HAL_TIM_SlaveConfigSynchronization(&htim3, &sSlaveConfig);
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig);
+
+}
+
+/* TIM9 init function */
+void MX_TIM9_Init(void)
+{
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_IC_InitTypeDef sConfigIC;
+  TIM_SlaveConfigTypeDef sSlaveConfig;
+
+  htim9.Instance = TIM9;
+  htim9.Init.Prescaler = 167;
+  htim9.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim9.Init.Period = 65535;
+  htim9.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim9);
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  HAL_TIM_ConfigClockSource(&htim9, &sClockSourceConfig);
+
+  HAL_TIM_IC_Init(&htim9);
+
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+  sConfigIC.ICFilter = 0;
+  HAL_TIM_IC_ConfigChannel(&htim9, &sConfigIC, TIM_CHANNEL_1);
+
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
+  sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
+  HAL_TIM_IC_ConfigChannel(&htim9, &sConfigIC, TIM_CHANNEL_2);
+
+  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+  sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
+  sSlaveConfig.TriggerPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+  sSlaveConfig.TriggerFilter = 0;
+  HAL_TIM_SlaveConfigSynchronization(&htim9, &sSlaveConfig);
+
+}
+
+/* TIM10 init function */
+void MX_TIM10_Init(void)
+{
+  TIM_OC_InitTypeDef sConfigOC;
+
+  htim10.Instance = TIM10;
+  htim10.Init.Prescaler = 167;
+  htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim10.Init.Period = 65535;
+  htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim10);
+
+  HAL_TIM_PWM_Init(&htim10);
+
+  HAL_TIM_OnePulse_Init(&htim10, TIM_OPMODE_SINGLE);
+
+  sConfigOC.OCMode = TIM_OCMODE_PWM2;
+  sConfigOC.Pulse = 65526;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
+  HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
+
+}
+
+/* TIM11 init function */
+void MX_TIM11_Init(void)
+{
+  TIM_OC_InitTypeDef sConfigOC;
+
+  htim11.Instance = TIM11;
+  htim11.Init.Prescaler = 167;
+  htim11.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim11.Init.Period = 65535;
+  htim11.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim11);
+
+  HAL_TIM_PWM_Init(&htim11);
+
+  HAL_TIM_OnePulse_Init(&htim11, TIM_OPMODE_SINGLE);
+
+  sConfigOC.OCMode = TIM_OCMODE_PWM2;
+  sConfigOC.Pulse = 65526;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
+  HAL_TIM_PWM_ConfigChannel(&htim11, &sConfigOC, TIM_CHANNEL_1);
+
 }
 
 /* TIM12 init function */
@@ -172,6 +366,30 @@ void MX_TIM13_Init(void)
 
 }
 
+/* TIM14 init function */
+void MX_TIM14_Init(void)
+{
+  TIM_OC_InitTypeDef sConfigOC;
+
+  htim14.Instance = TIM14;
+  htim14.Init.Prescaler = 83;
+  htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim14.Init.Period = 65535;
+  htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim14);
+
+  HAL_TIM_PWM_Init(&htim14);
+
+  HAL_TIM_OnePulse_Init(&htim14, TIM_OPMODE_SINGLE);
+
+  sConfigOC.OCMode = TIM_OCMODE_PWM2;
+  sConfigOC.Pulse = 65526;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
+  HAL_TIM_PWM_ConfigChannel(&htim14, &sConfigOC, TIM_CHANNEL_1);
+
+}
+
 /** Configure pins as 
         * Analog 
         * Input 
@@ -184,10 +402,12 @@ void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
+  __GPIOE_CLK_ENABLE();
   __GPIOH_CLK_ENABLE();
   __GPIOA_CLK_ENABLE();
   __GPIOB_CLK_ENABLE();
   __GPIOD_CLK_ENABLE();
+  __GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin : PA0 */
   GPIO_InitStruct.Pin = GPIO_PIN_0;
@@ -208,7 +428,7 @@ uint32_t ic_val;
 uint32_t range_mm; 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-	ic_val = HAL_TIM_ReadCapturedValue( &htim12, TIM_CHANNEL_2 );	
+	ic_val = HAL_TIM_ReadCapturedValue( htim, TIM_CHANNEL_2 );	
 	range_mm = (int)((float)ic_val*0.175f+0.5f);
 	HAL_GPIO_TogglePin( GPIOD, GPIO_PIN_14 );
 }
