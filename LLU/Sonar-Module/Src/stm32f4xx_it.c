@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    stm32f4xx_it.c
-  * @date    28/04/2014 15:53:31
+  * @date    30/04/2014 15:48:35
   * @brief   Interrupt Service Routines.
   ******************************************************************************
   *
@@ -42,6 +42,8 @@ extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim9;
 extern TIM_HandleTypeDef htim12;
+extern UART_HandleTypeDef huart1;
+extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Interruption and Exception Handlers         */
@@ -54,6 +56,15 @@ void TIM8_BRK_TIM12_IRQHandler(void)
 {
   HAL_NVIC_ClearPendingIRQ(TIM8_BRK_TIM12_IRQn);
   HAL_TIM_IRQHandler(&htim12);
+}
+
+/**
+* @brief This function handles USB On The Go FS global interrupt.
+*/
+void OTG_FS_IRQHandler(void)
+{
+  HAL_NVIC_ClearPendingIRQ(OTG_FS_IRQn);
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
 }
 
 /**
@@ -89,6 +100,15 @@ void TIM3_IRQHandler(void)
 {
   HAL_NVIC_ClearPendingIRQ(TIM3_IRQn);
   HAL_TIM_IRQHandler(&htim3);
+}
+
+/**
+* @brief This function handles USART1 global interrupt.
+*/
+void USART1_IRQHandler(void)
+{
+  HAL_NVIC_ClearPendingIRQ(USART1_IRQn);
+  HAL_UART_IRQHandler(&huart1);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

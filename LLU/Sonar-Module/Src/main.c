@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : main.c
-  * Date               : 28/04/2014 15:53:33
+  * Date               : 30/04/2014 15:48:37
   * Description        : Main program body
   ******************************************************************************
   *
@@ -45,6 +45,12 @@ TIM_HandleTypeDef htim12;
 TIM_HandleTypeDef htim13;
 TIM_HandleTypeDef htim14;
 
+UART_HandleTypeDef huart1;
+DMA_HandleTypeDef hdma_usart1_rx;
+DMA_HandleTypeDef hdma_usart1_tx;
+
+PCD_HandleTypeDef hpcd_USB_OTG_FS;
+
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
@@ -52,6 +58,7 @@ TIM_HandleTypeDef htim14;
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM9_Init(void);
@@ -60,6 +67,8 @@ static void MX_TIM11_Init(void);
 static void MX_TIM12_Init(void);
 static void MX_TIM13_Init(void);
 static void MX_TIM14_Init(void);
+static void MX_USART1_UART_Init(void);
+static void MX_USB_OTG_FS_PCD_Init(void);
 
 int main(void)
 {
@@ -77,6 +86,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM9_Init();
@@ -85,6 +95,8 @@ int main(void)
   MX_TIM12_Init();
   MX_TIM13_Init();
   MX_TIM14_Init();
+  MX_USART1_UART_Init();
+  MX_USB_OTG_FS_PCD_Init();
 
   /* USER CODE BEGIN 2 */
   HAL_GPIO_WritePin( GPIOD, GPIO_PIN_12, GPIO_PIN_SET );
@@ -125,7 +137,7 @@ static void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLM = 8;
   RCC_OscInitStruct.PLL.PLLN = 336;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.PLL.PLLQ = 7;
   HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -162,7 +174,6 @@ void MX_TIM2_Init(void)
   sConfigIC.ICFilter = 0;
   HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1);
 
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
   sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
   HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_2);
 
@@ -204,7 +215,6 @@ void MX_TIM3_Init(void)
   sConfigIC.ICFilter = 0;
   HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_1);
 
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
   sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
   HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_2);
 
@@ -245,7 +255,6 @@ void MX_TIM9_Init(void)
   sConfigIC.ICFilter = 0;
   HAL_TIM_IC_ConfigChannel(&htim9, &sConfigIC, TIM_CHANNEL_1);
 
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
   sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
   HAL_TIM_IC_ConfigChannel(&htim9, &sConfigIC, TIM_CHANNEL_2);
 
@@ -330,7 +339,6 @@ void MX_TIM12_Init(void)
   sConfigIC.ICFilter = 0;
   HAL_TIM_IC_ConfigChannel(&htim12, &sConfigIC, TIM_CHANNEL_1);
 
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
   sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
   HAL_TIM_IC_ConfigChannel(&htim12, &sConfigIC, TIM_CHANNEL_2);
 
@@ -387,6 +395,53 @@ void MX_TIM14_Init(void)
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
   HAL_TIM_PWM_ConfigChannel(&htim14, &sConfigOC, TIM_CHANNEL_1);
+
+}
+
+/* USART1 init function */
+void MX_USART1_UART_Init(void)
+{
+
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  HAL_UART_Init(&huart1);
+
+}
+
+/* USB_OTG_FS init function */
+void MX_USB_OTG_FS_PCD_Init(void)
+{
+
+  hpcd_USB_OTG_FS.Instance = USB_OTG_FS;
+  hpcd_USB_OTG_FS.Init.dev_endpoints = 7;
+  hpcd_USB_OTG_FS.Init.speed = PCD_SPEED_FULL;
+  hpcd_USB_OTG_FS.Init.dma_enable = DISABLE;
+  hpcd_USB_OTG_FS.Init.ep0_mps = DEP0CTL_MPS_64;
+  hpcd_USB_OTG_FS.Init.phy_itface = PCD_PHY_EMBEDDED;
+  hpcd_USB_OTG_FS.Init.Sof_enable = DISABLE;
+  hpcd_USB_OTG_FS.Init.low_power_enable = ENABLE;
+  hpcd_USB_OTG_FS.Init.vbus_sensing_enable = DISABLE;
+  hpcd_USB_OTG_FS.Init.use_dedicated_ep1 = DISABLE;
+  hpcd_USB_OTG_FS.Init.use_external_vbus = DISABLE;
+  HAL_PCD_Init(&hpcd_USB_OTG_FS);
+
+}
+
+/** 
+  * Enable DMA controller clock
+  */
+void MX_DMA_Init(void) 
+{
+  /* DMA controller clock enable */
+  __DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
 
 }
 
