@@ -119,6 +119,7 @@ private:
     bool mNewImageAvailable; /*!< Used to retrieve image from WebcamServer */
 
     cv::Mat mDefaultBgImg; /*!< Default background image */
+    bool mFirstResize; /*!< Used to understand if @ref ResizeEvent is called for the first time
 
 /*#ifndef android
     QGlOpenCVWidget* mOpenCVWidget;

@@ -53,7 +53,6 @@ CMainWindow::CMainWindow(QWidget *parent) :
     ui->widget_plot->legend->setFont(QFont("Helvetica",8));
     ui->widget_plot->xAxis->setLabel( tr("Time (msec)") );
 
-
     // make left and bottom axes transfer their ranges to right and top axes:
     connect(ui->widget_plot->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->widget_plot->xAxis2, SLOT(setRange(QCPRange)));
     connect(ui->widget_plot->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->widget_plot->yAxis2, SLOT(setRange(QCPRange)));
@@ -93,7 +92,10 @@ void CMainWindow::on_verticalSlider_SetPoint_valueChanged(int value)
             ui->verticalSlider_SetPoint->setToolTip( tooltip);
 
             if(mRcComm)
+            {
+                mRcComm->getRobotControl();
                 mRcComm->setMotorSpeed( mCurrMotorIdx, setPoint );
+            }
         }
         else
         {
@@ -178,6 +180,7 @@ void CMainWindow::on_pushButton_SetPoint_clicked()
     {
         if(mRcComm)
         {
+            mRcComm->getRobotControl();
             if( pidEnabled )
                 mRcComm->setMotorSpeed( mCurrMotorIdx, value );
             else

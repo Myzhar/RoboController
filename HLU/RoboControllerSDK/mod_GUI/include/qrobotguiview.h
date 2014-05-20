@@ -4,6 +4,9 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 #include <QPoint>
+#include <QLCDNumber>
+#include <QLabel>
+#include <QGraphicsProxyWidget>
 #include "qopencvscene.h"
 
 #include <opencv2/core/core.hpp>
@@ -44,6 +47,11 @@ private:
 
     double mLastJoyX; ///< Last Joypad X value in the range [-100,100]
     double mLastJoyY; ///< Last Joypad Y value in the range [-100,100]
+
+    QLCDNumber* mLcdFwSpeed;
+    QLCDNumber* mLcdRotSpeed;
+    QGraphicsProxyWidget* mProxyLcdFwSpeed;
+    QGraphicsProxyWidget* mProxyLcdRotSpeed;
 };
 
 #endif // QROBOTGUIVIEW_H

@@ -7,7 +7,9 @@
 #endif
 
 QRobotGUIView::QRobotGUIView(QWidget *parent) :
-    QGraphicsView(parent)
+    QGraphicsView(parent),
+    mLcdFwSpeed(NULL),
+    mLcdRotSpeed(NULL)
 {
 #ifndef QT_NO_OPENGL
     mOpenGLActive = true;
@@ -29,6 +31,12 @@ QRobotGUIView::QRobotGUIView(QWidget *parent) :
 
     mLastJoyX = 0.0;
     mLastJoyY = 0.0;
+
+    mLcdFwSpeed = new QLCDNumber(8);
+    mLcdFwSpeed = new QLCDNumber(8);
+
+    mProxyLcdFwSpeed = mScene->addWidget(mLcdFwSpeed);
+    mProxyLcdRotSpeed = mScene->addWidget(mLcdRotSpeed);
 }
 
 void QRobotGUIView::setJoypadSize( QSize bgSize, QSize thumbSize )
@@ -53,6 +61,13 @@ void QRobotGUIView::setJoypadSize( QSize bgSize, QSize thumbSize )
     // <<<<< Let's keep the size of the Joypad constant
 
     mScene->setJoypadSize( bgSize, thumbSize );
+
+    QPointF origin = mapToScene( bgSize.width()/10.0, bgSize.height()/10.0 );
+
+    mProxyLcdFwSpeed->setPos( origin);
+    //mProxyLcdFwSpeed->setMinimumSize( bgSize.width(), bgSize.height()/3 );
+    mProxyLcdRotSpeed->setPos( origin + QPointF( 0.0f, bgSize.height()/3+5 ));
+    //mProxyLcdRotSpeed->setMinimumSize( bgSize.width(), bgSize.height()/3 );
 }
 
 void QRobotGUIView::mousePressEvent(QMouseEvent *event)

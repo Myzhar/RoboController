@@ -218,7 +218,9 @@ CMainWindow::CMainWindow(QWidget *parent) :
 
     QImage img( ":/icon/images/MyzharBot_favicon_512x512.png" );
     mDefaultBgImg = OpenCVTools::QImageToCvMat( img, true );
-    ui->widget_video_container->scene()->setBgImage( mDefaultBgImg );
+    //ui->widget_video_container->scene()->setBgImage( mDefaultBgImg );
+
+    mFirstResize = true;
 }
 
 CMainWindow::~CMainWindow()
@@ -396,8 +398,12 @@ void CMainWindow::resizeEvent(QResizeEvent * ev)
     ui->widget_video_container->setJoypadSize( QSize(jw,jw),
                                                QSize(jw/2,jw/2) );
 
-    ui->widget_video_container->scene()->addWidget( ui->lcdNumber_fw_speed );
-    ui->widget_video_container->scene()->addWidget( ui->lcdNumber_rot_speed );
+    if( !mDefaultBgImg.empty() && mFirstResize )
+    {
+        mFirstResize = false;
+        ui->widget_video_container->scene()->setBgImage(mDefaultBgImg);
+    }
+
 }
 
 void CMainWindow::onFindServerButtonClicked()
