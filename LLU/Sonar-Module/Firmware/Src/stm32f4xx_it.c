@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    stm32f4xx_it.c
-  * @date    06/05/2014 21:44:53
+  * @date    25/05/2014 12:27:55
   * @brief   Interrupt Service Routines.
   ******************************************************************************
   *
@@ -38,26 +38,11 @@
 
 /* External variables --------------------------------------------------------*/
 
-extern TIM_HandleTypeDef htim1;
-extern TIM_HandleTypeDef htim2;
-extern TIM_HandleTypeDef htim3;
-extern TIM_HandleTypeDef htim9;
-extern TIM_HandleTypeDef htim12;
-extern UART_HandleTypeDef huart1;
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /******************************************************************************/
-/*            Cortex-M4 Processor Interruption and Exception Handlers         */
+/*            Cortex-M4 Processor Interruption and Exception Handlers         */ 
 /******************************************************************************/
-
-/**
-* @brief This function handles TIM8 Break interrupt and TIM12 global interrupt.
-*/
-void TIM8_BRK_TIM12_IRQHandler(void)
-{
-  HAL_NVIC_ClearPendingIRQ(TIM8_BRK_TIM12_IRQn);
-  HAL_TIM_IRQHandler(&htim12);
-}
 
 /**
 * @brief This function handles USB On The Go FS global interrupt.
@@ -74,43 +59,7 @@ void OTG_FS_IRQHandler(void)
 void SysTick_Handler(void)
 {
   HAL_IncTick();
-}
-
-/**
-* @brief This function handles TIM1 Break interrupt and TIM9 global interrupt.
-*/
-void TIM1_BRK_TIM9_IRQHandler(void)
-{
-  HAL_NVIC_ClearPendingIRQ(TIM1_BRK_TIM9_IRQn);
-  HAL_TIM_IRQHandler(&htim1);
-  HAL_TIM_IRQHandler(&htim9);
-}
-
-/**
-* @brief This function handles TIM2 global interrupt.
-*/
-void TIM2_IRQHandler(void)
-{
-  HAL_NVIC_ClearPendingIRQ(TIM2_IRQn);
-  HAL_TIM_IRQHandler(&htim2);
-}
-
-/**
-* @brief This function handles TIM3 global interrupt.
-*/
-void TIM3_IRQHandler(void)
-{
-  HAL_NVIC_ClearPendingIRQ(TIM3_IRQn);
-  HAL_TIM_IRQHandler(&htim3);
-}
-
-/**
-* @brief This function handles USART1 global interrupt.
-*/
-void USART1_IRQHandler(void)
-{
-  HAL_NVIC_ClearPendingIRQ(USART1_IRQn);
-  HAL_UART_IRQHandler(&huart1);
+  HAL_SYSTICK_IRQHandler();
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
