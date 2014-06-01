@@ -43,24 +43,24 @@ CONFIG(opencv)
     QT       += printsupport
 
     INCLUDEPATH += \
-                $$ROBOCONTROLLERSDKPATH/mod_EXTERN/opencv-2.4.8/include
+                $$ROBOCONTROLLERSDKPATH/mod_EXTERN/opencv-2.4.9/include
 
     win32 {
         message(Using OpenCV for Windows)
-        OPENCV_LIB_PATH = $$ROBOCONTROLLERSDKPATH/mod_EXTERN/opencv-2.4.8/bin/vc10/lib
+        OPENCV_LIB_PATH = $$ROBOCONTROLLERSDKPATH/mod_EXTERN/opencv-2.4.9/bin/vc10/lib
 
         #LIBS += \
-        #        $$OPENCV_LIB_PATH/opencv_core248d.lib \
-        #        $$OPENCV_LIB_PATH/opencv_highgui248d.lib
+        #        $$OPENCV_LIB_PATH/opencv_core249d.lib \
+        #        $$OPENCV_LIB_PATH/opencv_highgui249d.lib
 
         LIBS += \
-            $$OPENCV_LIB_PATH/opencv_core248.lib \
-            $$OPENCV_LIB_PATH/opencv_highgui248.lib
+            $$OPENCV_LIB_PATH/opencv_core249.lib \
+            $$OPENCV_LIB_PATH/opencv_highgui249.lib
     }
 
     android {
         message(Used OpenCV for Android)
-        OPENCV_LIB_PATH = $$ROBOCONTROLLERSDKPATH/mod_EXTERN/opencv-2.4.8/bin/android-armeabi-v7a
+        OPENCV_LIB_PATH = $$ROBOCONTROLLERSDKPATH/mod_EXTERN/opencv-2.4.9/bin/android-armeabi-v7a
 
         LIBS += \
             $$OPENCV_LIB_PATH/libopencv_contrib.a \

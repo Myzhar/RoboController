@@ -1,8 +1,9 @@
 /**
   ******************************************************************************
-  * @file    stm32f4xx_it.c
-  * @date    01/06/2014 10:34:34
-  * @brief   Interrupt Service Routines.
+  * File Name          : I2C.c
+  * Date               : 01/06/2014 10:34:32
+  * Description        : This file provides code for the configuration
+  *                      of the I2C instances.
   ******************************************************************************
   *
   * COPYRIGHT(c) 2014 STMicroelectronics
@@ -31,45 +32,81 @@
   *
   ******************************************************************************
   */
+
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx.h"
-#include "stm32f4xx_it.h"
+#include "i2c.h"
 
-/* External variables --------------------------------------------------------*/
+#include "gpio.h"
 
-extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
-extern UART_HandleTypeDef huart2;
+/* USER CODE BEGIN 0 */
 
-/******************************************************************************/
-/*            Cortex-M4 Processor Interruption and Exception Handlers         */ 
-/******************************************************************************/
+/* USER CODE END 0 */
 
-/**
-* @brief This function handles USB On The Go FS global interrupt.
-*/
-void OTG_FS_IRQHandler(void)
+I2C_HandleTypeDef hi2c2;
+
+/* I2C2 init function */
+void MX_I2C2_Init(void)
 {
-  HAL_NVIC_ClearPendingIRQ(OTG_FS_IRQn);
-  HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+
+  hi2c2.Instance = I2C2;
+  hi2c2.Init.ClockSpeed = 100000;
+  hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c2.Init.OwnAddress1 = 0;
+  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
+  hi2c2.Init.OwnAddress2 = 0;
+  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
+  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
+  HAL_I2C_Init(&hi2c2);
+
 }
 
-/**
-* @brief This function handles System tick timer.
-*/
-void SysTick_Handler(void)
+void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
 {
-  HAL_IncTick();
-  HAL_SYSTICK_IRQHandler();
+
+  GPIO_InitTypeDef GPIO_InitStruct;
+  if(hi2c->Instance==I2C2)
+  {
+    /* Peripheral clock enable */
+    __I2C2_CLK_ENABLE();
+  
+    /**I2C2 GPIO Configuration    
+    PB10     ------> I2C2_SCL
+    PB11     ------> I2C2_SDA 
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF4_I2C2;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  }
 }
 
-/**
-* @brief This function handles USART2 global interrupt.
-*/
-void USART2_IRQHandler(void)
+void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c)
 {
-  HAL_NVIC_ClearPendingIRQ(USART2_IRQn);
-  HAL_UART_IRQHandler(&huart2);
-}
+
+  if(hi2c->Instance==I2C2)
+  {
+    /* Peripheral clock disable */
+    __I2C2_CLK_DISABLE();
+  
+    /**I2C2 GPIO Configuration    
+    PB10     ------> I2C2_SCL
+    PB11     ------> I2C2_SDA 
+    */
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10|GPIO_PIN_11);
+
+  }
+} 
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

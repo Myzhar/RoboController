@@ -1,8 +1,9 @@
 /**
   ******************************************************************************
-  * @file    stm32f4xx_it.c
-  * @date    01/06/2014 10:34:34
-  * @brief   Interrupt Service Routines.
+  * File Name          : dma.c
+  * Date               : 01/06/2014 10:34:32
+  * Description        : This file provides code for the configuration
+  *                      of all the requested memory to memory DMA transfers.
   ******************************************************************************
   *
   * COPYRIGHT(c) 2014 STMicroelectronics
@@ -32,44 +33,43 @@
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx.h"
-#include "stm32f4xx_it.h"
+#include "dma.h"
 
-/* External variables --------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
 
-extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
-extern UART_HandleTypeDef huart2;
+/* USER CODE END 0 */
 
-/******************************************************************************/
-/*            Cortex-M4 Processor Interruption and Exception Handlers         */ 
-/******************************************************************************/
+/*----------------------------------------------------------------------------*/
+/* Configure DMA                                                              */
+/*----------------------------------------------------------------------------*/
 
-/**
-* @brief This function handles USB On The Go FS global interrupt.
-*/
-void OTG_FS_IRQHandler(void)
+/* USER CODE BEGIN 1 */
+
+/* USER CODE END 1 */
+
+/** 
+  * Enable DMA controller clock
+  */
+void MX_DMA_Init(void) 
 {
-  HAL_NVIC_ClearPendingIRQ(OTG_FS_IRQn);
-  HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+  /* DMA controller clock enable */
+  __DMA2_CLK_ENABLE();
+  __DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+
 }
 
-/**
-* @brief This function handles System tick timer.
-*/
-void SysTick_Handler(void)
-{
-  HAL_IncTick();
-  HAL_SYSTICK_IRQHandler();
-}
+/* USER CODE BEGIN 2 */
+
+/* USER CODE END 2 */
 
 /**
-* @brief This function handles USART2 global interrupt.
-*/
-void USART2_IRQHandler(void)
-{
-  HAL_NVIC_ClearPendingIRQ(USART2_IRQn);
-  HAL_UART_IRQHandler(&huart2);
-}
+  * @}
+  */
+
+/**
+  * @}
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

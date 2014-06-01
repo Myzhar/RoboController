@@ -1,8 +1,9 @@
 /**
   ******************************************************************************
-  * @file    stm32f4xx_it.c
-  * @date    01/06/2014 10:34:34
-  * @brief   Interrupt Service Routines.
+  * File Name          : USART.h
+  * Date               : 01/06/2014 10:34:33
+  * Description        : This file provides code for the configuration
+  *                      of the USART instances.
   ******************************************************************************
   *
   * COPYRIGHT(c) 2014 STMicroelectronics
@@ -31,45 +32,33 @@
   *
   ******************************************************************************
   */
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __usart_H
+#define __usart_H
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-#include "stm32f4xx.h"
-#include "stm32f4xx_it.h"
 
-/* External variables --------------------------------------------------------*/
-
-extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 
-/******************************************************************************/
-/*            Cortex-M4 Processor Interruption and Exception Handlers         */ 
-/******************************************************************************/
+void MX_USART1_UART_Init(void);
+void MX_USART2_UART_Init(void);
+
+#ifdef __cplusplus
+}
+#endif
+#endif /*__ usart_H */
 
 /**
-* @brief This function handles USB On The Go FS global interrupt.
-*/
-void OTG_FS_IRQHandler(void)
-{
-  HAL_NVIC_ClearPendingIRQ(OTG_FS_IRQn);
-  HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
-}
+  * @}
+  */
 
 /**
-* @brief This function handles System tick timer.
-*/
-void SysTick_Handler(void)
-{
-  HAL_IncTick();
-  HAL_SYSTICK_IRQHandler();
-}
-
-/**
-* @brief This function handles USART2 global interrupt.
-*/
-void USART2_IRQHandler(void)
-{
-  HAL_NVIC_ClearPendingIRQ(USART2_IRQn);
-  HAL_UART_IRQHandler(&huart2);
-}
+  * @}
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
