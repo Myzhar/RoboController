@@ -1,14 +1,16 @@
 #include "qwebcamclient.h"
+#include "RoboControllerSDK_global.h"
 
 #include <vector>
 #include <QCoreApplication>
+
 
 using namespace std;
 
 namespace roboctrl
 {
 
-QWebcamClient::QWebcamClient(QString serverIp, int listenPort, int sendPort, QObject *parent) :
+QWebcamClient::QWebcamClient( int listenPort, int sendPort, QObject *parent) :
     QThread(parent),
     mUdpSocketSend(NULL)
 {
@@ -18,43 +20,64 @@ QWebcamClient::QWebcamClient(QString serverIp, int listenPort, int sendPort, QOb
     mLastImageState=true;
     mListenPort = listenPort;
     mSendPort = sendPort;
-    mServerIp = serverIp;
+    mServerIp = QString(MULTICAST_WEBCAM_SERVER_IP);
 
     connectToServer( sendPort, listenPort );
 }
 
 QWebcamClient::~QWebcamClient()
 {
-    if(mUdpSocketSend)
-    {
-        char cmd = CMD_REMOVE_CLIENT;
-        mUdpSocketSend->writeDatagram( &cmd,
-                                       QHostAddress(mServerIp),
-                                       mSendPort );
-        mUdpSocketSend->flush();
+//    if(mUdpSocketSend)
+//    {
+//        /*char cmd = CMD_REMOVE_CLIENT;
+//        mUdpSocketSend->writeDatagram( &cmd,
+//                                       QHostAddress(mServerIp),
+//                                       mSendPort );
+//        mUdpSocketSend->flush();*/
 
-        delete mUdpSocketSend;
-    }
 
-    if(mUdpSocketListen)
-        delete mUdpSocketListen;
+//        delete mUdpSocketSend;
+//    }
 
-    mConnected = false;
+//    if(mUdpSocketListen)
+//    {
+//        mUdpSocketListen->leaveMulticastGroup( QHostAddress(MULTICAST_WEBCAM_SERVER_IP) );
+//        delete mUdpSocketListen;
+//    }
+
+//    mConnected = false;
+//
+    disconnectServer();
 }
 
 void QWebcamClient::disconnectServer()
 {
+
+    if( this->isRunning() )
+    {
+        this->terminate();
+        this->wait( 1000 );
+    }
+
     if(mUdpSocketSend)
     {
-        char cmd = CMD_REMOVE_CLIENT;
+        /*char cmd = CMD_REMOVE_CLIENT;
         mUdpSocketSend->writeDatagram( &cmd,
                                        QHostAddress(mServerIp),
                                        mListenPort );
-        mUdpSocketSend->flush();
+        mUdpSocketSend->flush();*/
 
         delete mUdpSocketSend;
         mUdpSocketSend = NULL;
     }
+
+    if(mUdpSocketListen)
+    {
+        mUdpSocketListen->leaveMulticastGroup( QHostAddress(MULTICAST_WEBCAM_SERVER_IP) );
+        delete mUdpSocketListen;
+    }
+
+
     mConnected = false;
 }
 
@@ -75,10 +98,14 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
 //                                   QUdpSocket::ShareAddress );
 
     mUdpSocketListen = new QUdpSocket();
-    bool binded = mUdpSocketListen->bind( //QHostAddress(mServerIp),
+    /*bool binded = mUdpSocketListen->bind( //QHostAddress(mServerIp),
                                         mListenPort,
-                                        QUdpSocket::ShareAddress );
-   // mUdpSocketListen->
+                                        QUdpSocket::ShareAddress ); */
+
+    // To connect to multicast server we need that the client socket is binded
+    bool binded = mUdpSocketListen->bind( QHostAddress::AnyIPv4,
+                                            mListenPort,
+                                            QUdpSocket::ShareAddress );
 
     // >>>> Trying connection
     if(!binded)
@@ -89,7 +116,7 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
     }
     else
     {
-        char cmd = CMD_ADD_CLIENT;
+        /*char cmd = CMD_ADD_CLIENT;
         int res = mUdpSocketSend->writeDatagram( &cmd,
                                                  QHostAddress(mServerIp),
                                                  //QHostAddress::Broadcast,
@@ -104,6 +131,22 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
         else
         {
 
+            qDebug() << tr("Connected to server. Listening on port %1. Sending on port %2")
+                        .arg(mListenPort).arg(mSendPort);
+            mConnected = true;
+
+            connect(mUdpSocketListen, SIGNAL(readyRead()),
+                    this, SLOT(processPendingDatagrams()));
+        }*/
+
+        if( !mUdpSocketListen->joinMulticastGroup( QHostAddress(MULTICAST_WEBCAM_SERVER_IP) ) )
+        {
+            qDebug() << tr("Connection to server failed on port %2")
+                        .arg(mSendPort);
+            mConnected = false;
+        }
+        else
+        {
             qDebug() << tr("Connected to server. Listening on port %1. Sending on port %2")
                         .arg(mListenPort).arg(mSendPort);
             mConnected = true;

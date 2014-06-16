@@ -30,16 +30,7 @@ QWebcamServer::QWebcamServer(int camIdx, int sendPort,
     mMaxPacketSize=udpPacketSize;
     mMaxClientCount=maxClientCount;
 
-    //mClientIpList.push_back( clientIP );
-
-    mUdpSocketSender = new QUdpSocket(this);
-    //mUdpSocketSend->bind( mSendPort, QUdpSocket::ShareAddress );
-
-    mUdpSocketReceiver = new QUdpSocket(this);
-    mUdpSocketReceiver->bind( mListenPort, QUdpSocket::ShareAddress );
-
-    connect( mUdpSocketReceiver, SIGNAL(readyRead()),
-             this, SLOT(onReadyRead() ) );
+    mFps = 25;
 
     if( mCap.open( mCamIdx ) )
     {
@@ -66,7 +57,6 @@ QWebcamServer::QWebcamServer(int camIdx, int sendPort,
 
         throw exc;
     }
-
 }
 
 QWebcamServer::~QWebcamServer()
@@ -120,20 +110,14 @@ void QWebcamServer::sendFragmentedData( QByteArray data, char fragID )
             stream << val;
         }
 
-        for( int c=0; c<(int)mClientIpList.size(); c++ )
+        int res = mUdpSocketSender->writeDatagram( buffer, QHostAddress(MULTICAST_WEBCAM_SERVER_IP), mSendPort );
+
+        if( -1==res )
         {
-            int res = mUdpSocketSender->writeDatagram( buffer,
-                                                       /*QHostAddress::Broadcast*/QHostAddress(mClientIpList[c]),
-                                                       mSendPort );
-            mUdpSocketSender->flush();
-            if( -1==res )
-            {
-                /*qDebug() << tr("Frame #%3: Missed fragment %1/%2 to Client %4")
-                            .arg(i).arg(numFrag).arg((quint8)fragID).arg(mClientIpList[c]);*/
-                qDebug() << tr("Frame #%3: Missed fragment %1/%2 to Broadcast")
-                                            .arg(i).arg(numFrag).arg((quint8)fragID);
-            }
+            qDebug() << tr("Frame #%3: Missed fragment %1/%2 to Broadcast")
+                        .arg(i).arg(numFrag).arg((quint8)fragID);
         }
+
         QCoreApplication::processEvents( QEventLoop::AllEvents, 1 );
     }
 
@@ -143,17 +127,35 @@ void QWebcamServer::sendFragmentedData( QByteArray data, char fragID )
 }
 
 void QWebcamServer::run()
-{
+{    
+    qDebug() << tr("Webcam Server Thread started");
+
+    // >>>>> Frame compression parameters
     vector<int> params;
     params.push_back(CV_IMWRITE_JPEG_QUALITY);
     params.push_back(75);
+    // <<<<< Frame compression parameters
 
     quint8 frameCount = 0;
 
-    qDebug() << tr("Webcam Server Thread started");
+    // >>>>> Thread Initialization
+    mUdpSocketSender = new QUdpSocket();
+    // Multicast on the subnet
+    mUdpSocketSender->setSocketOption( QAbstractSocket::MulticastTtlOption, 1 );
 
+    mUdpSocketReceiver = new QUdpSocket();
+    mUdpSocketReceiver->bind( mListenPort, QUdpSocket::ShareAddress );
+
+    connect( mUdpSocketReceiver, SIGNAL(readyRead()),
+             this, SLOT(onReadyRead() ) );
+    // <<<<< Thread Initialization
+
+    // >>>>> Thread Loop
     forever
     {
+        // Waiting between loops according to FPS set by user
+        double waitMsec = 1000.0/((double)mFps);
+
         QTime chrono;
         chrono.start();
 
@@ -176,38 +178,49 @@ void QWebcamServer::run()
         //qDebug() << tr( "Frame %1").arg( frameCount );
 
         // JPG Compression in memory
-        if( !frame.empty() && (mClientIpList.size() > 0 ) )
+        if( !frame.empty() )
         {
             cv::imencode( ".jpg", frame, compressed, params );
 
-            // ---> UDP Sending
+            // >>>>> UDP Sending
             QByteArray fullDatagram;
             fullDatagram.setRawData( (char*)compressed.data(), compressed.size() );
 
             sendFragmentedData( fullDatagram, frameCount );
-            // <--- UDP Sending
+            // <<<<< UDP Sending
         }
 
 #ifdef WIN32
         if( !frame.empty() )
         {
             cv::imshow( "Frame", frame );
-            //cv::waitKey(1);
-            //qDebug() << "frame";
         }
 #endif
 
         QCoreApplication::processEvents( QEventLoop::AllEvents, 50 );
 
-        int wait = 100 - chrono.elapsed(); // 10 fps
+        int wait = waitMsec - chrono.elapsed(); // to grant maximum FPS
         if( wait>0 )
             msleep(wait);
 
         //qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz") << tr("Wait: %1msec").arg(wait);
     }
+    // <<<<< Thread Loop
+
+    // >>>>> Thread deinitialization
+    disconnect( mUdpSocketReceiver, SIGNAL(readyRead()),
+             this, SLOT(onReadyRead() ) );
+
+    if(mUdpSocketSender)
+        delete mUdpSocketSender;
+    mUdpSocketSender = NULL;
+
+    if(mUdpSocketReceiver)
+        delete mUdpSocketReceiver;
+    mUdpSocketReceiver = NULL;
+    // <<<<< Thread deinitialization
 
     qDebug() << tr("Webcam Server Thread finished");
-
 }
 
 void QWebcamServer::onReadyRead()
@@ -235,41 +248,10 @@ void QWebcamServer::onReadyRead()
 
         switch( cmd )
         {
-        case CMD_ADD_CLIENT:
-        {
-            if( mClientIpList.contains( senderIP.toString() ) )
-            {
-                mUdpSocketSender->writeDatagram( MSG_CONN_ACCEPTED.toLocal8Bit().constData(), MSG_CONN_ACCEPTED.size(), senderIP, mSendPort );
-                mUdpSocketSender->flush();
-                qDebug() << tr("Client %1 already connected").arg( senderIP.toString() );
-            }
-            else if(mClientIpList.size()<mMaxClientCount)
-            {
-                int res = mUdpSocketSender->writeDatagram( MSG_CONN_ACCEPTED.toLocal8Bit().constData(), MSG_CONN_ACCEPTED.size(), senderIP, mSendPort );
-                if(MSG_CONN_ACCEPTED.size()==res)
-                {
-                    mClientIpList.push_back( senderIP.toString() );
-                    qDebug() << tr("Client %1 connected").arg( senderIP.toString() );
-                }
-                else
-                    qDebug() << tr("Unable to accept client %1 - Error: %2").arg( senderIP.toString() )
-                                .arg(mUdpSocketSender->errorString() ) ;
-            }
-            else
-            {
-                mUdpSocketSender->writeDatagram( MSG_CONN_REFUSED.toLocal8Bit().constData(), MSG_CONN_REFUSED.size(), senderIP, mSendPort );
-                mUdpSocketSender->flush();
-                qDebug() << tr("Client %1 refused, too much client connected").arg( senderIP.toString() );
-            }
-        }
-            break;
 
-        case CMD_REMOVE_CLIENT:
-        {
-            mClientIpList.removeAll( senderIP.toString() );
-            qDebug() << tr("Client %1 disconnected").arg( senderIP.toString() );
-        }
-            break;
+        // TODO: Process webcam commands
+
+        // TODO: Create command to set FPS
 
         default:
             qDebug() << tr("Command not recognized: %1").arg( (int)cmd );

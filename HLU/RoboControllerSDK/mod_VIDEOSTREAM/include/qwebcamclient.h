@@ -23,8 +23,7 @@ class QWebcamClient : public QThread
 {
     Q_OBJECT
 public:
-    explicit QWebcamClient(QString serverIp,
-                           int listenPort=55554,
+    explicit QWebcamClient(int listenPort=55554,
                            int sendPort=55555,
                            QObject *parent = 0);
     virtual ~QWebcamClient();

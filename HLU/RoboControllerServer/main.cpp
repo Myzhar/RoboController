@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
 
-    QCommandLineOption testOpt( "test", QObject::tr("Test Mode. The Server simulates a connection to a Virtual RoboController.") );
+    QCommandLineOption testOpt( "t", QObject::tr("Test Mode. The Server simulates a connection to a Virtual RoboController.") );
 
     parser.addOption( testOpt );
 

@@ -542,7 +542,7 @@ void CMainWindow::onConnectButtonClicked()
     QCoreApplication::processEvents( QEventLoop::AllEvents, 1500 );
     QThread::msleep(500);
 
-    mWebcamClient = new QWebcamClient( mRobIpAddress, 55554, 55555, this );
+    mWebcamClient = new QWebcamClient( /*mRobIpAddress,*/ 55554, 55555, this );
 
     connect( mWebcamClient, SIGNAL(newImageReceived()),
              this, SLOT(onNewImage()) );

@@ -24,6 +24,11 @@
 #define DEG2RAD 0.0174532925199433
 // <<<<< Radians/Degree conversion constants
 
+// >>>>> Multicast Server IPs
+#define MULTICAST_DATA_SERVER_IP "239.255.43.21"
+#define MULTICAST_WEBCAM_SERVER_IP "239.255.43.31"
+// <<<<< Multicast Server IPs
+
 namespace roboctrl
 {
 

@@ -63,10 +63,12 @@ private:
     QUdpSocket *mUdpSocketSender;
     QUdpSocket *mUdpSocketReceiver;
 
-    QStringList mClientIpList;
+    //QStringList mClientIpList;
 
     QMutex mStopMutex;
     bool mStopped;
+
+    quint8 mFps;
 };
 
 }
