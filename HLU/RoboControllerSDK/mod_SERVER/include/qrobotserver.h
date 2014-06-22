@@ -15,7 +15,7 @@
 
 #define WORD_TEST_BOARD 0
 #define TEST_TIMER_INTERVAL 1000
-#define SVR_CONTROL_UDP_TIMEOUT 30000
+#define SRV_CONTROL_UDP_TIMEOUT 30000
 
 #define INITIAL_REPLY_BUFFER_SIZE 20
 
@@ -55,7 +55,7 @@ private:
     void openUdpControlSession(); ///< Opens UDP Control socket
 
     void sendBlockTCP( quint16 msgCode, QVector<quint16>& data ); ///< Send data block to TCP socket
-    void sendStatusBlockUDP(QHostAddress addr, quint16 msgCode, QVector<quint16>& data );///< Send data block to UDP socket
+    void sendStatusBlockUDP(QHostAddress addr, quint16 msgCode, QVector<quint16>& data ); ///< Send data block to UDP socket
 
     modbus_t* initializeSerialModbus( const char *device,
                                       int baud, char parity, int data_bit,

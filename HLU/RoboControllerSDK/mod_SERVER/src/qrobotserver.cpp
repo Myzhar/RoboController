@@ -328,7 +328,7 @@ void QRobotServer::openUdpStatusSession()
     if( mUdpStatusSocket )
         delete mUdpStatusSocket;
 
-    mUdpStatusSocket = new QUdpSocket(this);
+    mUdpStatusSocket = new QUdpSocket();
 
     if( !mUdpStatusSocket->bind( mServerUdpStatusPortListen, /*QAbstractSocket::ReuseAddressHint|*/QAbstractSocket::ShareAddress ) )
     {
@@ -352,7 +352,7 @@ void QRobotServer::openUdpControlSession()
     if( mUdpControlSocket )
         delete mUdpStatusSocket;
 
-    mUdpControlSocket = new QUdpSocket(this);
+    mUdpControlSocket = new QUdpSocket();
 
     if( !mUdpControlSocket->bind( mServerUdpControlPortListen, /*QAbstractSocket::ReuseAddressHint|*/QAbstractSocket::ShareAddress  ) )
     {
@@ -684,238 +684,212 @@ void QRobotServer::onUdpStatusReadyRead()
 
         mUdpStatusSocket->readDatagram( buffer.data(), buffer.size(), &addr, &port );
 
+        // TOD0: Overwriting client address with multicast address... server now sends information in multicast
+        // addr = QHostAddress( )
+
         QDataStream in( buffer );
         in.setVersion(QDataStream::Qt_5_2);
 
-        //while( !in.atEnd() )
+        // >>>>> Searching for start character
+        int count = 0;
+        quint16 val16;
+        in >> val16;
+
+        while( val16 != UDP_START_VAL )
         {
-            //QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
-
-            if( mNextUdpStatBlockSize==0) // No incomplete blocks received before
+            count++;
+            if(count == datagramSize)
             {
-                if (datagramSize < (qint64)sizeof(quint16))
-                {
-                    //qDebug() << Q_FUNC_INFO << tr("No more TCP Data available");
-                    break;
-                }
+                QDataStream::Status st = in.status();
 
-                /*int count = 0;
-                while( mNextUdpStatBlockSize == 0 )
-                {
-                    // Datagram dimension
-                    in >> mNextUdpStatBlockSize; // Updated only if we are parsing a new block
-
-                    count++;
-                    if(count == datagramSize)
-                    {
-                        QDataStream::Status st = in.status();
-
-                        qCritical() << Q_FUNC_INFO << tr("Read %1 bytes equal to ZERO. Stream status: %2")
-                                       .arg(datagramSize).arg(st);
-                        return;
-                    }
-                }*/
-                int count = 0;
-                quint16 val16;
-                in >> val16;
-
-                while( val16 != UDP_START_VAL )
-                {
-                    count++;
-                    if(count == datagramSize)
-                    {
-                        QDataStream::Status st = in.status();
-
-                        qCritical() << Q_FUNC_INFO << tr("Read %1 bytes not founding UDP_START_VAL. Stream status: %2")
-                                       .arg(datagramSize).arg(st);
-                        return;
-                    }
-                    in >> val16;
-                }
-
-                // Datagram dimension
-                in >> mNextUdpStatBlockSize; // Updated only if we are parsing a new block
+                qCritical() << Q_FUNC_INFO << tr("Read %1 bytes not founding UDP_START_VAL. Stream status: %2")
+                               .arg(datagramSize).arg(st);
+                return;
             }
+            in >> val16;
+        }
+        // <<<<< Searching for start character
 
-            if( datagramSize < mNextUdpStatBlockSize )
-            {
-                qDebug() << Q_FUNC_INFO << tr("Received incomplete UDP Status Block... waiting for the missing data");
-                break;
-            }
+        // Datagram dimension
+        in >> mNextUdpStatBlockSize; // Updated only if we are parsing a new block
 
-            // Datagram IDX
-            quint16 msgIdx;
-            in >> msgIdx;
-
-            QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-            //qDebug() << tr("%1 - UDP Status Received msg #%2 by %3:%4").arg(timeStr).arg(msgIdx).arg(addr.toString()).arg(port);
-
-            // Datagram Code
-            in >> msgCode;
-
-            switch(msgCode)
-            {
-            case CMD_SERVER_PING_REQ: // Sent by client to verify that Server is running
-            {
-                //qDebug() << tr("UDP Status Received msg #%1: CMD_SERVER_PING_REQ (%2)").arg(msgIdx).arg(msgCode);
-
-                QVector<quint16> vec;
-                sendStatusBlockUDP( addr, MSG_SERVER_PING_OK, vec );
-
-                break;
-            }
-
-            case CMD_RD_MULTI_REG:
-            {
-                //qDebug() << tr("UDP Status Received msg #%1: CMD_RD_MULTI_REG (%2)").arg(msgIdx).arg(msgCode);
-
-                if( !mBoardConnected )
-                {
-                    // TODO: LEGGERE I BYTE RIMANENTI
-                    mUdpStatusSocket->read( mNextUdpStatBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
-
-                    QVector<quint16> vec;
-                    sendStatusBlockUDP( addr, MSG_RC_NOT_FOUND, vec );
-
-                    qCritical() << Q_FUNC_INFO << "CMD_RD_MULTI_REG - Board not connected!";
-                    break;
-                }
-
-                quint16 startAddr;
-                in >> startAddr; // First word to be read
-                quint16 nReg;
-                in >> nReg;
-                //qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
-
-                bool commOk = readMultiReg( startAddr, nReg );
-
-                QVector<quint16> readRegReply;
-
-                readRegReply.resize( nReg+2 );
-
-                readRegReply[0] = (quint16)startAddr;
-                readRegReply[1] = (quint16)nReg;
-                memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) );
-
-                if( !commOk )
-                {
-                    QVector<quint16> vec;
-                    vec << CMD_RD_MULTI_REG;
-                    vec << startAddr;
-                    //sendBlockTCP( mUdpStatusSocket, MSG_FAILED, vec );
-                    sendStatusBlockUDP( addr, MSG_FAILED, vec );
-                }
-                else
-                    //sendBlockTCP( mUdpStatusSocket, MSG_READ_REPLY, readRegReply );
-                    sendStatusBlockUDP( addr, MSG_READ_REPLY, readRegReply );
-
-                break;
-            }
-
-            case CMD_WR_MULTI_REG:
-            {
-                //qDebug() << tr("UDP Status Received msg #%1: CMD_WR_MULTI_REG (%2)").arg(msgIdx).arg(msgCode);
-
-                if( !mBoardConnected )
-                {
-                    // TODO: LEGGERE I BYTE RIMANENTI
-                    mUdpStatusSocket->read( mNextUdpStatBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
-
-                    QVector<quint16> vec;
-                    sendStatusBlockUDP( addr, MSG_RC_NOT_FOUND, vec );
-                    break;
-                }
-
-                quint16 startAddr;
-                in >> startAddr;  // First word to be read
-
-                // We can extract data size (nReg!) from message without asking it to client in the protocol
-                int nReg = (mNextUdpStatBlockSize/sizeof(quint16)) - headerSize;
-
-                //qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
-
-                QVector<quint16> vals;
-                vals.reserve(nReg);
-
-                for( int i=0; i<nReg; i++ )
-                {
-                    quint16 data;
-                    in >> data;
-
-                    vals << data;
-                }
-
-                bool commOk = writeMultiReg( startAddr, nReg, vals );
-
-                if( !commOk )
-                {
-                    QVector<quint16> vec;
-                    vec << CMD_WR_MULTI_REG;
-                    vec << startAddr;
-                    sendStatusBlockUDP( addr, MSG_FAILED, vec );
-                }
-                else
-                {
-                    QVector<quint16> vec;
-                    vec << startAddr;
-                    vec << nReg;
-                    sendStatusBlockUDP( addr, MSG_WRITE_OK, vec );
-                }
-                break;
-            }
-
-            case CMD_GET_ROBOT_CTRL:
-            {
-                //qDebug() << tr("UDP Status Received msg #%1: CMD_GET_ROBOT_CTRL (%2)").arg(msgIdx).arg(msgCode);
-                mControlTimeoutTimerId = startTimer( SVR_CONTROL_UDP_TIMEOUT );
-
-                if( mControllerClientIp.isEmpty() || mControllerClientIp==addr.toString() )
-                {
-                    mControllerClientIp = addr.toString();
-                    QVector<quint16> vec;
-                    sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_OK, vec ); // Robot control taken
-
-                    qDebug() << tr("The client %1 has taken the control of the robot").arg(addr.toString());
-                }
-                else
-                {
-                    QVector<quint16> vec;
-                    sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_KO, vec ); // Robot not free
-                }
-                break;
-            }
-
-            case CMD_REL_ROBOT_CTRL:
-            {
-                releaseControl();
-
-                break;
-            }
-
-            default:
-            {
-                qDebug() << tr("Received unknown message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
-
-
-                qint64 bytes = mUdpStatusSocket->pendingDatagramSize();
-                if(bytes>0)
-                {
-                    qDebug() << tr("Removing %1 bytes from UDP Status socket buffer").arg(bytes);
-                    char* buf = new char[bytes];
-                    //in.readRawData( buf, mNextTcpBlockSize );
-                    in.readRawData( buf, bytes );
-                    delete [] buf;
-                }
-
-                break;
-            }
-            }
-
-            mNextUdpStatBlockSize = 0;
+        if( datagramSize < mNextUdpStatBlockSize )
+        {
+            qDebug() << Q_FUNC_INFO << tr("Received incomplete UDP Status Block... "); // This should never happens!
+            break;
         }
 
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 1 );
+        // Datagram IDX
+        quint16 msgIdx;
+        in >> msgIdx;
 
+        //QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
+        //qDebug() << tr("%1 - UDP Status Received msg #%2 by %3:%4").arg(timeStr).arg(msgIdx).arg(addr.toString()).arg(port);
+
+        // Datagram Code
+        in >> msgCode;
+
+        switch(msgCode)
+        {
+        case CMD_SERVER_PING_REQ: // Sent by client to verify that Server is running
+        {
+            //qDebug() << tr("UDP Status Received msg #%1: CMD_SERVER_PING_REQ (%2)").arg(msgIdx).arg(msgCode);
+
+            QVector<quint16> vec;
+            sendStatusBlockUDP( addr, MSG_SERVER_PING_OK, vec );
+
+            break;
+        }
+
+        case CMD_RD_MULTI_REG:
+        {
+            //qDebug() << tr("UDP Status Received msg #%1: CMD_RD_MULTI_REG (%2)").arg(msgIdx).arg(msgCode);
+
+            if( !mBoardConnected )
+            {
+                // Removing unused message from buffer
+                mUdpStatusSocket->read( mNextUdpStatBlockSize-2 );
+
+                QVector<quint16> vec;
+                sendStatusBlockUDP( addr, MSG_RC_NOT_FOUND, vec );
+
+                qCritical() << Q_FUNC_INFO << "CMD_RD_MULTI_REG - Board not connected!";
+                break;
+            }
+
+            quint16 startAddr;
+            in >> startAddr; // First word to be read
+            quint16 nReg;
+            in >> nReg;
+            //qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
+
+            bool commOk = readMultiReg( startAddr, nReg );
+
+            QVector<quint16> readRegReply;
+
+            readRegReply.resize( nReg+2 );
+
+            readRegReply[0] = (quint16)startAddr;
+            readRegReply[1] = (quint16)nReg;
+            memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) );
+
+            if( !commOk )
+            {
+                QVector<quint16> vec;
+                vec << CMD_RD_MULTI_REG;
+                vec << startAddr;
+
+                sendStatusBlockUDP( addr, MSG_FAILED, vec );
+            }
+            else
+                sendStatusBlockUDP( addr, MSG_READ_REPLY, readRegReply );
+
+            break;
+        }
+
+        case CMD_WR_MULTI_REG:
+        {
+            //qDebug() << tr("UDP Status Received msg #%1: CMD_WR_MULTI_REG (%2)").arg(msgIdx).arg(msgCode);
+
+            if( !mBoardConnected )
+            {
+                // Removing unused message from buffer
+                mUdpStatusSocket->read( mNextUdpStatBlockSize-2 );
+
+                QVector<quint16> vec;
+                sendStatusBlockUDP( addr, MSG_RC_NOT_FOUND, vec );
+
+                qCritical() << Q_FUNC_INFO << "CMD_RD_MULTI_REG - Board not connected!";
+                break;
+            }
+
+            quint16 startAddr;
+            in >> startAddr;  // First word to be read
+
+            // We can extract data size (nReg!) from message without asking it to client in the protocol
+            int nReg = (mNextUdpStatBlockSize/sizeof(quint16)) - headerSize;
+
+            //qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
+
+            QVector<quint16> vals;
+            vals.reserve(nReg);
+
+            for( int i=0; i<nReg; i++ )
+            {
+                quint16 data;
+                in >> data;
+
+                vals << data;
+            }
+
+            bool commOk = writeMultiReg( startAddr, nReg, vals );
+
+            if( !commOk )
+            {
+                QVector<quint16> vec;
+                vec << CMD_WR_MULTI_REG;
+                vec << startAddr;
+                sendStatusBlockUDP( addr, MSG_FAILED, vec );
+            }
+            else
+            {
+                QVector<quint16> vec;
+                vec << startAddr;
+                vec << nReg;
+                sendStatusBlockUDP( addr, MSG_WRITE_OK, vec );
+            }
+            break;
+        }
+
+        case CMD_GET_ROBOT_CTRL:
+        {
+            //qDebug() << tr("UDP Status Received msg #%1: CMD_GET_ROBOT_CTRL (%2)").arg(msgIdx).arg(msgCode);
+            mControlTimeoutTimerId = startTimer( SRV_CONTROL_UDP_TIMEOUT );
+
+            if( mControllerClientIp.isEmpty() || mControllerClientIp==addr.toString() )
+            {
+                mControllerClientIp = addr.toString();
+                QVector<quint16> vec;
+                sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_OK, vec ); // Robot control taken
+
+                qDebug() << tr("The client %1 has taken the control of the robot").arg(addr.toString());
+            }
+            else
+            {
+                QVector<quint16> vec;
+                sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_KO, vec ); // Robot not free
+            }
+            break;
+        }
+
+        case CMD_REL_ROBOT_CTRL:
+        {
+            releaseControl();
+
+            break;
+        }
+
+        default:
+        {
+            qDebug() << tr("Received unknown message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
+
+            qint64 bytes = mUdpStatusSocket->pendingDatagramSize();
+            if(bytes>0)
+            {
+                qDebug() << tr("Removing %1 bytes from UDP Status socket buffer").arg(bytes);
+                char* buf = new char[bytes];
+                in.readRawData( buf, bytes );
+                delete [] buf;
+            }
+
+            break;
+        }
+        }
+
+        mNextUdpStatBlockSize = 0;
+
+
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
     }
 }
 
@@ -942,159 +916,131 @@ void QRobotServer::onUdpControlReadyRead()
         QDataStream in( buffer );
         in.setVersion(QDataStream::Qt_5_2);
 
-        //while( !in.atEnd() )
+        // >>>>> Searching for start character
+        int count = 0;
+        quint16 val16;
+        in >> val16;
+
+        while( val16 != UDP_START_VAL )
         {
-            //QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
-
-            if( mNextUdpCmdBlockSize==0) // No incomplete blocks received before
+            count++;
+            if(count == datagramSize)
             {
-                if (datagramSize < (qint64)sizeof(quint16))
-                {
-                    //qDebug() << Q_FUNC_INFO << tr("No more TCP Data available");
-                    break;
-                }
+                QDataStream::Status st = in.status();
 
-                /*int count = 0;
-                while( mNextUdpCmdBlockSize == 0 )
-                {
-                    // Datagram dimension
-                    in >> mNextUdpCmdBlockSize; // Updated only if we are parsing a new block
-
-                    count++;
-                    if(count == datagramSize)
-                    {
-                        QDataStream::Status st = in.status();
-
-                        qCritical() << Q_FUNC_INFO << tr("Read %1 bytes equal to ZERO. Stream status: %2")
-                                       .arg(datagramSize).arg(st);
-                        return;
-                    }
-                }*/
-
-                int count = 0;
-                quint16 val16;
-                in >> val16;
-
-                while( val16 != UDP_START_VAL )
-                {
-                    count++;
-                    if(count == datagramSize)
-                    {
-                        QDataStream::Status st = in.status();
-
-                        qCritical() << Q_FUNC_INFO << tr("Read %1 bytes not founding UDP_START_VAL. Stream status: %2")
-                                       .arg(datagramSize).arg(st);
-                        return;
-                    }
-                    in >> val16;
-                }
-
-                // Datagram dimension
-                in >> mNextUdpCmdBlockSize; // Updated only if we are parsing a new block
+                qCritical() << Q_FUNC_INFO << tr("Read %1 bytes not founding UDP_START_VAL. Stream status: %2")
+                               .arg(datagramSize).arg(st);
+                return;
             }
 
-            if( datagramSize < mNextUdpCmdBlockSize )
-            {
-                qDebug() << Q_FUNC_INFO << tr("Received incomplete UDP Control Block... waiting for the missing data");
-                break;
-            }
+            in >> val16;
+        }
+        // <<<<< Searching for start character
 
-            // Datagram IDX
-            quint16 msgIdx;
-            in >> msgIdx;
+        // Datagram dimension
+        in >> mNextUdpCmdBlockSize;
 
-            //QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
-            //qDebug() << tr("%1 - UDP Status Received msg #%2").arg(timeStr).arg(msgIdx);
-
-            // Datagram Code
-            in >> msgCode;
-
-            switch(msgCode)
-            {
-            case CMD_WR_MULTI_REG:
-            {
-                mControlTimeoutTimerId = startTimer( SVR_CONTROL_UDP_TIMEOUT );
-                //qDebug() << tr("UDP Control Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
-
-                if( !mBoardConnected )
-                {
-                    // TODO: LEGGERE I BYTE RIMANENTI
-                    mUdpControlSocket->read( mNextUdpCmdBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
-
-                    qCritical() << Q_FUNC_INFO << "CMD_WR_MULTI_REG - Board not connected!";
-                    break;
-                }
-
-                quint16 startAddr;
-                in >> startAddr;  // First word to be read
-
-                // We can extract data size (nReg!) from message without asking it to client in the protocol
-                int nReg = (mNextUdpCmdBlockSize/sizeof(quint16)) - headerSize;
-
-                //qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
-
-                QVector<quint16> vals;
-                vals.reserve(nReg);
-
-                for( int i=0; i<nReg; i++ )
-                {
-                    quint16 data;
-                    in >> data;
-
-                    vals << data;
-                }
-
-                // >>>>> Control taken test
-                // Before sending the control command to Robocontroller we must test
-                // if the client has the control of the robot. If we not send the information
-                // to the client using the UDP Status Socket
-                if(addr.toString()!= mControllerClientIp) // The client has no control of the robot
-                {
-                    QVector<quint16> vec;
-                    sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_KO, vec ); // Robot not controlled by client
-
-                    if(mControllerClientIp.isEmpty())
-                        qDebug() << tr("The client %1 cannot send commands before taking control of the robot").arg(addr.toString());
-                    else
-                        qDebug() << tr("The client %1 is controlling the robot. %2 cannot send commands").arg(mControllerClientIp).arg(addr.toString());
-
-                    break;
-                }
-
-                bool commOk = writeMultiReg( startAddr, nReg, vals );
-
-                if( !commOk )
-                {
-                    qDebug() << tr("Error writing %1 registers, starting from %2").arg(nReg).arg(startAddr);
-                }
-
-                readSpeedsAndSend( addr );
-
-                break;
-            }
-
-            default:
-            {
-                qDebug() << tr("UDP Control Received wrong message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
-
-                qint64 bytes = mUdpControlSocket->pendingDatagramSize();
-                if(bytes>0)
-                {
-                    qDebug() << tr("Removing %1 bytes from UDP Control socket buffer").arg(bytes);
-                    char* buf = new char[bytes];
-                    //in.readRawData( buf, mNextTcpBlockSize );
-                    in.readRawData( buf, bytes );
-                    delete [] buf;
-                }
-
-                break;
-            }
-            }
-
-            mNextUdpCmdBlockSize = 0;
+        if( datagramSize < mNextUdpCmdBlockSize )
+        {
+            qDebug() << Q_FUNC_INFO << tr("Received incomplete UDP Control Block..."); // This should never happens!
+            break;
         }
 
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 10 );
+        // Datagram IDX
+        quint16 msgIdx;
+        in >> msgIdx;
+
+        //QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
+        //qDebug() << tr("%1 - UDP Status Received msg #%2").arg(timeStr).arg(msgIdx);
+
+        // Datagram Code
+        in >> msgCode;
+
+        switch(msgCode)
+        {
+        case CMD_WR_MULTI_REG:
+        {
+            mControlTimeoutTimerId = startTimer( SRV_CONTROL_UDP_TIMEOUT );
+            //qDebug() << tr("UDP Control Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
+
+            if( !mBoardConnected )
+            {
+                // Removing unused message from buffer
+                mUdpControlSocket->read( mNextUdpCmdBlockSize-2 );
+
+                qCritical() << Q_FUNC_INFO << "CMD_WR_MULTI_REG - Board not connected!";
+                break;
+            }
+
+            quint16 startAddr;
+            in >> startAddr;  // First word to be read
+
+            // We can extract data size (nReg!) from message without asking it to client in the protocol
+            int nReg = (mNextUdpCmdBlockSize/sizeof(quint16)) - headerSize;
+
+            //qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
+
+            QVector<quint16> vals;
+            vals.reserve(nReg);
+
+            for( int i=0; i<nReg; i++ )
+            {
+                quint16 data;
+                in >> data;
+
+                vals << data;
+            }
+
+            // >>>>> Control taken test
+            // Before sending the control command to Robocontroller we must test
+            // if the client has the control of the robot. If not we send the information
+            // to the client using the UDP Status Socket
+            if(addr.toString()!= mControllerClientIp) // The client has no control of the robot
+            {
+                QVector<quint16> vec;
+                sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_KO, vec ); // Robot not controlled by client
+
+                if(mControllerClientIp.isEmpty())
+                    qDebug() << tr("The client %1 cannot send commands before taking control of the robot").arg(addr.toString());
+                else
+                    qDebug() << tr("The client %1 is controlling the robot. %2 cannot send commands").arg(mControllerClientIp).arg(addr.toString());
+
+                break;
+            }
+
+            bool commOk = writeMultiReg( startAddr, nReg, vals );
+
+            if( !commOk )
+            {
+                qDebug() << tr("Error writing %1 registers, starting from %2").arg(nReg).arg(startAddr);
+            }
+
+            readSpeedsAndSend( addr );
+
+            break;
+        }
+
+        default:
+        {
+            qDebug() << tr("UDP Control Received wrong message code(%1) with msg #%2").arg(msgCode).arg(msgIdx);
+
+            qint64 bytes = mUdpControlSocket->pendingDatagramSize();
+            if(bytes>0)
+            {
+                qDebug() << tr("Removing %1 bytes from UDP Control socket buffer").arg(bytes);
+                char* buf = new char[bytes];
+                in.readRawData( buf, bytes );
+                delete [] buf;
+            }
+
+            break;
+        }
+        }
+
+        mNextUdpCmdBlockSize = 0;
+
+
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
     }
 }
 
@@ -1302,7 +1248,7 @@ void QRobotServer::timerEvent(QTimerEvent *event)
     }
     else if(event->timerId() == mControlTimeoutTimerId )
     {
-        qDebug() << tr("Control timeout. Elapsed %1 seconds since last control command").arg( SVR_CONTROL_UDP_TIMEOUT);
+        qDebug() << tr("Control timeout. Elapsed %1 seconds since last control command").arg(SRV_CONTROL_UDP_TIMEOUT);
 
         releaseControl();
     }

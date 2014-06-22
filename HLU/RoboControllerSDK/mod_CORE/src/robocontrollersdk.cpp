@@ -68,15 +68,15 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
     // <<<<< TCP Socket
 
     // >>>>> UDP Sockets
-    mUdpControlSocket = new QUdpSocket(this);
-    mUdpStatusSocket = new QUdpSocket(this);
+    mUdpControlSocket = new QUdpSocket();
+    mUdpStatusSocket = new QUdpSocket();
 
     mUdpControlPortSend = udpControlPort;
     mUdpStatusPortSend = udpStatusPortSend;
     mUdpStatusPortListen = udpStatusPortListen;
 
     mNextUdpCtrlBlockSize = 0;
-    mNextUdpStBlockSize = 0;
+    //mNextUdpStBlockSize = 0;
 
     /*connect( mUdpControlSocket, SIGNAL(readyRead()),
              this, SLOT(onUdpControlReadyRead()) ); // The control UDP Socket does not receive!*/
@@ -427,7 +427,7 @@ void RoboControllerSDK::onUdpStatusReadyRead()
     // TODO try to implement the same as http://www.informit.com/articles/article.aspx?p=1405552&seqNum=4
     
     
-    mNextUdpStBlockSize=0;
+    //mNextUdpStBlockSize=0;
     quint16 msgCode;
 
     while( mUdpStatusSocket->hasPendingDatagrams() ) // Receiving data while there is data available
@@ -448,11 +448,13 @@ void RoboControllerSDK::onUdpStatusReadyRead()
         QDataStream in( buffer );
         in.setVersion(QDataStream::Qt_5_2);
 
-        while( !in.atEnd() )
-        {
-            QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
+        quint16 dataSize;
 
-            if( mNextUdpStBlockSize==0) // No incomplete blocks received before
+        //while( !in.atEnd() )
+        {
+            //QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
+
+            //if( mNextUdpStBlockSize==0) // No incomplete blocks received before
             {
                 if (datagramSize < (qint64)sizeof(quint16))
                 {
@@ -479,14 +481,14 @@ void RoboControllerSDK::onUdpStatusReadyRead()
                 }
                 
                 // Datagram dimension
-                in >> mNextUdpStBlockSize; // Updated only if we are parsing a new block
+                in >> dataSize; // Updated only if we are parsing a new block
             }
 
-            if( datagramSize < mNextUdpStBlockSize )
+            /*if( datagramSize < mNextUdpStBlockSize )
             {
                 qDebug() << Q_FUNC_INFO << tr("Received incomplete UDP Status Block... waiting for the missing data");
                 break;
-            }
+            }*/
 
             // Datagram IDX
             quint16 msgIdx;
@@ -569,7 +571,7 @@ void RoboControllerSDK::onUdpStatusReadyRead()
                 break;
             }
 
-            mNextUdpStBlockSize = 0;
+            //mNextUdpStBlockSize = 0;
         }
     }
 }

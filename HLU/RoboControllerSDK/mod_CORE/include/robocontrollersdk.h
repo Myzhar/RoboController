@@ -320,7 +320,7 @@ private:
     QUdpSocket* mUdpControlSocket;   /**< UDP Socket for control communications */
 
     quint16 mNextTcpBlockSize;      /**< Used to recover incomplete TCP block */
-    quint16 mNextUdpStBlockSize;    /**< Used to recover incomplete UDP Status block */
+    //quint16 mNextUdpStBlockSize;    /**< Used to recover incomplete UDP Status block */
     quint16 mNextUdpCtrlBlockSize;  /**< Used to recover incomplete UDP Control block */
 
     bool mTcpConnected;     /**< Indicates if TCP Socket is connected */
@@ -342,7 +342,6 @@ private:
     quint64 mWatchDogTimeMsec; /**< Board WatchDog Time in millisecond*/
     QTimer mPingTimer; /** Id of the ping timer. Ping is called with a time smaller of 10% than watchdog time to mantain the board active */
     QTimer mUdpControlDisconnectTimer; ///< If a client does not send command to Control Server for @ref CONTROL_UDP_TIMEOUT millisecond, the server automatically release the exclusive control.
-
 
     bool            mWatchDogEnable;
     bool            mNewStatusBit1Received;
