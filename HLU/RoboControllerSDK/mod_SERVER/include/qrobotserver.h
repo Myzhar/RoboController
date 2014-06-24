@@ -14,8 +14,9 @@
 #include <QAbstractSocket>
 
 #define WORD_TEST_BOARD 0
-#define TEST_TIMER_INTERVAL 1000
-#define SVR_CONTROL_UDP_TIMEOUT 30000
+#define TEST_TIMER_INTERVAL_MSEC 1000
+#define SRV_CONTROL_UDP_TIMEOUT_MSEC 30000
+#define TELEMETRY_UPDATE_MSEC 30
 
 #define INITIAL_REPLY_BUFFER_SIZE 20
 
@@ -32,7 +33,7 @@ class ROBOCONTROLLERSDKSHARED_EXPORT QRobotServer : public QThread
     Q_OBJECT
 
 public:
-    explicit QRobotServer(quint16 serverUdpControl=14560,
+    explicit QRobotServer(quint16 serverUdpControl=14560, quint16 statusMulticastPort=14565,
                           quint16 serverUdpStatusListener=14550, quint16 serverUdpStatusSender=14555,
                           quint16 serverTcpPort=14500, bool testMode=false, QObject *parent=0); ///< Default constructor
     virtual ~QRobotServer(); ///< Destructor
@@ -49,6 +50,8 @@ private slots:
     void onUdpStatusReadyRead(); ///< Called when a new data from UDP Status socket is available
     void onUdpControlReadyRead(); ///< Called when a new data from UDP Control socket is available
 
+    bool updateTelemetry(); ///< Called to update telemetry from RoboController
+
 private:
     void openTcpSession(); ///< Opens TCP socket
     void openUdpStatusSession(); ///< Opens UDP Status socket
@@ -56,6 +59,7 @@ private:
 
     void sendBlockTCP( quint16 msgCode, QVector<quint16>& data ); ///< Send data block to TCP socket
     void sendStatusBlockUDP(QHostAddress addr, quint16 msgCode, QVector<quint16>& data );///< Send data block to UDP socket
+    void multicastSendTelemetry(); ///< Send telemetry in multicast
 
     modbus_t* initializeSerialModbus( const char *device,
                                       int baud, char parity, int data_bit,
@@ -85,6 +89,7 @@ private:
     
     QUdpSocket*     mUdpStatusSocket; ///< UDP Status Socket Listener
     QUdpSocket*     mUdpControlSocket; ///< UDP Control Socket Listener
+    QUdpSocket*     mMulticastUdpTelemetryServer; ///< Multicast Telemetry Socket
 
     QSettings*      mSettings; ///< Settings in file INI
 
@@ -92,6 +97,8 @@ private:
     unsigned int    mServerUdpStatusPortListen; ///< Port of the UDP Status Listen Server
     unsigned int    mServerUdpStatusPortSend; ///< Port of the UDP Status Listen Server
     unsigned int    mServerUdpControlPortListen; ///< Port of the UDP Control Server @note The control server receives without replying, the client can control if a motion command is successfull using the Status UDP Socket.
+
+    unsigned int    mMulticastUdpTelemetryServerPort; ///< Port of the Multicast UDP server, the server will send telemetry in multicast each @ref TELEMETRY_UPDATE_MSEC msec
 
     modbus_t*       mModbus;  ///< ModBus protocol implementation
     quint16         mBoardIdx;      /// Id of the connected board
@@ -104,6 +111,7 @@ private:
     int             mBoardTestTimerId; ///< Id of the test timer.
     int             mTcpClientCount; ///< Number of Clients connected on TCP
     int             mControlTimeoutTimerId; ///< If a client does not send control command for @ref SVR_CONTROL_UDP_TIMEOUT
+    int             mTelemetryUpdateTimerId; ///< Telemetry update timer ID
 
     QString         mControllerClientIp; ///< Ip address of the client that took control for driving the robot using @ref getRobotControl function
 
@@ -114,6 +122,8 @@ private:
     quint16         mNextUdpStatBlockSize;      ///< Used to recover incomplete UDP Status block
 
     bool            mTestMode; ///< If true the server does not connect to RoboController, but allows connection to sockets to test communications
+
+    RobotTelemetry  mTelemetry; ///< Telemetry of the robot, updated every @ref TELEMETRY_UPDATE_MSEC msec
 };
 
 }

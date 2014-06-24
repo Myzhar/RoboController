@@ -134,6 +134,22 @@ typedef struct _RobotConfiguration
     // <<<<< Battery
 } RobotConfiguration;
 
+/**
+  * @struct _RobotTelemetry
+  * @brief Used to keep track of the telemetry of the robot
+  */
+typedef struct _RobotTelemetry
+{
+    qint16 PwmLeft;         /**< Last value of the PWM for left wheel */
+    qint16 PwmRight;        /**< Last value of the PWM for right wheel */
+    qreal RpmLeft;          /**< Last RPM for left wheel */
+    qreal RpmRight;         /**< Last RPM for right wheel */
+    qreal LinSpeedLeft;     /**< Last Linear Speed for left Wheel */
+    qreal LinSpeedRight;    /**< Last Linear Speed for right Wheel */
+    qreal Battery;          /**< Last battery voltage */
+
+} RobotTelemetry;
+
 }
 
 #endif // ROBOCONTROLLERSDK_GLOBAL_H
