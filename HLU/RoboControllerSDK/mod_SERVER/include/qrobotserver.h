@@ -65,7 +65,7 @@ private:
                                       int baud, char parity, int data_bit,
                                       int stop_bit ); ///< Initializes Modbus Serial Connection to RoboController
 
-    bool connectModbus( int retryCount=-1); ///< retryCount=-1 puts the server in an infinite loop trying reconnection */
+    bool connectModbus( int retryCount=-1); ///< retryCount=-1 puts the server in an infinite loop trying reconnection
     bool testBoardConnection(); ///< Tests if the board has not been disconnected
 
     bool readMultiReg( quint16 startAddr, quint16 nReg ); ///< Called to read registers from RoboController
@@ -73,7 +73,7 @@ private:
     // QVector used instead of QList to provide direct data access using "Data()" function
     bool writeMultiReg( quint16 startAddr, quint16 nReg, QVector<quint16> vals ); ///< Called to write registers to RoboController
 
-    void readSpeedsAndSend(QHostAddress addr); ///< Called to send to client the speed of the robot after receiveing a command of movement
+//    void readSpeedsAndSend(QHostAddress addr); ///< Called to send to client the speed of the robot after receiveing a command of movement
 
     void releaseControl(); ///< Release the control of the robot
 

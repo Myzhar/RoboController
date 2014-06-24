@@ -1133,7 +1133,7 @@ void QRobotServer::onUdpControlReadyRead()
                     qDebug() << tr("Error writing %1 registers, starting from %2").arg(nReg).arg(startAddr);
                 }
 
-                readSpeedsAndSend( addr );
+//                readSpeedsAndSend( addr );
 
                 break;
             }
@@ -1204,22 +1204,22 @@ bool QRobotServer::testBoardConnection()
     return true;
 }
 
-void QRobotServer::readSpeedsAndSend( QHostAddress addr )
-{
-    quint16 startAddr = WORD_ENC1_SPEED;
-    quint16 nReg = 2;
-    bool commOk = readMultiReg( startAddr, nReg );
+//void QRobotServer::readSpeedsAndSend( QHostAddress addr )
+//{
+//    quint16 startAddr = WORD_ENC1_SPEED;
+//    quint16 nReg = 2;
+//    bool commOk = readMultiReg( startAddr, nReg );
 
-    QVector<quint16> readRegReply;
-    readRegReply.resize( nReg+2 );
+//    QVector<quint16> readRegReply;
+//    readRegReply.resize( nReg+2 );
 
-    readRegReply[0] = (quint16)startAddr;
-    readRegReply[1] = (quint16)nReg;
-    memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) );
+//    readRegReply[0] = (quint16)startAddr;
+//    readRegReply[1] = (quint16)nReg;
+//    memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) );
 
-    if( commOk )
-        sendStatusBlockUDP( addr, MSG_READ_REPLY, readRegReply );
-}
+//    if( commOk )
+//        sendStatusBlockUDP( addr, MSG_READ_REPLY, readRegReply );
+//}
 
 bool QRobotServer::readMultiReg( quint16 startAddr, quint16 nReg )
 {
