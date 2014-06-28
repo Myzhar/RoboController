@@ -11,11 +11,12 @@
 #include <QCoreApplication>
 #include <QMutex>
 #include "modbus_registers.h"
+#include <QDateTime>
 
 namespace roboctrl
 {
 
-QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/,
+QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMulticastPort/*=14565*/,
                            quint16 serverUdpStatusListener/*=14550*/, quint16 serverUdpStatusSender/*=14555*/,
                            quint16 serverTcpPort/*=14500*/, bool testMode, QObject *parent/*=0*/) :
     QThread(parent),
@@ -28,6 +29,7 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/,
     mServerUdpStatusPortListen(serverUdpStatusListener),
     mServerUdpStatusPortSend(serverUdpStatusSender),
     mServerUdpControlPortListen(serverUdpControl),
+    mMulticastUdpTelemetryServerPort(statusMulticastPort),
     mModbus(NULL),
     mReplyBuffer(NULL),
     mBoardConnected(false),
@@ -256,9 +258,26 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/,
     openUdpControlSession();
     // <<<<< UDP Control configuration
 
+    // >>>>> UDP Multicast
+    mMulticastUdpTelemetryServerPort = mSettings->value( "UDP_Multicast_telemetry_port", "0" ).toUInt();
+    if( mMulticastUdpTelemetryServerPort==0 )
+    {
+        mMulticastUdpTelemetryServerPort = 14565;
+        mSettings->setValue( "UDP_Multicast_telemetry_port", QString("%1").arg(mMulticastUdpTelemetryServerPort) );
+        mSettings->sync();
+    }
+
+    mMulticastUdpTelemetryServer = new QUdpSocket();
+    // Multicast on the subnet
+    mMulticastUdpTelemetryServer->setSocketOption( QAbstractSocket::MulticastTtlOption, 1 );
+    // <<<<< UDP Multicast
+
     mSettings->sync();
 
     mTcpClientCount = 0;
+
+    // Start telemetry update timer
+    mTelemetryUpdateTimerId = startTimer( TELEMETRY_UPDATE_MSEC, Qt::PreciseTimer );
 
     // Start Server Thread
     this->start();
@@ -266,7 +285,7 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/,
     if(!mTestMode)
     {
         // Start Ping Timer
-        mBoardTestTimerId = startTimer( TEST_TIMER_INTERVAL, Qt::PreciseTimer );
+        mBoardTestTimerId = startTimer( TEST_TIMER_INTERVAL_MSEC, Qt::PreciseTimer );
     }
 }
 
@@ -280,6 +299,15 @@ QRobotServer::~QRobotServer()
 
     if(mTcpServer)
         delete mTcpServer;
+
+    if(mUdpControlSocket)
+        delete mUdpControlSocket;
+
+    if(mUdpStatusSocket)
+        delete mUdpStatusSocket;
+
+    if(mMulticastUdpTelemetryServer)
+        delete mMulticastUdpTelemetryServer;
 
     if( mModbus )
     {
@@ -458,6 +486,43 @@ void QRobotServer::sendStatusBlockUDP( QHostAddress addr, quint16 msgCode, QVect
 
     //QString timeStr = QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" );
     //qDebug() << tr("%1 - Sent msg #%2 -> %3 to %4:%5").arg(timeStr).arg(mMsgCounter).arg(msgCode).arg(addr.toString()).arg(mServerUdpStatusPortSend);
+}
+
+void QRobotServer::multicastSendTelemetry()
+{
+    QByteArray block;
+    QDataStream out(&block, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_2);
+    out << (quint16)UDP_START_VAL; // Start Word
+    out << (quint16)0;      // Block size
+
+    qint64 timestamp = QDateTime::currentMSecsSinceEpoch();
+    out << timestamp; // Timestamp
+
+    // >>>>> Data
+    out << mTelemetry.Battery;
+    out << mTelemetry.LinSpeedLeft;
+    out << mTelemetry.LinSpeedRight;
+    out << mTelemetry.PwmLeft;
+    out << mTelemetry.PwmRight;
+    out << mTelemetry.RpmLeft;
+    out << mTelemetry.RpmRight;
+    // <<<<< Data
+
+    out.device()->seek(0);          // Back to the beginning to set block size
+    int blockSize = (block.size() - 2*sizeof(quint16));
+    out << (quint16)UDP_START_VAL; // Start Word again
+    out << (quint16)blockSize;
+
+    int res = mMulticastUdpTelemetryServer->writeDatagram( block,
+                                                           QHostAddress(MULTICAST_DATA_SERVER_IP),
+                                                           mMulticastUdpTelemetryServerPort );
+
+    if( -1==res )
+    {
+        qDebug() << tr("[%1] Missed telemetry sending")
+                    .arg(QDateTime::fromMSecsSinceEpoch(timestamp).toString(Qt::ISODate));
+    }
 }
 
 void QRobotServer::onTcpReadyRead()
@@ -833,10 +898,30 @@ void QRobotServer::onUdpStatusReadyRead()
             }
             else
             {
+<<<<<<< HEAD
                 QVector<quint16> vec;
                 vec << startAddr;
                 vec << nReg;
                 sendStatusBlockUDP( addr, MSG_WRITE_OK, vec );
+=======
+                //qDebug() << tr("UDP Status Received msg #%1: CMD_GET_ROBOT_CTRL (%2)").arg(msgIdx).arg(msgCode);
+                mControlTimeoutTimerId = startTimer(SRV_CONTROL_UDP_TIMEOUT_MSEC );
+
+                if( mControllerClientIp.isEmpty() || mControllerClientIp==addr.toString() )
+                {
+                    mControllerClientIp = addr.toString();
+                    QVector<quint16> vec;
+                    sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_OK, vec ); // Robot control taken
+
+                    qDebug() << tr("The client %1 has taken the control of the robot").arg(addr.toString());
+                }
+                else
+                {
+                    QVector<quint16> vec;
+                    sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_KO, vec ); // Robot not free
+                }
+                break;
+>>>>>>> origin/master
             }
             break;
         }
@@ -940,11 +1025,20 @@ void QRobotServer::onUdpControlReadyRead()
         // Datagram dimension
         in >> mNextUdpCmdBlockSize;
 
+<<<<<<< HEAD
         if( datagramSize < mNextUdpCmdBlockSize )
         {
             qDebug() << Q_FUNC_INFO << tr("Received incomplete UDP Control Block..."); // This should never happens!
             break;
         }
+=======
+            switch(msgCode)
+            {
+            case CMD_WR_MULTI_REG:
+            {
+                mControlTimeoutTimerId = startTimer(SRV_CONTROL_UDP_TIMEOUT_MSEC );
+                //qDebug() << tr("UDP Control Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
+>>>>>>> origin/master
 
         // Datagram IDX
         quint16 msgIdx;
@@ -1000,10 +1094,14 @@ void QRobotServer::onUdpControlReadyRead()
                 QVector<quint16> vec;
                 sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_KO, vec ); // Robot not controlled by client
 
+<<<<<<< HEAD
                 if(mControllerClientIp.isEmpty())
                     qDebug() << tr("The client %1 cannot send commands before taking control of the robot").arg(addr.toString());
                 else
                     qDebug() << tr("The client %1 is controlling the robot. %2 cannot send commands").arg(mControllerClientIp).arg(addr.toString());
+=======
+//                readSpeedsAndSend( addr );
+>>>>>>> origin/master
 
                 break;
             }
@@ -1085,22 +1183,22 @@ bool QRobotServer::testBoardConnection()
     return true;
 }
 
-void QRobotServer::readSpeedsAndSend( QHostAddress addr )
-{
-    quint16 startAddr = WORD_ENC1_SPEED;
-    quint16 nReg = 2;
-    bool commOk = readMultiReg( startAddr, nReg );
+//void QRobotServer::readSpeedsAndSend( QHostAddress addr )
+//{
+//    quint16 startAddr = WORD_ENC1_SPEED;
+//    quint16 nReg = 2;
+//    bool commOk = readMultiReg( startAddr, nReg );
 
-    QVector<quint16> readRegReply;
-    readRegReply.resize( nReg+2 );
+//    QVector<quint16> readRegReply;
+//    readRegReply.resize( nReg+2 );
 
-    readRegReply[0] = (quint16)startAddr;
-    readRegReply[1] = (quint16)nReg;
-    memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) );
+//    readRegReply[0] = (quint16)startAddr;
+//    readRegReply[1] = (quint16)nReg;
+//    memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) );
 
-    if( commOk )
-        sendStatusBlockUDP( addr, MSG_READ_REPLY, readRegReply );
-}
+//    if( commOk )
+//        sendStatusBlockUDP( addr, MSG_READ_REPLY, readRegReply );
+//}
 
 bool QRobotServer::readMultiReg( quint16 startAddr, quint16 nReg )
 {
@@ -1223,9 +1321,78 @@ bool QRobotServer::connectModbus( int retryCount/*=-1*/)
     return true;
 }
 
+bool QRobotServer::updateTelemetry()
+{
+    quint16 replyBuffer[4];
+
+    // >>>>> Telemetry update
+    // WORD_TENSIONE_ALIM 8
+    // WORD_ENC1_SPEED 20
+    // WORD_ENC2_SPEED 21
+    // WORD_RD_PWM_CH1 22
+    // WORD_RD_PWM_CH2 23
+
+    mBoardMutex.lock();
+    {
+        quint16 startAddr = WORD_ENC1_SPEED;
+        quint16 nReg = 4;
+        int res = modbus_read_input_registers( mModbus, startAddr, nReg, replyBuffer );
+
+        if(res!=nReg)
+        {
+            mBoardMutex.unlock();
+            return false;
+        }
+    }
+
+
+    double speed0;
+    if(replyBuffer[0] < 32768)  // Speed is integer 2-complement!
+        speed0 = ((double)replyBuffer[0])/1000.0;
+    else
+        speed0 = ((double)(replyBuffer[0]-65536))/1000.0;
+    mTelemetry.LinSpeedLeft = speed0;
+
+    double speed1;
+    if(replyBuffer[1] < 32768)  // Speed is integer 2-complement!
+        speed1 = ((double)replyBuffer[1])/1000.0;
+    else
+        speed1 = ((double)(replyBuffer[1]-65536))/1000.0;
+    mTelemetry.LinSpeedRight = speed1;
+
+    mTelemetry.PwmLeft = replyBuffer[2];
+    mTelemetry.PwmRight = replyBuffer[3];
+
+    // TODO mTelemetry.RpmLeft = // CALCULATE!!!
+    // TODO mTelemetry.RpmRight = // CALCULATE!!!
+
+    mBoardMutex.lock();
+    {
+        quint16 startAddr = WORD_TENSIONE_ALIM;
+        quint16 nReg = 1;
+        int res = modbus_read_input_registers( mModbus, startAddr, nReg, replyBuffer );
+
+        if(res!=nReg)
+        {
+            mBoardMutex.unlock();
+            return false;
+        }
+    }
+
+    mTelemetry.Battery = ((double)replyBuffer[0])/1000.0;
+
+    return true;
+
+}
+
 void QRobotServer::timerEvent(QTimerEvent *event)
 {
-    if( event->timerId() == mBoardTestTimerId )
+    if( event->timerId() == mTelemetryUpdateTimerId )
+    {
+        if( updateTelemetry() )
+            multicastSendTelemetry();
+    }
+    else if( event->timerId() == mBoardTestTimerId )
     {
         if(mTestMode)
         {
@@ -1248,7 +1415,11 @@ void QRobotServer::timerEvent(QTimerEvent *event)
     }
     else if(event->timerId() == mControlTimeoutTimerId )
     {
+<<<<<<< HEAD
         qDebug() << tr("Control timeout. Elapsed %1 seconds since last control command").arg(SRV_CONTROL_UDP_TIMEOUT);
+=======
+        qDebug() << tr("Control timeout. Elapsed %1 seconds since last control command").arg(SRV_CONTROL_UDP_TIMEOUT_MSEC);
+>>>>>>> origin/master
 
         releaseControl();
     }

@@ -19,6 +19,7 @@
 #define DEFAULT_IP "127.0.0.1"
 #define DEFAULT_TCP_PORT 14500
 #define DEFAULT_UDP_CTRL_PORT 14560
+#define DEFAULT_MULTICAST_PORT 14565
 #define DEFAULT_UDP_STAT_PORT_SEND 14550
 #define DEFAULT_UDP_STAT_PORT_LISTEN 14555
 
@@ -433,6 +434,8 @@ void CMainWindow::onConnectButtonClicked()
             delete mRoboCtrl;
 
         mRobIpAddress = mRobIpLineEdit->text();
+
+        //TODO add multicast port
         mRoboCtrl = new RoboControllerSDK( mRobIpAddress, mRobUdpStatusPortSend, mRobUdpStatusPortListen,
                                            mRobUdpControlPort, mRobTcpPort );
 

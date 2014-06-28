@@ -27,6 +27,7 @@ public:
     explicit RoboControllerSDK(QString serverAddr=QString("127.0.0.1"),
                                quint16 udpStatusPortSend=14550,
                                quint16 udpStatusPortListen=14555,
+                               quint16 multicastUdpPort=14565,
                                quint16 udpControlPort=14560,
                                quint16 tcpPort=14500);
 
@@ -309,6 +310,7 @@ private:
     int mUdpStatusPortSend;      /**< Socket UDP Status Port to send datagrams*/
     int mUdpStatusPortListen;    /**< Socket UDP Status Port to bind to receive datagrams*/
     int mUdpControlPortSend;     /**< Socket UDP Control Port */
+    int mUdpTelemetryMulticastPort; /**< Multicast UDP Port for telemetry */
     int mTcpPort;          /**< Socket TCP Port */
 
     QString mServerAddr;   /**< Server address */
@@ -359,6 +361,8 @@ private:
                                   are true a @ref newRobotConfiguration signal can be emitted. */
 
     QTimer mUdpPingTimer; /**< Timer of Udp Servers testing */
+
+    RobotTelemetry mTelemetry; /**< Telemetry of the robot, updated every @ref TELEMETRY_UPDATE_MSEC msec */
 };
 
 }

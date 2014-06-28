@@ -16,7 +16,7 @@ namespace roboctrl
 
 RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/,
                                      quint16 udpStatusPortSend/*=14550*/,
-                                     quint16 udpStatusPortListen/*=14555*/,
+                                     quint16 udpStatusPortListen/*=14555*/, quint16 multicastUdpPort/*=14565*/,
                                      quint16 udpControlPort/*=14560*/,
                                      quint16 tcpPort/*=14500*/) :
     mTcpSocket(NULL),
@@ -74,6 +74,8 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
     mUdpControlPortSend = udpControlPort;
     mUdpStatusPortSend = udpStatusPortSend;
     mUdpStatusPortListen = udpStatusPortListen;
+
+    mUdpTelemetryMulticastPort = multicastUdpPort;
 
     mNextUdpCtrlBlockSize = 0;
     //mNextUdpStBlockSize = 0;
@@ -1084,8 +1086,6 @@ void RoboControllerSDK::getBoardStatus()
     mBoardStatusValid = false;
 
     sendBlockTCP( CMD_RD_MULTI_REG, data );
-
-
 }
 
 bool RoboControllerSDK::setBoardStatus( BoardStatus &status )
