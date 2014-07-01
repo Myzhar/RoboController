@@ -30,7 +30,7 @@ public:
 
     bool isConnected(){return mConnected;}
 
-    bool connectToServer(int sendPort,int listenPort);
+    bool connectToServer(int sendPort, int listenPort);
     void disconnectServer();
 
     cv::Mat getLastFrame();

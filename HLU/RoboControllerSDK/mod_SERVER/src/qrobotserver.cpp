@@ -609,7 +609,6 @@ void QRobotServer::onTcpReadyRead()
 
             if( !mBoardConnected )
             {
-                // TODO: LEGGERE I BYTE RIMANENTI
                 // Dovrebbe essere così:
                 mTcpSocket->read( mNextTcpBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
 
@@ -655,7 +654,6 @@ void QRobotServer::onTcpReadyRead()
 
             if( !mBoardConnected )
             {
-                // TODO: LEGGERE I BYTE RIMANENTI
                 // Dovrebbe essere così:
                 mTcpSocket->read( mNextTcpBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
 
@@ -898,12 +896,7 @@ void QRobotServer::onUdpStatusReadyRead()
             }
             else
             {
-<<<<<<< HEAD
-                QVector<quint16> vec;
-                vec << startAddr;
-                vec << nReg;
-                sendStatusBlockUDP( addr, MSG_WRITE_OK, vec );
-=======
+
                 //qDebug() << tr("UDP Status Received msg #%1: CMD_GET_ROBOT_CTRL (%2)").arg(msgIdx).arg(msgCode);
                 mControlTimeoutTimerId = startTimer(SRV_CONTROL_UDP_TIMEOUT_MSEC );
 
@@ -921,7 +914,6 @@ void QRobotServer::onUdpStatusReadyRead()
                     sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_KO, vec ); // Robot not free
                 }
                 break;
->>>>>>> origin/master
             }
             break;
         }
@@ -929,7 +921,7 @@ void QRobotServer::onUdpStatusReadyRead()
         case CMD_GET_ROBOT_CTRL:
         {
             //qDebug() << tr("UDP Status Received msg #%1: CMD_GET_ROBOT_CTRL (%2)").arg(msgIdx).arg(msgCode);
-            mControlTimeoutTimerId = startTimer( SRV_CONTROL_UDP_TIMEOUT );
+            mControlTimeoutTimerId = startTimer( SRV_CONTROL_UDP_TIMEOUT_MSEC );
 
             if( mControllerClientIp.isEmpty() || mControllerClientIp==addr.toString() )
             {
@@ -1025,20 +1017,12 @@ void QRobotServer::onUdpControlReadyRead()
         // Datagram dimension
         in >> mNextUdpCmdBlockSize;
 
-<<<<<<< HEAD
         if( datagramSize < mNextUdpCmdBlockSize )
         {
             qDebug() << Q_FUNC_INFO << tr("Received incomplete UDP Control Block..."); // This should never happens!
             break;
         }
-=======
-            switch(msgCode)
-            {
-            case CMD_WR_MULTI_REG:
-            {
-                mControlTimeoutTimerId = startTimer(SRV_CONTROL_UDP_TIMEOUT_MSEC );
-                //qDebug() << tr("UDP Control Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
->>>>>>> origin/master
+
 
         // Datagram IDX
         quint16 msgIdx;
@@ -1054,7 +1038,7 @@ void QRobotServer::onUdpControlReadyRead()
         {
         case CMD_WR_MULTI_REG:
         {
-            mControlTimeoutTimerId = startTimer( SRV_CONTROL_UDP_TIMEOUT );
+            mControlTimeoutTimerId = startTimer( SRV_CONTROL_UDP_TIMEOUT_MSEC );
             //qDebug() << tr("UDP Control Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
 
             if( !mBoardConnected )
@@ -1094,14 +1078,14 @@ void QRobotServer::onUdpControlReadyRead()
                 QVector<quint16> vec;
                 sendStatusBlockUDP( addr, MSG_ROBOT_CTRL_KO, vec ); // Robot not controlled by client
 
-<<<<<<< HEAD
+
                 if(mControllerClientIp.isEmpty())
                     qDebug() << tr("The client %1 cannot send commands before taking control of the robot").arg(addr.toString());
                 else
                     qDebug() << tr("The client %1 is controlling the robot. %2 cannot send commands").arg(mControllerClientIp).arg(addr.toString());
-=======
-//                readSpeedsAndSend( addr );
->>>>>>> origin/master
+
+                //                readSpeedsAndSend( addr );
+
 
                 break;
             }
@@ -1113,7 +1097,7 @@ void QRobotServer::onUdpControlReadyRead()
                 qDebug() << tr("Error writing %1 registers, starting from %2").arg(nReg).arg(startAddr);
             }
 
-            readSpeedsAndSend( addr );
+            // readSpeedsAndSend( addr );
 
             break;
         }
@@ -1415,11 +1399,8 @@ void QRobotServer::timerEvent(QTimerEvent *event)
     }
     else if(event->timerId() == mControlTimeoutTimerId )
     {
-<<<<<<< HEAD
-        qDebug() << tr("Control timeout. Elapsed %1 seconds since last control command").arg(SRV_CONTROL_UDP_TIMEOUT);
-=======
+
         qDebug() << tr("Control timeout. Elapsed %1 seconds since last control command").arg(SRV_CONTROL_UDP_TIMEOUT_MSEC);
->>>>>>> origin/master
 
         releaseControl();
     }

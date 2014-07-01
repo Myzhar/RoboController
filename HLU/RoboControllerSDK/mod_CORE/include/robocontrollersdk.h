@@ -41,20 +41,6 @@ public:
      */
     static QString findServer(quint16 udpSendPort=14550, quint64 udpListenPort=14555 ); // Tested
 
-    /** @brief Send a request for motor speed.
-     *         The reply is received with /ref newMotorSpeedValue
-     *         signal
-     *
-     * @param motorIdx Index of the motor (0 or 1)
-     */
-    void getMotorSpeed( quint16 motorIdx ); // Tested
-
-    /** @brief Send a request for motor speeds.
-     *         The reply is received with /ref newMotorSpeedValues
-     *         signal
-     */
-    void getMotorSpeeds( ); // Tested
-
     /** @brief Sets the speed of the motor in m/sec
      *
      * @param motorIdx Index of the motor (0 or 1)
@@ -74,20 +60,6 @@ public:
      *       equal to @ref mcPid, else it does nothing
      */
     void setMotorSpeeds( double speed0, double speed1 );
-
-    /** @brief Send a request for motor pwm.
-     *         The reply is received with /ref newMotorPwmValue
-     *         signal
-     *
-     * @param motorIdx Index of the motor (0 or 1)
-     */
-    void getMotorPWM( quint16 motorIdx ); // Tested
-
-    /** @brief Send a request for motor PWMs.
-     *         The reply is received with /ref newMotorPwmValues
-     *         signal
-     */
-    //void getMotorPWMs( ) // TODO create getMotorPWMs
 
     /** @brief Sets the PWM of the motor
      *
@@ -176,12 +148,6 @@ public:
      */
     void releaseRobotControl();
 
-    /** @brief Gets the current charge value of battery
-     *  The reply is received with @ref newBatteryValue
-     *  signal
-     */
-    void getBatteryChargeValue();
-
     /** @brief Calibrates the Battery charge value
      *
      * @param valueType the type of value to be set (see @ref AnalogCalibValue)
@@ -207,8 +173,6 @@ public:
      *         signal
      */
     void getWatchdogTime( ); // Tested
-
-
 
 protected:
     /// Thread function
@@ -276,24 +240,12 @@ signals:
     /// Signal emitted when UDP Socket is disconnected
     void udpDisconnected();
 
-    /// Signal emitted when a new PWM value is received
-    void newMotorPwmValue( quint16 motorIdx, quint16 value );
-    /// Signal emitted when new PWM values for both motors are received
-    void newMotorPwmValues( quint16 pwmMotor0, quint16 pwmMotor1 );
-    /// Signal emitted when a new SPEED value is received (speed is in m/sec)
-    void newMotorSpeedValue( quint16 motorIdx, double value );
-    /// Signal emitted when a two new SPEED values are received (speed is in m/sec)
-    void newMotorSpeedValues( double speed1, double speed2 );
-    /// Signal emitted when a new PWM value is received
-    void newMotorPwmValue( quint16 motorIdx, double value );
     /// Signal emitted when new PID gains are received
     void newMotorPIDGains( quint16 motorIdx, quint16 Kp, quint16 Ki, quint16 Kd );
     /// Signal emitted when a new Robot Configuration is received from robot
     void newRobotConfiguration( RobotConfiguration& robConf );
     /// Signal emitted when a new Board Status is ready
     void newBoardStatus(BoardStatus& status);
-    /// Signal emitted when a new Battery Value is available
-    void newBatteryValue( double batChargeVal );
     /// Signal emitted when a new Watchdog value is available
     void newWatchdogTime( quint64 wd_value );
 

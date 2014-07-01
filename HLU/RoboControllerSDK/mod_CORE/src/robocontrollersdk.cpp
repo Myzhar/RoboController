@@ -426,10 +426,6 @@ void RoboControllerSDK::onTcpReadyRead()
 
 void RoboControllerSDK::onUdpStatusReadyRead()
 {
-    // TODO try to implement the same as http://www.informit.com/articles/article.aspx?p=1405552&seqNum=4
-    
-    
-    //mNextUdpStBlockSize=0;
     quint16 msgCode;
 
     while( mUdpStatusSocket->hasPendingDatagrams() ) // Receiving data while there is data available
@@ -593,57 +589,7 @@ void RoboControllerSDK::processReplyMsg( QDataStream *inStream )
 
     if(nReg==1)
     {
-        if( ( startAddr == WORD_PWM_CH1 || startAddr == WORD_PWM_CH2 ) )
-        {
-            quint16 motorIdx;
-            if(startAddr == WORD_PWM_CH1)
-                motorIdx = 0;
-            else
-                motorIdx = 1;
-
-            *inStream >> value;
-            emit newMotorPwmValue( motorIdx, value );
-        }
-        else if( ( startAddr == WORD_RD_PWM_CH1 || startAddr == WORD_RD_PWM_CH2 ) )
-        {
-            quint16 motorIdx;
-            if(startAddr == WORD_RD_PWM_CH1)
-                motorIdx = 0;
-            else
-                motorIdx = 1;
-
-            *inStream >> value;
-
-            emit newMotorPwmValue( motorIdx, value );
-        }
-        else if( ( startAddr == WORD_ENC1_SPEED || startAddr == WORD_ENC2_SPEED ) )
-        {
-            quint16 motorIdx;
-            if(startAddr == WORD_ENC1_SPEED)
-                motorIdx = 0;
-            else
-                motorIdx = 1;
-
-            *inStream >> value;
-
-            /*double speed = ((double)value-32768)/1000.0;*/
-            double speed;
-            if(value < 32768)  // Speed is integer 2-complement!
-                speed = ((double)value)/1000.0;
-            else
-                speed = ((double)(value-65536))/1000.0;
-
-            emit newMotorSpeedValue( motorIdx, speed );
-        }
-        else if( startAddr == WORD_TENSIONE_ALIM )
-        {
-            *inStream >> value;
-
-            double val = (double)value/1000.0;
-
-            emit newBatteryValue( val );
-        }
-        else if( startAddr == WORD_STATUSBIT1 ||  startAddr == WORD_STATUSBIT2 )
+        if( startAddr == WORD_STATUSBIT1 ||  startAddr == WORD_STATUSBIT2 )
         {
             *inStream >> value;
 
@@ -709,34 +655,6 @@ void RoboControllerSDK::processReplyMsg( QDataStream *inStream )
         }
         else
             qDebug() << tr("Address %1 not yet handled with nReg=1").arg(startAddr);
-    }
-    else if(nReg==2)
-    {
-        if( ( startAddr == WORD_ENC1_SPEED ) ) // Motor Speeds
-        {
-            quint16 speed0;
-            quint16 speed1;
-
-            *inStream >> speed0;
-            *inStream >> speed1;
-
-            /*double speed = ((double)value-32768)/1000.0;*/
-            double speed0_64;
-            if(speed0 < 32768)  // Speed is integer 2-complement!
-                speed0_64 = ((double)speed0)/1000.0;
-            else
-                speed0_64 = ((double)(speed0-65536))/1000.0;
-
-            double speed1_64;
-            if(speed1 < 32768)  // Speed is integer 2-complement!
-                speed1_64 = ((double)speed1)/1000.0;
-            else
-                speed1_64 = ((double)(speed1-65536))/1000.0;
-
-            emit newMotorSpeedValues( speed0_64, speed1_64 );
-        }
-        else
-            qDebug() << tr("Address %1 not yet handled with nReg=2").arg(startAddr);
     }
     else if(nReg==3)
     {
@@ -1038,43 +956,6 @@ void RoboControllerSDK::run()
     exec();
 
     qDebug() << tr("RoboControllerSDK thread finished");
-}
-
-void RoboControllerSDK::getMotorPWM( quint16 motorIdx )
-{
-    QVector<quint16> data;
-    if(motorIdx==0)
-        data << (quint16)WORD_RD_PWM_CH1;
-    else
-        data << (quint16)WORD_RD_PWM_CH2;
-    data << 1; // Only one register
-
-    //sendBlockTCP( mUdpStatusSocket, CMD_RD_MULTI_REG, data );
-    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, /*true*/false );
-}
-
-void RoboControllerSDK::getMotorSpeed( quint16 motorIdx )
-{
-    QVector<quint16> data;
-    if(motorIdx==0)
-        data << (quint16)WORD_ENC1_SPEED;
-    else
-        data << (quint16)WORD_ENC2_SPEED;
-    data << 1; // Only one register
-
-    //sendBlockTCP( mUdpStatusSocket, CMD_RD_MULTI_REG, data );
-    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, /*true*/false );
-}
-
-void RoboControllerSDK::getMotorSpeeds( )
-{
-    QVector<quint16> data;
-    data << (quint16)WORD_ENC1_SPEED;
-
-    data << 2; // Only one register
-
-    //sendBlockTCP( mUdpStatusSocket, CMD_RD_MULTI_REG, data );
-    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, /*true*/false );
 }
 
 void RoboControllerSDK::getBoardStatus()
@@ -1449,15 +1330,6 @@ void RoboControllerSDK::releaseRobotControl()
 
     QVector<quint16> vec;
     sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_REL_ROBOT_CTRL, vec, true );
-}
-
-void RoboControllerSDK::getBatteryChargeValue()
-{
-    QVector<quint16> data;
-    data << (quint16)WORD_TENSIONE_ALIM;
-    data << 1; // Just a register
-
-    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_RD_MULTI_REG, data, true );
 }
 
 void RoboControllerSDK::setBatteryCalibrationParams( AnalogCalibValue valueType, double curChargeVal)

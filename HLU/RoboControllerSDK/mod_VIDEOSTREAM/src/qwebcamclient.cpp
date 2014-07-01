@@ -93,14 +93,8 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
     }
 
     mUdpSocketSend = new QUdpSocket();
-//    bool binded = mUdpSocketSend->bind( QHostAddress(mServerIp),
-//                                   mSendPort,
-//                                   QUdpSocket::ShareAddress );
 
     mUdpSocketListen = new QUdpSocket();
-    /*bool binded = mUdpSocketListen->bind( //QHostAddress(mServerIp),
-                                        mListenPort,
-                                        QUdpSocket::ShareAddress ); */
 
     // To connect to multicast server we need that the client socket is binded
     bool binded = mUdpSocketListen->bind( QHostAddress::AnyIPv4,
@@ -116,38 +110,15 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
     }
     else
     {
-        /*char cmd = CMD_ADD_CLIENT;
-        int res = mUdpSocketSend->writeDatagram( &cmd,
-                                                 QHostAddress(mServerIp),
-                                                 //QHostAddress::Broadcast,
-                                                 mSendPort );
-        mUdpSocketSend->flush();
-        if( -1==res )
-        {
-            qDebug() << tr("Connection to server failed on port %2")
-                        .arg(mSendPort);
-            mConnected = false;
-        }
-        else
-        {
-
-            qDebug() << tr("Connected to server. Listening on port %1. Sending on port %2")
-                        .arg(mListenPort).arg(mSendPort);
-            mConnected = true;
-
-            connect(mUdpSocketListen, SIGNAL(readyRead()),
-                    this, SLOT(processPendingDatagrams()));
-        }*/
-
         if( !mUdpSocketListen->joinMulticastGroup( QHostAddress(MULTICAST_WEBCAM_SERVER_IP) ) )
         {
-            qDebug() << tr("Connection to server failed on port %2")
+            qDebug() << tr("Connection to Multicast server failed on port %2")
                         .arg(mSendPort);
             mConnected = false;
         }
         else
         {
-            qDebug() << tr("Connected to server. Listening on port %1. Sending on port %2")
+            qDebug() << tr("Connected to Multicast server. Listening on port %1. Sending on port %2")
                         .arg(mListenPort).arg(mSendPort);
             mConnected = true;
 
