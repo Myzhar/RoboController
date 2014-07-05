@@ -48,7 +48,7 @@ private slots:
     void onTcpClientDisconnected(); ///< Called when a client disconnects from TCP Server
 
     void onTcpReadyRead(); ///< Called when a new data from TCP socket is available
-    void onUdpStatusReadyRead(); ///< Called when a new data from UDP Status socket is available
+    void onUdpInfoServerReadyRead(); ///< Called when a new data from UDP Status socket is available
     void onUdpControlReadyRead(); ///< Called when a new data from UDP Control socket is available
 
     bool updateTelemetry(); ///< Called to update telemetry from RoboController
@@ -60,7 +60,7 @@ private:
 
     void sendBlockTCP( quint16 msgCode, QVector<quint16>& data ); ///< Send data block to TCP socket
 
-    void sendStatusBlockUDP(QHostAddress addr, quint16 msgCode, QVector<quint16>& data );///< Send data block to UDP socket
+    void sendInfoBlockUDP(QHostAddress addr, quint16 msgCode, QVector<quint16>& data );///< Send data block to UDP socket
     void multicastSendTelemetry(); ///< Send telemetry in multicast
 
     modbus_t* initializeSerialModbus( const char *device,
@@ -86,18 +86,21 @@ protected:
 private:
     QMutex  	    mBoardMutex; ///< Mutex on Robocontroller board
 
+    // >>>>> Servers
+    // TODO: create a thread for each server!?!???!?!?
     QTcpServer*     mTcpServer; ///< TCP Server Object
     QTcpSocket*     mTcpSocket; ///< TCP Socket
     
-    QUdpSocket*     mUdpStatusSocket; ///< UDP Status Socket Listener
-    QUdpSocket*     mUdpControlSocket; ///< UDP Control Socket Listener
-    QUdpSocket*     mMulticastUdpTelemetryServer; ///< Multicast Telemetry Socket
+    QUdpSocket*     mUdpInfoServer; ///< UDP Info Socket Listener
+    QUdpSocket*     mUdpControlReceiver; ///< UDP Control Socket Listener
+    QUdpSocket*     mUdpMulticastTelemetryServer; ///< Multicast Telemetry Socket
+    // <<<<< Servers
 
     QSettings*      mSettings; ///< Settings in file INI
 
     unsigned int    mServerTcpPort; ///< Port of the TCP Server
-    unsigned int    mServerUdpStatusPortListen; ///< Port of the UDP Status Listen Server
-    unsigned int    mServerUdpStatusPortSend; ///< Port of the UDP Status Listen Server
+    unsigned int    mServerUdpInfoPortListen; ///< Port of the UDP Info Listen Server
+    unsigned int    mServerUdpInfoPortSend; ///< Port of the UDP Info Listen Server
     unsigned int    mServerUdpControlPortListen; ///< Port of the UDP Control Server @note The control server receives without replying, the client can control if a motion command is successfull using the Status UDP Socket.
 
     unsigned int    mMulticastUdpTelemetryServerPort; ///< Port of the Multicast UDP server, the server will send telemetry in multicast each @ref TELEMETRY_UPDATE_MSEC msec
@@ -120,8 +123,8 @@ private:
     quint16         mMsgCounter; /// Counts the message sent
 
     quint16         mNextTcpBlockSize;      ///< Used to recover incomplete TCP block
-    quint16         mNextUdpCmdBlockSize;      ///< Used to recover incomplete UDP Control block
-    quint16         mNextUdpStatBlockSize;      ///< Used to recover incomplete UDP Status block
+    //quint16         mNextUdpCmdBlockSize;      ///< Used to recover incomplete UDP Control block
+    //quint16         mNextUdpStatBlockSize;      ///< Used to recover incomplete UDP Status block
 
     bool            mTestMode; ///< If true the server does not connect to RoboController, but allows connection to sockets to test communications
 
