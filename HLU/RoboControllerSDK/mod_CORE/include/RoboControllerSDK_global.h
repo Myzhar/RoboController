@@ -2,6 +2,7 @@
 #define ROBOCONTROLLERSDK_GLOBAL_H
 
 #include <QtCore/qglobal.h>
+#include <QString>
 
 #if defined(ROBOCONTROLLERSDK_LIBRARY)
 #  define ROBOCONTROLLERSDKSHARED_EXPORT Q_DECL_EXPORT
@@ -140,6 +141,7 @@ typedef struct _RobotConfiguration
   */
 typedef struct _RobotTelemetry
 {
+    QString CtrlClientIP;   /**< IP of the client that is controlling the robot */
     qint16 PwmLeft;         /**< Last value of the PWM for left wheel */
     qint16 PwmRight;        /**< Last value of the PWM for right wheel */
     qreal RpmLeft;          /**< Last RPM for left wheel */
@@ -147,7 +149,6 @@ typedef struct _RobotTelemetry
     qreal LinSpeedLeft;     /**< Last Linear Speed for left Wheel */
     qreal LinSpeedRight;    /**< Last Linear Speed for right Wheel */
     qreal Battery;          /**< Last battery voltage */
-
 } RobotTelemetry;
 
 }

@@ -12,11 +12,11 @@
 #include <QTimer>
 #include <QMutex>
 #include <QAbstractSocket>
+#include "qrobotctrlserver.h"
 
 #define WORD_TEST_BOARD 0
 
 #define TEST_TIMER_INTERVAL_MSEC 1000
-#define SRV_CONTROL_UDP_TIMEOUT_MSEC 30000
 #define TELEMETRY_UPDATE_MSEC 30
 
 #define INITIAL_REPLY_BUFFER_SIZE 20
@@ -32,6 +32,8 @@ namespace roboctrl
 class ROBOCONTROLLERSDKSHARED_EXPORT QRobotServer : public QThread
 {
     Q_OBJECT
+
+    friend class QRobotCtrlServer; ///< @ref QRobotCtrlServer must be able to access to RoboController using @ref writeMultiReg function
 
 public:
     explicit QRobotServer(quint16 serverUdpControl=14560, quint16 statusMulticastPort=14565,
@@ -49,14 +51,17 @@ private slots:
 
     void onTcpReadyRead(); ///< Called when a new data from TCP socket is available
     void onUdpInfoServerReadyRead(); ///< Called when a new data from UDP Status socket is available
-    void onUdpControlReadyRead(); ///< Called when a new data from UDP Control socket is available
 
     bool updateTelemetry(); ///< Called to update telemetry from RoboController
+
+    void onCtrlGained( QString clientIP ); ///< Called when the client gains the control of the robot
+    void onCtrlRefused( QString clientIP ); ///< Called when the client tries to get control of the robot, but it is just assigned to another client
+    void onCtrlLost( QString clientIP ); ///< Called when the client loses control of the robot for a release or a timeout
 
 private:
     void openTcpSession(); ///< Opens TCP socket
     void openUdpStatusSession(); ///< Opens UDP Status socket
-    void openUdpControlSession(); ///< Opens UDP Control socket
+
 
     void sendBlockTCP( quint16 msgCode, QVector<quint16>& data ); ///< Send data block to TCP socket
 
@@ -75,10 +80,6 @@ private:
     // QVector used instead of QList to provide direct data access using "Data()" function
     bool writeMultiReg( quint16 startAddr, quint16 nReg, QVector<quint16> vals ); ///< Called to write registers to RoboController
 
-//    void readSpeedsAndSend(QHostAddress addr); ///< Called to send to client the speed of the robot after receiveing a command of movement
-
-    void releaseControl(); ///< Release the control of the robot
-
 protected:
     virtual void run() Q_DECL_OVERRIDE;
     virtual void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
@@ -87,13 +88,13 @@ private:
     QMutex  	    mBoardMutex; ///< Mutex on Robocontroller board
 
     // >>>>> Servers
-    // TODO: create a thread for each server!?!???!?!?
     QTcpServer*     mTcpServer; ///< TCP Server Object
     QTcpSocket*     mTcpSocket; ///< TCP Socket
     
-    QUdpSocket*     mUdpInfoServer; ///< UDP Info Socket Listener
-    QUdpSocket*     mUdpControlReceiver; ///< UDP Control Socket Listener
-    QUdpSocket*     mUdpMulticastTelemetryServer; ///< Multicast Telemetry Socket
+    QUdpSocket*     mUdpInfoServer; ///< UDP Info Socket Listener   TODO: Move to its own server
+    QUdpSocket*     mUdpMulticastTelemetryServer; ///< Multicast Telemetry Socket TODO: Move to its own server
+
+    QRobotCtrlServer* mRobotCtrlServer; ///< Control Server Thread
     // <<<<< Servers
 
     QSettings*      mSettings; ///< Settings in file INI
@@ -115,10 +116,7 @@ private:
 
     int             mBoardTestTimerId; ///< Id of the test timer.
     int             mTcpClientCount; ///< Number of Clients connected on TCP
-    int             mControlTimeoutTimerId; ///< If a client does not send control command for @ref SVR_CONTROL_UDP_TIMEOUT
     int             mTelemetryUpdateTimerId; ///< Telemetry update timer ID
-
-    QString         mControllerClientIp; ///< Ip address of the client that took control for driving the robot using @ref getRobotControl function
 
     quint16         mMsgCounter; /// Counts the message sent
 
@@ -129,6 +127,8 @@ private:
     bool            mTestMode; ///< If true the server does not connect to RoboController, but allows connection to sockets to test communications
 
     RobotTelemetry  mTelemetry; ///< Telemetry of the robot, updated every @ref TELEMETRY_UPDATE_MSEC msec
+
+
 };
 
 }

@@ -1320,7 +1320,7 @@ void RoboControllerSDK::getRobotControl()
     mUdpControlDisconnectTimer.start( CONTROL_UDP_TIMEOUT );
 
     QVector<quint16> vec;
-    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_GET_ROBOT_CTRL, vec, true );
+    sendBlockUDP( mUdpControlSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_GET_ROBOT_CTRL, vec, true );
 }
 
 void RoboControllerSDK::releaseRobotControl()
@@ -1329,7 +1329,7 @@ void RoboControllerSDK::releaseRobotControl()
         return;
 
     QVector<quint16> vec;
-    sendBlockUDP( mUdpStatusSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_REL_ROBOT_CTRL, vec, true );
+    sendBlockUDP( mUdpControlSocket, QHostAddress(mServerAddr), mUdpStatusPortSend, CMD_REL_ROBOT_CTRL, vec, true );
 }
 
 void RoboControllerSDK::setBatteryCalibrationParams( AnalogCalibValue valueType, double curChargeVal)
