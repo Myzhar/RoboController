@@ -1,4 +1,4 @@
-#include "exception.h"
+#include "rcexception.h"
 
 namespace roboctrl
 {

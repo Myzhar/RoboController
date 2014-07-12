@@ -2,7 +2,7 @@
 #include "cmainwindow.h"
 
 #include "qcommon.h"
-#include "exception.h"
+#include "rcexception.h"
 
 int main(int argc, char *argv[])
 {

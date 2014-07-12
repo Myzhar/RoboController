@@ -65,7 +65,7 @@ void QJoypad::setJoypadValues( float x, float y )
         update();
 
     emit newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );
-    //qDebug() << PREFIX << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
+    //qDebug() /*<< PREFIX*/ << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
 }
 
 void QJoypad::resizeEvent( QResizeEvent* event )
@@ -100,7 +100,7 @@ void QJoypad::resizeEvent( QResizeEvent* event )
     // <--- Pixel scale according to range
 
     emit newJoypadValues( 0.0, 0.0 );
-    //qDebug() << PREFIX << "emitted newJoypadValues( 0.0, 0.0 );";
+    //qDebug() /*<< PREFIX*/ << "emitted newJoypadValues( 0.0, 0.0 );";
 
     qDebug() << newSize;
 
@@ -129,8 +129,8 @@ void QJoypad::mousePressEvent( QMouseEvent *event )
     emit mouseButtonDown( event );
     emit newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );
 
-    //qDebug() << PREFIX << "emitted mouseButtonDown( event );";
-    //qDebug() << PREFIX << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
+    //qDebug() /*<< PREFIX*/ << "emitted mouseButtonDown( event );";
+    //qDebug() /*<< PREFIX*/ << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
 }
 
 void QJoypad::mouseMoveEvent( QMouseEvent *event )
@@ -170,7 +170,7 @@ void QJoypad::mouseMoveEvent( QMouseEvent *event )
     update();
 
     emit newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );
-    //qDebug() << PREFIX << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
+    //qDebug() /*<< PREFIX*/ << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
 }
 
 void QJoypad::mouseReleaseEvent( QMouseEvent *event )
@@ -183,8 +183,8 @@ void QJoypad::mouseReleaseEvent( QMouseEvent *event )
     emit mouseButtonUp( event );
     emit newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );
 
-    //qDebug() << PREFIX << "emitted mouseButtonUp( event );";
-    //qDebug() << PREFIX << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
+    //qDebug() /*<< PREFIX*/ << "emitted mouseButtonUp( event );";
+    //qDebug() /*<< PREFIX*/ << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
 }
 
 void QJoypad::paintEvent(QPaintEvent *event)

@@ -20,6 +20,7 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
                            quint16 serverUdpStatusListener/*=14550*/, quint16 serverUdpStatusSender/*=14555*/,
                            quint16 serverTcpPort/*=14500*/, bool testMode, QObject *parent/*=0*/) :
     QThread(parent),
+    mRoboController(NULL),
     mTcpServer(NULL),
     mTcpSocket(NULL),
     mUdpInfoServer(NULL),
@@ -30,9 +31,6 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
     mServerUdpInfoPortSend(serverUdpStatusSender),
     mServerUdpControlPortListen(serverUdpControl),
     mMulticastUdpTelemetryServerPort(statusMulticastPort),
-    mModbus(NULL),
-    mReplyBuffer(NULL),
-    mBoardConnected(false),
     mMsgCounter(0),
     mTestMode(testMode)
 {
@@ -50,9 +48,6 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
     if(testMode)
         qDebug() << " TESTMODE ACTIVE ";
 
-    mReplyBufSize = INITIAL_REPLY_BUFFER_SIZE;
-    mReplyBuffer = new quint16[mReplyBufSize];
-
     mBoardIdx = mSettings->value( "boardidx", "0" ).toInt();
     if( mBoardIdx==0 )
     {
@@ -65,12 +60,13 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
     {
         // >>>>> MOD_BUS serial communication settings
         /* Default Values:
-       [SERIAL_CONNECTION]
-       serialinterface=Serial port 0
-       serialbaudrate=57600
-       serialparity=none
-       serialdatabits=8
-       serialstopbits=1 */
+        [SERIAL_CONNECTION]
+        serialinterface=Serial port 0
+        serialbaudrate=57600
+        serialparity=none
+        serialdatabits=8
+        serialstopbits=1 */
+
 
         mSettings->beginGroup( "SERIAL_CONNECTION" );
 
@@ -158,57 +154,17 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
             mSettings->sync();
         }
 
-        int count = 0;
-
-
-
-        qDebug() << tr("#%1 - Initializing connection to RoboController Id: %2").arg(count+1).arg(mBoardIdx);
-
-        while( !initializeSerialModbus( port.toLatin1().data(),
-                                        serialbaudrate, parity, data_bit, stop_bit ) &&
-               count < 10 )
-        {
-            qWarning() << tr( "Failed to initialize mod_bus on port: %1").arg(port);
-            qWarning() << tr("Trying again in one second...");
-
-            count++;
-
-            msleep( 1000 );
-            qDebug() << tr("#%1 - Initializing connection to RoboController Id: %2").arg(count+1).arg(mBoardIdx);
-        }
-
-        if( count > 10 )
-        {
-            QString err = tr("* Robocontroller not connected in 10 seconds. Server not started!");
-            qCritical() << " ";
-            qCritical() << err;
-
-            roboctrl::RcException exc(excRoboControllerNotFound, err.toStdString().c_str() );
-
-            throw exc;
-        }
-
-
         mSettings->endGroup();
 
 
-        // >>>>> Board connection
-        bool res = connectModbus( 10 );
-        if( !res )
+        try
         {
-            QString err = tr("Failed to connect to modbus on port: %1").arg(port);
-            qCritical() << "Server not started";
-            qCritical() << err;
-
-            roboctrl::RcException exc(excRoboControllerNotFound, err.toStdString().c_str() );
-
-            throw exc;
+            mRoboController = new QRoboControllerInterface( mBoardIdx, port, serialbaudrate, parity, data_bit, stop_bit );
         }
-
-        qDebug() << tr("RoboController connected");
-        // <<<<< Board connection
-
-        // <<<<< MOD_BUS serial communication settings
+        catch( RcException &e)
+        {
+            throw e;
+        }
     }
 
     // >>>>> TCP configuration
@@ -254,7 +210,7 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
         mSettings->sync();
     }
 
-    mRobotCtrlServer = new QRobotCtrlServer( mServerUdpControlPortListen, this );
+    mRobotCtrlServer = new QRobotCtrlServer( mRoboController, mServerUdpControlPortListen );
 
     connect( mRobotCtrlServer, SIGNAL(clientGainedControl(QString)),
              this, SLOT(onCtrlGained( QString ) ) );
@@ -273,17 +229,14 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
         mSettings->sync();
     }
 
-    mUdpMulticastTelemetryServer = new QUdpSocket();
-    // Multicast on the subnet
-    mUdpMulticastTelemetryServer->setSocketOption( QAbstractSocket::MulticastTtlOption, 1 );
+    mRobotTelemetryServer = new QRobotTelemetryServer( mRoboController, mMulticastUdpTelemetryServerPort );
     // <<<<< UDP Multicast
 
     mSettings->sync();
 
     mTcpClientCount = 0;
 
-    // Start telemetry update timer
-    mTelemetryUpdateTimerId = startTimer( TELEMETRY_UPDATE_MSEC, Qt::PreciseTimer );
+
 
     // Start Server Thread
     this->start();
@@ -320,17 +273,11 @@ QRobotServer::~QRobotServer()
     if(mUdpInfoServer)
         delete mUdpInfoServer;
 
-    if(mUdpMulticastTelemetryServer)
-        delete mUdpMulticastTelemetryServer;
+    if( mRoboController )
+        delete mRoboController;
 
-    if( mModbus )
-    {
-        modbus_close( mModbus );
-        modbus_free( mModbus );
-    }
 
-    if(mReplyBuffer)
-        delete [] mReplyBuffer;
+
 }
 
 void QRobotServer::openTcpSession()
@@ -338,7 +285,7 @@ void QRobotServer::openTcpSession()
     if(mTcpServer)
         delete mTcpServer;
 
-    mTcpServer = new QTcpServer(this);
+    mTcpServer = new QTcpServer();
     mTcpServer->setMaxPendingConnections( 2 );
 
     if (!mTcpServer->listen( QHostAddress::Any, mServerTcpPort ))
@@ -478,43 +425,7 @@ void QRobotServer::sendInfoBlockUDP( QHostAddress addr, quint16 msgCode, QVector
     //qDebug() << tr("%1 - Sent msg #%2 -> %3 to %4:%5").arg(timeStr).arg(mMsgCounter).arg(msgCode).arg(addr.toString()).arg(mServerUdpStatusPortSend);
 }
 
-void QRobotServer::multicastSendTelemetry()
-{
-    QByteArray block;
-    QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_2);
-    out << (quint16)UDP_START_VAL; // Start Word
-    out << (quint16)0;      // Block size
 
-    qint64 timestamp = QDateTime::currentMSecsSinceEpoch();
-    out << timestamp; // Timestamp
-
-    // >>>>> Data
-    out << mTelemetry.CtrlClientIP;
-    out << mTelemetry.Battery;
-    out << mTelemetry.LinSpeedLeft;
-    out << mTelemetry.LinSpeedRight;
-    out << mTelemetry.PwmLeft;
-    out << mTelemetry.PwmRight;
-    out << mTelemetry.RpmLeft;
-    out << mTelemetry.RpmRight;
-    // <<<<< Data
-
-    out.device()->seek(0);          // Back to the beginning to set block size
-    int blockSize = (block.size() - 2*sizeof(quint16));
-    out << (quint16)UDP_START_VAL; // Start Word again
-    out << (quint16)blockSize;
-
-    int res = mUdpMulticastTelemetryServer->writeDatagram( block,
-                                                           QHostAddress(MULTICAST_DATA_SERVER_IP),
-                                                           mMulticastUdpTelemetryServerPort );
-
-    if( -1==res )
-    {
-        qDebug() << tr("[%1] Missed telemetry sending")
-                    .arg(QDateTime::fromMSecsSinceEpoch(timestamp).toString(Qt::ISODate));
-    }
-}
 
 void QRobotServer::onTcpReadyRead()
 {
@@ -597,7 +508,7 @@ void QRobotServer::onTcpReadyRead()
         {
             //qDebug() << tr("TCP Received msg #%1: CMD_RD_MULTI_REG (%2)").arg(msgIdx).arg(msgCode);
 
-            if( !mBoardConnected )
+            if( !mRoboController->isConnected() )
             {
                 // Dovrebbe essere così:
                 mTcpSocket->read( mNextTcpBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
@@ -615,17 +526,9 @@ void QRobotServer::onTcpReadyRead()
             in >> nReg;
             //qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
 
-            bool commOk = readMultiReg( startAddr, nReg );
+            QVector<quint16> readRegReply = mRoboController->readMultiReg( startAddr, nReg );
 
-            QVector<quint16> readRegReply;
-
-            readRegReply.resize( nReg+2 );
-
-            readRegReply[0] = (quint16)startAddr;
-            readRegReply[1] = (quint16)nReg;
-            memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) );
-
-            if( !commOk )
+            if( readRegReply.isEmpty() )
             {
                 QVector<quint16> vec;
                 vec << CMD_RD_MULTI_REG;
@@ -642,7 +545,7 @@ void QRobotServer::onTcpReadyRead()
         {
             //qDebug() << tr("TCP Received msg #%1: CMD_WR_MULTI_REG (%2)").arg(msgIdx).arg(msgCode);
 
-            if( !mBoardConnected )
+            if( !mRoboController->isConnected() )
             {
                 // Dovrebbe essere così:
                 mTcpSocket->read( mNextTcpBlockSize-2 ); // Tolgo i byte rimanenti dal buffer
@@ -673,7 +576,16 @@ void QRobotServer::onTcpReadyRead()
                 vals << data;
             }
 
-            bool commOk = writeMultiReg( startAddr, nReg, vals );
+            if( mTestMode )
+            {
+                QVector<quint16> vec;
+                vec << startAddr;
+                vec << nReg;
+                sendBlockTCP( MSG_WRITE_OK, vec );
+                break;
+            }
+
+            bool commOk = mRoboController->writeMultiReg( startAddr, nReg, vals );
 
             if( !commOk )
             {
@@ -802,7 +714,7 @@ void QRobotServer::onUdpInfoServerReadyRead()
         {
             //qDebug() << tr("UDP Status Received msg #%1: CMD_RD_MULTI_REG (%2)").arg(msgIdx).arg(msgCode);
 
-            if( !mBoardConnected )
+            if( !mRoboController->isConnected() )
             {
                 // Removing unused message from buffer
                 //mUdpInfoServer->read( infoUdpBlockSize-2 ); // Not needed, the datagram is fully read at the beginning
@@ -820,17 +732,9 @@ void QRobotServer::onUdpInfoServerReadyRead()
             in >> nReg;
             //qDebug() << tr("Starting address: %1 - #reg: %2").arg(startAddr).arg(nReg);
 
-            bool commOk = readMultiReg( startAddr, nReg );
+            QVector<quint16> readRegReply = mRoboController->readMultiReg( startAddr, nReg );
 
-            QVector<quint16> readRegReply;
-
-            readRegReply.resize( nReg+2 );
-
-            readRegReply[0] = (quint16)startAddr;
-            readRegReply[1] = (quint16)nReg;
-            memcpy( (quint16*)(readRegReply.data())+2, mReplyBuffer, nReg*sizeof(quint16) );
-
-            if( !commOk )
+            if( readRegReply.isEmpty() )
             {
                 QVector<quint16> vec;
                 vec << CMD_RD_MULTI_REG;
@@ -944,234 +848,9 @@ void QRobotServer::onTcpClientDisconnected()
     mTcpClientCount--;
 }
 
-modbus_t* QRobotServer::initializeSerialModbus( const char *device,
-                                                int baud, char parity, int data_bit,
-                                                int stop_bit )
-{
-    if( mModbus )
-    {
-        modbus_close( mModbus );
-        modbus_free( mModbus );
-    }
-
-    mModbus = modbus_new_rtu( device, baud, parity,
-                              data_bit, stop_bit );
-
-    return mModbus;
-}
-
-bool QRobotServer::testBoardConnection()
-{
-    uint16_t val;
-    int nReg = 1;
-    int res = modbus_read_input_registers( mModbus, WORD_TEST_BOARD, nReg, &val );
-
-    if(res!=1)
-    {
-        qCritical() << PREFIX << "Board Ping failed!!!";
-        /*qCritical() << PREFIX << "modbus_read_input_registers error -> " <<  modbus_strerror( errno )
-                    << "[First regAddress: " << WORD_TEST_BOARD << "- #reg: " << nReg <<  "]";*/
-
-        return false;
-    }
-
-    return true;
-}
-
-bool QRobotServer::readMultiReg( quint16 startAddr, quint16 nReg )
-{
-    if(mTestMode)
-        return true;
-
-    mBoardMutex.lock();
-    {
-        // >>>>> Reply buffer resize if needed
-        if( nReg > mReplyBufSize )
-        {
-            mReplyBufSize *= 2;
-            delete [] mReplyBuffer;
-            mReplyBuffer = new quint16[mReplyBufSize];
-        }
-        // <<<<< Reply buffer resize if needed
-
-        int res = modbus_read_input_registers( mModbus, startAddr, nReg, mReplyBuffer );
-
-        if(res!=nReg)
-        {
-            qCritical() << PREFIX << "modbus_read_input_registers error -> " <<  modbus_strerror( errno )
-                        << "[First regAddress: " << startAddr << "- #reg: " << nReg <<  "]";
-
-            mBoardMutex.unlock();
-            return false;
-        }
-    }
-    mBoardMutex.unlock();
-    return true;
-}
-
-bool QRobotServer::writeMultiReg( quint16 startAddr, quint16 nReg,
-                                  QVector<quint16> vals )
-{
-    if(mTestMode)
-        return true;
-
-    mBoardMutex.lock();
-    {
-        int res = modbus_write_registers( mModbus, startAddr, nReg, vals.data() );
-
-        if(res!=nReg)
-        {
-            qCritical() << PREFIX << "modbus_write_registers error -> " <<  modbus_strerror( errno )
-                        << "[First regAddress: " << startAddr << "- #reg: " << nReg <<  "]";
-
-            mBoardMutex.unlock();
-            return false;
-        }
-    }
-    mBoardMutex.unlock();
-    return true;
-}
-
-bool QRobotServer::connectModbus( int retryCount/*=-1*/)
-{
-    if( !mModbus )
-    {
-        qCritical() << PREFIX << "ModBus data structure not initialized!";
-        return false;
-    }
-
-    // Closing to reset active connections
-
-    //modbus_close( mModbus);
-
-    if( modbus_connect( mModbus ) == -1 )
-    {
-        qCritical() << PREFIX << "Modbus connection failed";
-        return false;
-    }
-
-    int res=-1;
-    // res = modbus_flush( mModbus );
-
-    msleep( 1000 );
-
-    timeval new_timeout;
-    new_timeout.tv_sec = 2;
-    new_timeout.tv_usec = 0;
-    modbus_set_response_timeout( mModbus, &new_timeout );
-    modbus_set_byte_timeout( mModbus, &new_timeout );
-
-    res = modbus_set_slave( mModbus, mBoardIdx );
-    if( res != 0 )
-    {
-        qCritical() << PREFIX << ": modbus_set_slave error -> " <<  modbus_strerror( errno );
-
-        modbus_flush( mModbus );
-
-        return false;
-    }
-    //qDebug() << PREFIX << "Modbus connected";
-
-    int tryCount=0;
-    bool ok = false;
-
-    forever
-    {
-        qWarning() << tr( "- testBoardConnection - Attempt: %1").arg(tryCount+1);
-        ok = testBoardConnection();
-        tryCount++;
-
-        if( tryCount==retryCount || ok )
-            break;
-        else
-            qWarning() << tr("Trying again...");
-
-        //msleep(1000); // Not needed there is the timeout on testBoardConnection function
-    }
-
-    if( !ok )
-    {
-        qCritical() << tr("Error on modbus: %1").arg(modbus_strerror( errno ));
-        return false;
-    }
-
-    mBoardConnected = true;
-    return true;
-}
-
-bool QRobotServer::updateTelemetry()
-{
-    quint16 replyBuffer[4];
-
-    // >>>>> Telemetry update
-    // WORD_TENSIONE_ALIM 8
-    // WORD_ENC1_SPEED 20
-    // WORD_ENC2_SPEED 21
-    // WORD_RD_PWM_CH1 22
-    // WORD_RD_PWM_CH2 23
-
-    mBoardMutex.lock();
-    {
-        quint16 startAddr = WORD_ENC1_SPEED;
-        quint16 nReg = 4;
-        int res = modbus_read_input_registers( mModbus, startAddr, nReg, replyBuffer );
-
-        if(res!=nReg)
-        {
-            mBoardMutex.unlock();
-            return false;
-        }
-    }
-    mBoardMutex.unlock();
-
-    double speed0;
-    if(replyBuffer[0] < 32768)  // Speed is integer 2-complement!
-        speed0 = ((double)replyBuffer[0])/1000.0;
-    else
-        speed0 = ((double)(replyBuffer[0]-65536))/1000.0;
-    mTelemetry.LinSpeedLeft = speed0;
-
-    double speed1;
-    if(replyBuffer[1] < 32768)  // Speed is integer 2-complement!
-        speed1 = ((double)replyBuffer[1])/1000.0;
-    else
-        speed1 = ((double)(replyBuffer[1]-65536))/1000.0;
-    mTelemetry.LinSpeedRight = speed1;
-
-    mTelemetry.PwmLeft = replyBuffer[2];
-    mTelemetry.PwmRight = replyBuffer[3];
-
-    // TODO mTelemetry.RpmLeft = // CALCULATE!!!
-    // TODO mTelemetry.RpmRight = // CALCULATE!!!
-
-    mBoardMutex.lock();
-    {
-        quint16 startAddr = WORD_TENSIONE_ALIM;
-        quint16 nReg = 1;
-        int res = modbus_read_input_registers( mModbus, startAddr, nReg, replyBuffer );
-
-        if(res!=nReg)
-        {
-            mBoardMutex.unlock();
-            return false;
-        }
-    }
-    mBoardMutex.unlock();
-
-    mTelemetry.Battery = ((double)replyBuffer[0])/1000.0;
-
-    return true;
-
-}
-
 void QRobotServer::timerEvent(QTimerEvent *event)
 {
-    if( event->timerId() == mTelemetryUpdateTimerId )
-    {
-        if( updateTelemetry() )
-            multicastSendTelemetry();
-    }
-    else if( event->timerId() == mBoardTestTimerId )
+    if( event->timerId() == mBoardTestTimerId )
     {
         if(mTestMode)
         {
@@ -1179,18 +858,14 @@ void QRobotServer::timerEvent(QTimerEvent *event)
             return;
         }
 
-        if( !testBoardConnection() )
+        if( !mRoboController->testBoardConnection() )
         {
-            mBoardConnected = false;
+            //mBoardConnected = false;
 
             qCritical() << tr("Robocontroller %1 not replying. Trying reconnection...").arg(mBoardIdx);
-            connectModbus( -1 );
+            mRoboController->connectModbus( -1 );
         }
-        else
-        {
-            mBoardConnected = true;
-            //qDebug() << "Ping Ok";
-        }
+
     }
 }
 
@@ -1205,7 +880,7 @@ void QRobotServer::run()
 
 void QRobotServer::onCtrlGained( QString clientIP )
 {
-    mTelemetry.CtrlClientIP = clientIP;
+    mRobotTelemetryServer->setCtrlIP(clientIP);
 
     QVector<quint16> vec;
     sendInfoBlockUDP( QHostAddress(clientIP), MSG_ROBOT_CTRL_OK, vec ); // Robot controlled by client
@@ -1217,9 +892,10 @@ void QRobotServer::onCtrlRefused( QString clientIP )
     sendInfoBlockUDP( QHostAddress(clientIP), MSG_ROBOT_CTRL_KO, vec ); // Robot not controlled by client
 }
 
+
 void QRobotServer::onCtrlLost( QString clientIP )
 {
-    mTelemetry.CtrlClientIP = QString();
+    mRobotTelemetryServer->setCtrlIP( QString());
 
     QVector<quint16> vec;
     sendInfoBlockUDP( QHostAddress(clientIP), MSG_ROBOT_CTRL_RELEASED, vec ); // Robot not controlled by any client

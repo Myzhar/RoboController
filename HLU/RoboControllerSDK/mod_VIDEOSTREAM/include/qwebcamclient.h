@@ -9,11 +9,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-// >>>> Server Command
-#define CMD_ADD_CLIENT      ((quint8)0)
-#define CMD_REMOVE_CLIENT   ((quint8)1)
-// <<<< Server Command
-
 using namespace std;
 
 namespace roboctrl

@@ -1,17 +1,17 @@
 #include "qrobotctrlserver.h"
 #include "network_msg.h"
 #include <QCoreApplication>
-#include "qrobotserver.h"
 
 namespace roboctrl
 {
 
 #define SRV_CONTROL_UDP_TIMEOUT_MSEC 30000
 
-QRobotCtrlServer::QRobotCtrlServer(quint16 listenPort,QObject *parent) :
+QRobotCtrlServer::QRobotCtrlServer( QRoboControllerInterface *robocontroller, quint16 listenPort, QObject *parent ):
     QThread(parent),
     mUdpCtrlReceiver(NULL),
-    mControllerClientIp("")
+    mControllerClientIp(""),
+    mRoboController(robocontroller)
 
 {
     mUdpServerCtrlListenPort = listenPort;
@@ -21,19 +21,19 @@ QRobotCtrlServer::QRobotCtrlServer(quint16 listenPort,QObject *parent) :
 
 QRobotCtrlServer::~QRobotCtrlServer()
 {
-    if(mUdpCtrlReceiver)
-        delete mUdpCtrlReceiver;
+    closeUdpControlSession();
+
 }
 
 void QRobotCtrlServer::run()
 {
     qDebug() << tr("Control Server Thread started");
 
-    openUdpControlSession();
+    //openUdpControlSession();
 
     exec();
 
-    closeUdpControlSession();
+    //closeUdpControlSession();
 
     qDebug() << tr("Control Server Thread finished.");
 
@@ -61,10 +61,15 @@ void QRobotCtrlServer::openUdpControlSession()
 
     qDebug() << tr("UDP Control Server listening on port %1" )
                 .arg(mUdpCtrlReceiver->localPort() );
+
+    start();
 }
 
 void QRobotCtrlServer::closeUdpControlSession()
 {
+    terminate();
+    wait(5000);
+
     disconnect( mUdpCtrlReceiver, SIGNAL(readyRead()),
              this, SLOT(onUdpCtrlReadyRead()) );
 
@@ -147,7 +152,7 @@ void QRobotCtrlServer::onUdpCtrlReadyRead()
             mControlTimeoutTimerId = startTimer( SRV_CONTROL_UDP_TIMEOUT_MSEC );
             //qDebug() << tr("UDP Control Received msg #%1: CMD_WR_MULTI_REG").arg(msgIdx);
 
-            if( !(((QRobotServer*)parent())->mBoardConnected) )
+            if( !mRoboController->isConnected() )
             {
                 // Removing unused message from buffer
                 //mUdpCtrlReceiver->read( cmdUdpBlockSize-2 );
@@ -193,7 +198,7 @@ void QRobotCtrlServer::onUdpCtrlReadyRead()
                 break;
             }
 
-            bool commOk = ((QRobotServer*)parent())->writeMultiReg( startAddr, nReg, vals );
+            bool commOk = mRoboController->writeMultiReg( startAddr, nReg, vals );
 
             if( !commOk )
             {

@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QUdpSocket>
+#include "qrobocontrollerinterface.h"
 
 namespace roboctrl
 {
@@ -11,7 +12,7 @@ class QRobotCtrlServer : public QThread
 {
     Q_OBJECT
 public:
-    explicit QRobotCtrlServer(quint16 listenPort,QObject *parent = 0);
+    explicit QRobotCtrlServer(QRoboControllerInterface* robocontroller, quint16 listenPort, QObject *parent = 0);
      virtual ~QRobotCtrlServer(); ///< Destructor
 
 private:
@@ -37,6 +38,8 @@ private:
 
     int         mControlTimeoutTimerId; ///< If a client does not send control command for @ref SVR_CONTROL_UDP_TIMEOUT
     QString     mControllerClientIp; ///< Ip address of the client that took control for driving the robot using @ref getRobotControl function
+
+    QRoboControllerInterface* mRoboController;
 };
 
 }

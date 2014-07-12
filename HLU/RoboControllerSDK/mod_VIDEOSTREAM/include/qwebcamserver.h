@@ -15,14 +15,6 @@
 
 using namespace std;
 
-// ---> Server Command
-#define CMD_ADD_CLIENT      0
-#define CMD_REMOVE_CLIENT   1
-
-#define MSG_CONN_REFUSED  tr("@R")
-#define MSG_CONN_ACCEPTED tr("@A")
-// <--- Server Command
-
 namespace roboctrl
 {
 

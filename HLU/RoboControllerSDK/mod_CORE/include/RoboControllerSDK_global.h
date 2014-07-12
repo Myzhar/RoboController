@@ -10,7 +10,7 @@
 #  define ROBOCONTROLLERSDKSHARED_EXPORT Q_DECL_IMPORT
 #endif
 
-#include "exception.h"
+#include "rcexception.h"
 
 // >>>>> Radians/Degree conversion constants
 #ifdef RAD2DEG

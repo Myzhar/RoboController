@@ -1,5 +1,5 @@
 #include <robocontrollersdk.h>
-#include <exception.h>
+#include <rcexception.h>
 #include <QDataStream>
 #include <QCoreApplication>
 
@@ -42,7 +42,7 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
     // <<<<< Default board status
 
     // >>>>> TCP Socket
-    mTcpSocket = new QTcpSocket(this);
+    mTcpSocket = new QTcpSocket();
 
     mServerAddr = serverAddr;
     mTcpPort = tcpPort;
