@@ -1,7 +1,7 @@
 #include "cmainwindow.h"
 #include "ui_cmainwindow.h"
 #include <QApplication>
-#include "exception.h"
+#include "rcexception.h"
 #include <QMessageBox>
 #include <QLabel>
 #include <QDesktopWidget>
@@ -19,7 +19,7 @@
 #define DEFAULT_IP "127.0.0.1"
 #define DEFAULT_TCP_PORT 14500
 #define DEFAULT_UDP_CTRL_PORT 14560
-#define DEFAULT_MULTICAST_PORT 14565
+#define DEFAULT_MULTICAST_TELEM_PORT 14565
 #define DEFAULT_UDP_STAT_PORT_SEND 14550
 #define DEFAULT_UDP_STAT_PORT_LISTEN 14555
 
@@ -123,6 +123,15 @@ CMainWindow::CMainWindow(QWidget *parent) :
         mIniSettings->setValue( ROB_UDP_STAT_PORT_LISTEN, mRobUdpStatusPortListen );
         mIniSettings->sync();
     }
+
+    mRobUdpTelemetryPortListen = mIniSettings->value( ROB_UDP_TELEM_PORT_LISTEN, "-1" ).toInt();
+    if(mRobUdpTelemetryPortListen == -1 )
+    {
+        mRobUdpTelemetryPortListen = DEFAULT_MULTICAST_TELEM_PORT;
+        mIniSettings->setValue( ROB_UDP_TELEM_PORT_LISTEN, mRobUdpTelemetryPortListen );
+        mIniSettings->sync();
+    }
+
     // <<<<< Robot IP Address from INI File
 
     // >>>>> PID State from INI File
@@ -216,6 +225,7 @@ CMainWindow::CMainWindow(QWidget *parent) :
     mRobotConfigValid = false;
 
     mNewImageAvailable = false;
+    mNewTelemetryAvailable = false;
 
     QImage img( ":/icon/images/MyzharBot_favicon_512x512.png" );
     mDefaultBgImg = OpenCVTools::QImageToCvMat( img, true );
@@ -356,30 +366,19 @@ void CMainWindow::timerEvent( QTimerEvent* event )
 
         try
         {
-            mRoboCtrl->getBatteryChargeValue();
             mRoboCtrl->getBoardStatus();
         }
         catch( RcException &e)
         {
             qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
         }
-    }
-    else if( event->timerId() == mSpeedsReqTimer )
-    {
-        if(!mRoboCtrl)
-            return;
 
-        if( !mSpeedRequested )
+        if( mNewTelemetryAvailable )
         {
-            try
-            {
-                mSpeedRequested = true;
-                mRoboCtrl->getMotorSpeeds();
-            }
-            catch( RcException &e)
-            {
-                qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
-            }
+            mNewTelemetryAvailable = false;
+            mRoboCtrl->getLastTelemetry( mTelemetry );
+
+            // TODO update the GUI!!!
         }
     }
 }
@@ -437,12 +436,13 @@ void CMainWindow::onConnectButtonClicked()
 
         //TODO add multicast port
         mRoboCtrl = new RoboControllerSDK( mRobIpAddress, mRobUdpStatusPortSend, mRobUdpStatusPortListen,
-                                           mRobUdpControlPort, mRobTcpPort );
+                                           mRobUdpTelemetryPortListen, mRobUdpControlPort, mRobTcpPort );
 
         mIniSettings->setValue( ROB_IP, mRobIpAddress );
         mIniSettings->setValue( ROB_TCP_PORT, mRobTcpPort );
         mIniSettings->setValue( ROB_UDP_STAT_PORT_SEND, mRobUdpStatusPortSend );
         mIniSettings->setValue( ROB_UDP_STAT_PORT_LISTEN, mRobUdpStatusPortListen );
+        mIniSettings->setValue( ROB_UDP_TELEM_PORT_LISTEN, mRobUdpTelemetryPortListen );
         mIniSettings->setValue( ROB_UDP_CTRL_PORT, mRobUdpControlPort );
         mIniSettings->sync();
 
@@ -469,6 +469,8 @@ void CMainWindow::onConnectButtonClicked()
              this, SLOT(onNewBatteryValue(double)) );
     connect( mRoboCtrl, SIGNAL(newBoardStatus(BoardStatus&)),
              this, SLOT(onNewBoardStatus(BoardStatus&)) );
+    connect( mRoboCtrl, SIGNAL(newTelemetryAvailable()),
+             this, SLOT(onNewTelemetryAvailable() ));
     // <<<<< Signals/Slots connections
 
     // >>>>> Setting last PID state
@@ -554,13 +556,10 @@ void CMainWindow::onConnectButtonClicked()
     startTimers();
 }
 
-void CMainWindow::onNewMotorSpeeds( double speed0, double speed1 )
+/*void CMainWindow::onNewMotorSpeeds( double speed0, double speed1 )
 {
     if(mRobotConfigValid)
     {
-        /*if( speed0==0 && speed1==0 )
-            mRoboCtrl->setMotorSpeeds(0,0);*/
-
         mMotorSpeedLeft = speed0;
         mMotorSpeedLeftValid = true;
         mMotorSpeedRight = speed1;
@@ -580,9 +579,9 @@ void CMainWindow::onNewMotorSpeeds( double speed0, double speed1 )
         ui->lcdNumber_fw_speed->display("------");
         ui->lcdNumber_rot_speed->display("------");
     }
-}
+}*/
 
-void CMainWindow::onNewMotorSpeed( quint16 mot, double speed )
+/*void CMainWindow::onNewMotorSpeed( quint16 mot, double speed )
 {
     if(mRobotConfigValid)
     {
@@ -614,7 +613,7 @@ void CMainWindow::onNewMotorSpeed( quint16 mot, double speed )
     }
 
     QApplication::processEvents( QEventLoop::AllEvents, 10 );
-}
+}*/
 
 void CMainWindow::onNewJoypadValues(float x, float y)
 {
@@ -684,7 +683,6 @@ void CMainWindow::on_actionPidEnabled_triggered()
 void CMainWindow::stopTimers()
 {
     this->killTimer( mSpeedSendTimer );
-    this->killTimer( mSpeedsReqTimer );
     this->killTimer( mStatusReqTimer );
     this->killTimer( mFrameReqTimer );
 }
@@ -693,12 +691,10 @@ void CMainWindow::startTimers()
 {
 #ifndef ANDROID
     mSpeedSendTimer = this->startTimer( 30, Qt::PreciseTimer );
-    mSpeedsReqTimer = this->startTimer( 50, Qt::PreciseTimer );
     mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
     mFrameReqTimer = this->startTimer( 100, Qt::PreciseTimer );
 #else
     mSpeedSendTimer = this->startTimer( 50, Qt::PreciseTimer );
-    mSpeedsReqTimer = this->startTimer( 150, Qt::PreciseTimer );
     mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
     mFrameReqTimer = this->startTimer( 200, Qt::PreciseTimer );
 #endif
@@ -761,7 +757,7 @@ void CMainWindow::onNewRobotConfiguration( RobotConfiguration& robConf )
     //mStatusBattLevelProgr->setRange( mRoboConf.MinChargedBatteryLevel, mRoboConf.MaxChargedBatteryLevel );
 }
 
-void CMainWindow::onNewBatteryValue( double battVal )
+/*void CMainWindow::onNewBatteryValue( double battVal )
 {
     mBatteryLabel->setText( tr("Battery: %1V/%2V")
                             .arg( battVal, 5,'f', 2, ' ' )
@@ -794,11 +790,16 @@ void CMainWindow::onNewBatteryValue( double battVal )
         mStatusBattLevelProgr->setStyleSheet(mStatusBattLevelProgr->property("defaultStyleSheet").toString() +
                                              " QProgressBar::chunk { background: green; }");
     }
-}
+}*/
 
 void CMainWindow::onNewImage()
 {
     mNewImageAvailable = true;
+}
+
+void CMainWindow::onNewTelemetryAvailable()
+{
+    mNewTelemetryAvailable = true;
 }
 
 void CMainWindow::on_actionBattery_Calibration_triggered()

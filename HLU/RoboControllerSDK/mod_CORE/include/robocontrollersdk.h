@@ -174,6 +174,11 @@ public:
      */
     void getWatchdogTime( ); // Tested
 
+    /** @brief Retrieve the last telemetry received by @ref QRobotTelemetryServer
+     *  @return The timestamp of the last telemetry received
+     */
+    qint64 getLastTelemetry( RobotTelemetry& telemetry );
+
 protected:
     /// Thread function
     virtual void run();
@@ -214,8 +219,9 @@ protected slots:
 
     /// Processes data from UDP Status Socket
     void onUdpStatusReadyRead();
-    /// Processes data from UDP Control Socket
-    //void onUdpControlReadyRead();
+    /// Processes data from UDP Telemetry Socket
+    void onUdpTelemetryReadyRead();
+
     /// Handles errors on UDP Status Socket
     void onUdpStatusError( QAbstractSocket::SocketError err );
     /// Handles errors on UDP Control Socket
@@ -248,6 +254,8 @@ signals:
     void newBoardStatus(BoardStatus& status);
     /// Signal emitted when a new Watchdog value is available
     void newWatchdogTime( quint64 wd_value );
+    /// Signal emitted when a new telemetry is available
+    void newTelemetryAvailable();
 
     /// Signal emitted when client takes Robot Control successfully
     void robotControlTaken();
@@ -272,6 +280,7 @@ private:
     QTcpSocket* mTcpSocket;         /**< TCP Socket for secure communications */
     QUdpSocket* mUdpStatusSocket;   /**< UDP Socket for status communications */
     QUdpSocket* mUdpControlSocket;   /**< UDP Socket for control communications */
+    QUdpSocket* mUdpMulticastTelemetrySocket; /**< UDP Socket to receive telemetry */
 
     quint16 mNextTcpBlockSize;      /**< Used to recover incomplete TCP block */
     //quint16 mNextUdpStBlockSize;    /**< Used to recover incomplete UDP Status block */
@@ -315,6 +324,7 @@ private:
     QTimer mUdpPingTimer; /**< Timer of Udp Servers testing */
 
     RobotTelemetry mTelemetry; /**< Telemetry of the robot, updated every @ref TELEMETRY_UPDATE_MSEC msec */
+    qint64 mLastTelemetryTimestamp; /**< The timestamp of the last received telemetry */
 };
 
 }

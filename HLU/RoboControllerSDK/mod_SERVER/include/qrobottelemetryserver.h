@@ -21,6 +21,7 @@ protected:
     void run() Q_DECL_OVERRIDE;
 
 signals:
+
 protected slots:
     void onUpdateTimerTimeout();
 

@@ -21,7 +21,8 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
                                      quint16 tcpPort/*=14500*/) :
     mTcpSocket(NULL),
     mUdpStatusSocket(NULL),
-    mUdpControlSocket(NULL)
+    mUdpControlSocket(NULL),
+    mUdpMulticastTelemetrySocket(NULL)
 {
     mStopped = true;
     mWatchDogTimeMsec = 1000;
@@ -70,11 +71,11 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
     // >>>>> UDP Sockets
     mUdpControlSocket = new QUdpSocket();
     mUdpStatusSocket = new QUdpSocket();
+    mUdpMulticastTelemetrySocket = new QUdpSocket();
 
     mUdpControlPortSend = udpControlPort;
     mUdpStatusPortSend = udpStatusPortSend;
     mUdpStatusPortListen = udpStatusPortListen;
-
     mUdpTelemetryMulticastPort = multicastUdpPort;
 
     mNextUdpCtrlBlockSize = 0;
@@ -84,6 +85,9 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
              this, SLOT(onUdpControlReadyRead()) ); // The control UDP Socket does not receive!*/
     connect( mUdpStatusSocket, SIGNAL(readyRead()),
              this, SLOT(onUdpStatusReadyRead()) );
+
+    connect( mUdpMulticastTelemetrySocket, SIGNAL(readyRead()),
+             this, SLOT(onUdpTelemetryReadyRead) );
 
     connect( mUdpControlSocket, SIGNAL(error(QAbstractSocket::SocketError)),
              this, SLOT(onUdpControlError(QAbstractSocket::SocketError)) );
@@ -421,6 +425,71 @@ void RoboControllerSDK::onTcpReadyRead()
         }
 
         mNextTcpBlockSize = 0;
+    }
+}
+
+void RoboControllerSDK::onUdpTelemetryReadyRead()
+{
+    while( mUdpMulticastTelemetrySocket->hasPendingDatagrams() )
+    {
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
+
+        QByteArray buffer( mUdpStatusSocket->pendingDatagramSize(), 0 );
+        qint64 datagramSize = mUdpStatusSocket->pendingDatagramSize();
+
+        if( buffer.size()< datagramSize )
+            buffer.resize( datagramSize );
+
+        QHostAddress addr;
+        quint16 port;
+
+        mUdpStatusSocket->readDatagram( buffer.data(), buffer.size(), &addr, &port );
+
+        QDataStream in( buffer );
+        in.setVersion(QDataStream::Qt_5_2);
+
+        int count = 0;
+        quint16 val16;
+        quint16 dataSize;
+        in >> val16;
+
+        while( val16 != UDP_START_VAL )
+        {
+            count++;
+            if(count == datagramSize)
+            {
+                QDataStream::Status st = in.status();
+
+                qCritical() << Q_FUNC_INFO << tr("Read %1 bytes not founding UDP_START_VAL. Stream status: %2")
+                               .arg(datagramSize).arg(st);
+                return;
+            }
+            in >> val16;
+        }
+
+        // Datagram dimension
+        in >> dataSize; // Updated only if we are parsing a new block
+
+        if( dataSize < sizeof(RobotTelemetry) )
+        {
+            qWarning() << Q_FUNC_INFO << tr("Received datagram with wrong size. Expected: %1, Received: %2")
+                          .arg(sizeof(RobotTelemetry)).arg(dataSize);
+        }
+
+        in >> mLastTelemetryTimestamp;
+
+        // >>>>> Data
+        in >> mTelemetry.CtrlClientIP;
+        in >> mTelemetry.Battery;
+        in >> mTelemetry.LinSpeedLeft;
+        in >> mTelemetry.LinSpeedRight;
+        in >> mTelemetry.PwmLeft;
+        in >> mTelemetry.PwmRight;
+        in >> mTelemetry.RpmLeft;
+        in >> mTelemetry.RpmRight;
+        // <<<<< Data
+
+        emit newTelemetryAvailable();
     }
 }
 
@@ -1313,7 +1382,6 @@ void RoboControllerSDK::setRobotConfiguration( RobotConfiguration& roboConfig )
 
 void RoboControllerSDK::getRobotControl()
 {
-    // TODO Add a timer to release Robot Control if UDP Ping are not received for 5 seconds!
     if(!mUdpStatusSocket)
         return;
 
@@ -1391,6 +1459,13 @@ void RoboControllerSDK::getWatchdogTime( )
 
     if( sendBlockTCP( CMD_RD_MULTI_REG, data ) )
         qDebug() << tr("Motors wathdog has been enabled");
+}
+
+qint64 RoboControllerSDK::getLastTelemetry( RobotTelemetry& telemetry )
+{
+    memcpy( &telemetry, &mTelemetry, sizeof(RobotTelemetry) );
+
+    return mLastTelemetryTimestamp;
 }
 
 void RoboControllerSDK::disableWatchdog( )

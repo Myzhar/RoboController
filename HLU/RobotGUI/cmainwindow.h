@@ -26,6 +26,7 @@
 #define ROB_UDP_CTRL_PORT "robot_udp_control_port"
 #define ROB_UDP_STAT_PORT_SEND "robot_udp_status_port_send"
 #define ROB_UDP_STAT_PORT_LISTEN "robot_udp_status_port_listen"
+#define ROB_UDP_TELEM_PORT_LISTEN "robot_udp_telem_port_listen"
 #define PID_ENABLED "pid_enabled"
 // <<<<< INI names
 
@@ -52,11 +53,12 @@ private slots:
     void onConnectButtonClicked();
     void onFindServerButtonClicked();
     void onNewJoypadValues(float x, float y);
-    void onNewMotorSpeed( quint16 mot, double speed );
-    void onNewMotorSpeeds(double,double);
+    //void onNewMotorSpeed( quint16 mot, double speed );
+    //void onNewMotorSpeeds(double,double);
     void onNewRobotConfiguration( RobotConfiguration& robConf );
-    void onNewBatteryValue( double battVal);    
+    //void onNewBatteryValue( double battVal);
     void onNewBoardStatus(BoardStatus& status);
+    void onNewTelemetryAvailable();
 
     void on_actionRobot_Configuration_triggered();
 
@@ -82,6 +84,7 @@ private:
     int mRobUdpControlPort;
     int mRobUdpStatusPortSend;
     int mRobUdpStatusPortListen;
+    int mRobUdpTelemetryPortListen;
     QPushButton* mPushButtonConnect;
     QPushButton* mPushButtonFindServer;
 
@@ -109,7 +112,6 @@ private:
     float mMaxMotorSpeed; /*!< Max linear speed for each motor */
 
     int mSpeedSendTimer; /*!< Timer to read Joypad position and send related speed to Robot */
-    int mSpeedsReqTimer; /*!< Timer to request speeds of the motors to Server */
     int mStatusReqTimer; /*!< Timer to request status of the robot to server */
     int mFrameReqTimer; /*!< Timer to request frame to Webcam server */
 
@@ -117,9 +119,13 @@ private:
     float mLastJoyMot[2]; /*!< Last used values of the joypad */
 
     bool mNewImageAvailable; /*!< Used to retrieve image from WebcamServer */
+    bool mNewTelemetryAvailable; /*! Used to retrieve image from RobotClient */
 
     cv::Mat mDefaultBgImg; /*!< Default background image */
-    bool mFirstResize; /*!< Used to understand if @ref ResizeEvent is called for the first time
+    bool mFirstResize; /*!< Used to understand if @ref ResizeEvent is called for the first time */
+
+    RobotTelemetry mTelemetry; /*! Contains the last telemetry value */
+
 
 /*#ifndef android
     QGlOpenCVWidget* mOpenCVWidget;
