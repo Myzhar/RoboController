@@ -2,10 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <qopencvscene.h>
+#include <qwebcamclient.h>
 
 namespace Ui {
 class MainWindow;
 }
+
+using namespace roboctrl;
 
 class MainWindow : public QMainWindow
 {
@@ -16,13 +20,19 @@ public:
     ~MainWindow();
 
 protected:
-    void changeEvent(QEvent *e);
+    void changeEvent(QEvent *e);    
+
+protected slots:
+    void onNewImageReceived();
 
 private slots:
     void on_actionConnect_triggered();
 
 private:
     Ui::MainWindow *ui;
+
+    QOpenCVScene* mScene; ///< Default scene to be rendered
+    QWebcamClient* mWebcamClient;
 };
 
 #endif // MAINWINDOW_H

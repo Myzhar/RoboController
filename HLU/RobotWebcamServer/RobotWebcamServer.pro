@@ -25,13 +25,9 @@ include($$ROBOCONTROLLERSDKPATH/mod_EXTERN/RoboControllerSDK_EXTERN.pri)    # EX
 
 INCLUDEPATH += \
                include \
-               ../common/include\
 
-SOURCES +=  \
-            main.cpp \
-            ../common/src/loghandler.cpp \
+SOURCES += \
+           main.cpp
 
-HEADERS +=  \
-            ../common/include/loghandler.h
 
 
