@@ -269,7 +269,7 @@ void CMainWindow::timerEvent( QTimerEvent* event )
 
         float scale = ui->widget_joypad->getMaxAbsAxisValue();
 
-        if(mPidEnabled)
+        if(mPidEnabled) // Speed commands to be sent
         {
             try
             {
@@ -302,7 +302,7 @@ void CMainWindow::timerEvent( QTimerEvent* event )
                 qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
             }
         }
-        else
+        else // PWM commands to be sent
         {
             try
             {
@@ -314,19 +314,15 @@ void CMainWindow::timerEvent( QTimerEvent* event )
                     // <<<<< Taking robot control
                 }
 
-                if( mJoyMot[0] != mLastJoyMot[0] )
+                if( mJoyMot[0] != mLastJoyMot[0] || mJoyMot[1] != mLastJoyMot[1] )
                 {
-                    int speed = (int)(mJoyMot[0]/scale*2047.0f+0.5f);
-                    mRoboCtrl->setMotorPWM( 0, speed );
-                    mLastJoyMot[0] = mJoyMot[0];
-                }
+                    int pwm0 = (int)(mJoyMot[0]/scale*2047.0f+0.5f);
+                    int pwm1 = (int)(mJoyMot[1]/scale*2047.0f+0.5f);
 
-                if( mJoyMot[1] != mLastJoyMot[1] )
-                {
-                    int speed = (int)(mJoyMot[1]/scale*2047.0f+0.5f);
-                    mRoboCtrl->setMotorPWM( 1, speed );
+                    mRoboCtrl->setMotorPWMs( pwm0, pwm1 );
+                    mLastJoyMot[0] = mJoyMot[0];
                     mLastJoyMot[1] = mJoyMot[1];
-                }
+                }               
             }
             catch( RcException &e)
             {
@@ -378,7 +374,8 @@ void CMainWindow::timerEvent( QTimerEvent* event )
             mNewTelemetryAvailable = false;
             mRoboCtrl->getLastTelemetry( mTelemetry );
 
-            // TODO update the GUI!!!
+            updateBatteryInfo();
+            updateSpeedInfo();
         }
     }
 }
@@ -434,7 +431,6 @@ void CMainWindow::onConnectButtonClicked()
 
         mRobIpAddress = mRobIpLineEdit->text();
 
-        //TODO add multicast port
         mRoboCtrl = new RoboControllerSDK( mRobIpAddress, mRobUdpStatusPortSend, mRobUdpStatusPortListen,
                                            mRobUdpTelemetryPortListen, mRobUdpControlPort, mRobTcpPort );
 
@@ -458,15 +454,9 @@ void CMainWindow::onConnectButtonClicked()
         return;
     }
 
-    // >>>>> Signals/Slots connections
-    connect( mRoboCtrl, SIGNAL(newMotorSpeedValue(quint16,double)),
-             this, SLOT(onNewMotorSpeed(quint16,double)) );
-    connect( mRoboCtrl, SIGNAL(newMotorSpeedValues(double,double)),
-             this, SLOT(onNewMotorSpeeds(double,double)) );
+    // >>>>> Signals/Slots connections    
     connect( mRoboCtrl, SIGNAL(newRobotConfiguration(RobotConfiguration&)) ,
-             this, SLOT(onNewRobotConfiguration(RobotConfiguration&)) );
-    connect( mRoboCtrl, SIGNAL(newBatteryValue(double)),
-             this, SLOT(onNewBatteryValue(double)) );
+             this, SLOT(onNewRobotConfiguration(RobotConfiguration&)) );    
     connect( mRoboCtrl, SIGNAL(newBoardStatus(BoardStatus&)),
              this, SLOT(onNewBoardStatus(BoardStatus&)) );
     connect( mRoboCtrl, SIGNAL(newTelemetryAvailable()),
@@ -556,13 +546,13 @@ void CMainWindow::onConnectButtonClicked()
     startTimers();
 }
 
-/*void CMainWindow::onNewMotorSpeeds( double speed0, double speed1 )
+void CMainWindow::updateSpeedInfo( )
 {
     if(mRobotConfigValid)
     {
-        mMotorSpeedLeft = speed0;
+        mMotorSpeedLeft = mTelemetry.LinSpeedLeft;
         mMotorSpeedLeftValid = true;
-        mMotorSpeedRight = speed1;
+        mMotorSpeedRight = mTelemetry.LinSpeedLeft;
         mMotorSpeedRightValid = true;
 
         mSpeedRequested = false;
@@ -572,48 +562,13 @@ void CMainWindow::onConnectButtonClicked()
 
         double rotSpeed = (mMotorSpeedLeft-mMotorSpeedRight)/(mRoboConf.WheelBase/1000.0); // Wheelbase is in mm
         ui->lcdNumber_rot_speed->display( rotSpeed*RAD2DEG ); // deg/sec
-
     }
     else
     {
         ui->lcdNumber_fw_speed->display("------");
         ui->lcdNumber_rot_speed->display("------");
     }
-}*/
-
-/*void CMainWindow::onNewMotorSpeed( quint16 mot, double speed )
-{
-    if(mRobotConfigValid)
-    {
-        if( mot==0 )
-        {
-            mMotorSpeedLeft = speed;
-            mMotorSpeedLeftValid = true;
-        }
-        else
-        {
-            mMotorSpeedRight = speed;
-            mMotorSpeedRightValid = true;
-        }
-
-        if(mMotorSpeedLeftValid&&mMotorSpeedRightValid)
-        {
-            mSpeedRequested = false;
-            double fwSpeed = mMotorSpeedLeft+mMotorSpeedRight/2.0;
-            ui->lcdNumber_fw_speed->display( fwSpeed ); // m/sec
-
-            double rotSpeed = (mMotorSpeedLeft-mMotorSpeedRight)/(mRoboConf.WheelBase/1000.0); // Wheelbase is in mm
-            ui->lcdNumber_rot_speed->display( rotSpeed*RAD2DEG ); // deg/sec
-        }
-    }
-    else
-    {
-        ui->lcdNumber_fw_speed->display("------");
-        ui->lcdNumber_rot_speed->display("------");
-    }
-
-    QApplication::processEvents( QEventLoop::AllEvents, 10 );
-}*/
+}
 
 void CMainWindow::onNewJoypadValues(float x, float y)
 {
@@ -691,11 +646,11 @@ void CMainWindow::startTimers()
 {
 #ifndef ANDROID
     mSpeedSendTimer = this->startTimer( 30, Qt::PreciseTimer );
-    mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
+    mStatusReqTimer = this->startTimer( 50, Qt::CoarseTimer );
     mFrameReqTimer = this->startTimer( 100, Qt::PreciseTimer );
 #else
-    mSpeedSendTimer = this->startTimer( 50, Qt::PreciseTimer );
-    mStatusReqTimer = this->startTimer( 500, Qt::CoarseTimer );
+    mSpeedSendTimer = this->startTimer( 60, Qt::PreciseTimer );
+    mStatusReqTimer = this->startTimer( 100, Qt::CoarseTimer );
     mFrameReqTimer = this->startTimer( 200, Qt::PreciseTimer );
 #endif
 }
@@ -757,13 +712,13 @@ void CMainWindow::onNewRobotConfiguration( RobotConfiguration& robConf )
     //mStatusBattLevelProgr->setRange( mRoboConf.MinChargedBatteryLevel, mRoboConf.MaxChargedBatteryLevel );
 }
 
-/*void CMainWindow::onNewBatteryValue( double battVal )
+void CMainWindow::updateBatteryInfo( )
 {
     mBatteryLabel->setText( tr("Battery: %1V/%2V")
-                            .arg( battVal, 5,'f', 2, ' ' )
+                            .arg( mTelemetry.Battery, 5,'f', 2, ' ' )
                             .arg( (double)(mRoboConf.MaxChargedBatteryLevel)/100.0f, 5,'f', 2, ' ' ));
 
-    double perc = 100.0*(battVal-((double)mRoboConf.MinChargedBatteryLevel/100.0))/
+    double perc = 100.0*(mTelemetry.Battery-((double)mRoboConf.MinChargedBatteryLevel/100.0))/
             ((double)(mRoboConf.MaxChargedBatteryLevel-mRoboConf.MinChargedBatteryLevel)/100.0);
 
     perc = qMin( perc, 100.0 );
@@ -788,9 +743,8 @@ void CMainWindow::onNewRobotConfiguration( RobotConfiguration& robConf )
     else
     {
         mStatusBattLevelProgr->setStyleSheet(mStatusBattLevelProgr->property("defaultStyleSheet").toString() +
-                                             " QProgressBar::chunk { background: green; }");
-    }
-}*/
+                                             " QProgressBar::chunk { background: green; }");    }
+}
 
 void CMainWindow::onNewImage()
 {

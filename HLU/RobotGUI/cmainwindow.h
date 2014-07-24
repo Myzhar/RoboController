@@ -73,6 +73,9 @@ protected:
     void stopTimers();
     void startTimers();
 
+    void updateBatteryInfo();
+    void updateSpeedInfo();
+
 private:
     Ui::CMainWindow *ui;
 

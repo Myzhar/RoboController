@@ -220,7 +220,7 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
              this, SLOT(onCtrlLost( QString )) );
     // <<<<< UDP Control configuration
 
-    // >>>>> UDP Multicast
+    // >>>>> UDP Telemetry Multicast
     mMulticastUdpTelemetryServerPort = mSettings->value( "UDP_Multicast_telemetry_port", "0" ).toUInt();
     if( mMulticastUdpTelemetryServerPort==0 )
     {
@@ -230,13 +230,11 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
     }
 
     mRobotTelemetryServer = new QRobotTelemetryServer( mRoboController, mMulticastUdpTelemetryServerPort );
-    // <<<<< UDP Multicast
+    // <<<<< UDP Telemetry Multicast
 
     mSettings->sync();
 
     mTcpClientCount = 0;
-
-
 
     // Start Server Thread
     this->start();

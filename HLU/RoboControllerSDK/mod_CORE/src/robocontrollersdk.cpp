@@ -1115,6 +1115,41 @@ void RoboControllerSDK::setMotorPWM(quint16 motorIdx, int pwm )
     // <<<<< New PWM to RoboController
 }
 
+void RoboControllerSDK::setMotorPWMs( quint16 pwmMotor0, quint16 pwmMotor1 )
+{
+    if( mMotorCtrlMode != mcDirectPWM )
+    {
+        qWarning() << Q_FUNC_INFO << tr("Function available only in mcDirectPWM mode");
+    }
+
+    // >>>>> Saturation
+    if( pwmMotor0 > 2047)
+        pwmMotor0 = 2047;
+
+    if( pwmMotor0 < -2048 )
+        pwmMotor0 = -2048;
+
+    if( pwmMotor1 > 2047)
+        pwmMotor1 = 2047;
+
+    if( pwmMotor1 < -2048 )
+        pwmMotor1 = -2048;
+    // <<<<< Saturation
+
+    // >>>>> New PWM to RoboController
+    quint16 address = WORD_PWM_CH1;
+
+    QVector<quint16> data;
+    data << address;
+    //data << (quint16)nReg; <- Not requested by sendCommand!!!
+    data << pwmMotor0;
+    data << pwmMotor1;
+
+    //sendBlockTCP( mUdpControlSocket, CMD_WR_MULTI_REG, data );
+    sendBlockUDP( mUdpControlSocket, QHostAddress(mServerAddr), mUdpControlPortSend, CMD_WR_MULTI_REG, data, false );
+    // <<<<< New PWM to RoboController
+}
+
 void RoboControllerSDK::setMotorSpeeds( double speed0, double speed1 )
 {
     if( mMotorCtrlMode != mcPID )
