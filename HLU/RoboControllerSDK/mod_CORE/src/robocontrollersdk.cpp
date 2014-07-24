@@ -300,7 +300,7 @@ void RoboControllerSDK::onTcpReadyRead()
 
     forever // Receiving data while there is data available
     {
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
+        //QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
 
         qint64 bytesAvailable = mTcpSocket->bytesAvailable();
 
@@ -432,7 +432,7 @@ void RoboControllerSDK::onUdpTelemetryReadyRead()
 {
     while( mUdpMulticastTelemetrySocket->hasPendingDatagrams() )
     {
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
+        //QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
 
         QByteArray buffer( mUdpStatusSocket->pendingDatagramSize(), 0 );
         qint64 datagramSize = mUdpStatusSocket->pendingDatagramSize();
@@ -499,7 +499,7 @@ void RoboControllerSDK::onUdpStatusReadyRead()
 
     while( mUdpStatusSocket->hasPendingDatagrams() ) // Receiving data while there is data available
     {
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
+        //QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
 
         QByteArray buffer( mUdpStatusSocket->pendingDatagramSize(), 0 );
         qint64 datagramSize = mUdpStatusSocket->pendingDatagramSize();

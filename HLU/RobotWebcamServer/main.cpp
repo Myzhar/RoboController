@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 
     try
     {
-        QWebcamServer* webcamServer = new QWebcamServer(camera, 55554, 55555, 1500, 5, NULL );
+        QWebcamServer* webcamServer = new QWebcamServer(camera, 55554, 55555, 256, 5, NULL );
 
         QTime time;
         time.start();

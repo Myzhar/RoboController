@@ -258,7 +258,7 @@ void QRobotCtrlServer::onUdpCtrlReadyRead()
 
         cmdUdpBlockSize = 0;
 
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 1 ); // TODO: Does this introduces latency?
+        //QCoreApplication::processEvents( QEventLoop::AllEvents, 1 ); // TODO: Does this introduces latency?
     }
 }
 

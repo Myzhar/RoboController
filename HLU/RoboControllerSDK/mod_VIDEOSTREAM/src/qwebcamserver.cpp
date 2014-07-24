@@ -118,7 +118,7 @@ void QWebcamServer::sendFragmentedData( QByteArray data, char fragID )
                         .arg(i).arg(numFrag).arg((quint8)fragID);
         }
 
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 1 );
+        //QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
     }
 
     //    qDebug() << tr("Sent frame #%1 - size: %2 bytes").arg((int)fragID).arg(data.size() );
@@ -197,7 +197,7 @@ void QWebcamServer::run()
         }
 #endif
 
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 50 );
+        QCoreApplication::processEvents( /*QEventLoop::AllEvents, 50*/ );
 
         int wait = waitMsec - chrono.elapsed(); // to grant maximum FPS
         if( wait>0 )

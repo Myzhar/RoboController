@@ -99,7 +99,7 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
     // To connect to multicast server we need that the client socket is binded
     bool binded = mUdpSocketListen->bind( QHostAddress::AnyIPv4,
                                             mListenPort,
-                                            QUdpSocket::ShareAddress );
+                                            QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint );
 
     // >>>> Trying connection
     if(!binded)
@@ -138,7 +138,7 @@ void QWebcamClient::processPendingDatagrams()
 {
     while(mUdpSocketListen->hasPendingDatagrams())
     {
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
+        //QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
 
         QByteArray datagram;
         datagram.resize( mUdpSocketListen->pendingDatagramSize() );
@@ -161,7 +161,7 @@ void QWebcamClient::processPendingDatagrams()
         if( id != mCurrentId )
         {
             if(!mLastImageState)
-                qDebug() << tr("Frame #%1 lost").arg(mCurrentId);
+                qDebug() << tr("Frame #%1 lost. Received %2/%3").arg(mCurrentId).arg(mCurrentFragmentCount).arg(mNumFrag);
             mLastImageState = false;
 
             mCurrentId = id;

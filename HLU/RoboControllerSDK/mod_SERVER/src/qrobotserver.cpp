@@ -625,7 +625,7 @@ void QRobotServer::onTcpReadyRead()
 
         mNextTcpBlockSize = 0;
 
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
+        //QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
     }
 }
 
@@ -835,7 +835,7 @@ void QRobotServer::onUdpInfoServerReadyRead()
         infoUdpBlockSize = 0;
 
 
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 5 ); // TODO: Does this introduces latency?
+        //QCoreApplication::processEvents( QEventLoop::AllEvents, 5 ); // TODO: Does this introduces latency?
     }
 }
 
