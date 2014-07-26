@@ -28,9 +28,7 @@ INCLUDEPATH += \
                ../common/include\
 
 SOURCES +=  \
-            main.cpp \
-            ../common/src/loghandler.cpp \
+            main.cpp
 
 HEADERS +=  \
-            ../common/include/loghandler.h
 

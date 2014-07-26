@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 
     try
     {
-        QRobotServer* server = new QRobotServer(14560, 14550, 14555, 14500, test );
+        QRobotServer* server = new QRobotServer(14560, 14565, 14550, 14555, 14500, test );
 
         QTime time;
         time.start();

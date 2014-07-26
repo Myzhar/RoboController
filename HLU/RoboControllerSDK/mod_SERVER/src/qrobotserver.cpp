@@ -46,7 +46,7 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
     qDebug() << " ";
 
     if(testMode)
-        qDebug() << " TESTMODE ACTIVE ";
+        qDebug() << "*** TESTMODE ACTIVE ***";
 
     mBoardIdx = mSettings->value( "boardidx", "0" ).toInt();
     if( mBoardIdx==0 )
@@ -56,7 +56,7 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
         mSettings->sync();
     }
 
-    if(!mTestMode)
+    //if(!mTestMode)
     {
         // >>>>> MOD_BUS serial communication settings
         /* Default Values:
@@ -69,50 +69,57 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
 
 
         mSettings->beginGroup( "SERIAL_CONNECTION" );
-
-        QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
-        if( ports.isEmpty() )
+        QString port;
+        if( mTestMode )
         {
-            QString err = tr("No serial ports available. Cannot connect to RoboController");
-            qCritical() << " ";
-            qCritical() << err;
-            qDebug() << "Server not started";
-            qDebug() << " ";
-
-            roboctrl::RcException exc(excRoboControllerNotFound, err.toStdString().c_str() );
-
-            throw exc;
+            port = QString("Simulated");
         }
-
-        int i = 0;
-        bool found = false;
-        int port_idx = 0;
-        foreach( QSerialPortInfo port, ports )
+        else
         {
-            if( port.portName().compare( mSettings->value( "serialinterface" ).toString() )==0 )
+            QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
+            if( ports.isEmpty() )
             {
-                port_idx = i;
-                found = true;
-                break;
-            }
-            ++i;
-        }
+                QString err = tr("No serial ports available. Cannot connect to RoboController");
+                qCritical() << " ";
+                qCritical() << err;
+                qDebug() << "Server not started";
+                qDebug() << " ";
 
-        if( !found )
-        {
-            port_idx = 0;
-            mSettings->setValue( tr("serialinterface"), ports[0].portName() );
-            mSettings->sync();
-        }
+                roboctrl::RcException exc(excRoboControllerNotFound, err.toStdString().c_str() );
+
+                throw exc;
+            }
+
+            int i = 0;
+            bool found = false;
+            int port_idx = 0;
+            foreach( QSerialPortInfo port, ports )
+            {
+                if( port.portName().compare( mSettings->value( "serialinterface" ).toString() )==0 )
+                {
+                    port_idx = i;
+                    found = true;
+                    break;
+                }
+                ++i;
+            }
+
+            if( !found )
+            {
+                port_idx = 0;
+                mSettings->setValue( tr("serialinterface"), ports[0].portName() );
+                mSettings->sync();
+            }
 
 #ifdef Q_OS_WIN32
-        //    const QString port = embracedString( ports[port_idx].portName ) +
-        //            ":";
-        const QString port = tr( "%1%2").arg(ports[port_idx].portName()).arg(":");
+            //    const QString port = embracedString( ports[port_idx].portName ) +
+            //            ":";
+            port = tr( "%1%2").arg(ports[port_idx].portName()).arg(":");
 #else
-        //const QString port = ports[port_idx].physName;
-        const QString port = ports[port_idx].systemLocation();
+            //const QString port = ports[port_idx].physName;
+            port = ports[port_idx].systemLocation();
 #endif
+        }
 
         int serialbaudrate = mSettings->value( "serialbaudrate", "0" ).toInt();
         if( serialbaudrate==0 )
@@ -159,7 +166,7 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
 
         try
         {
-            mRoboController = new QRoboControllerInterface( mBoardIdx, port, serialbaudrate, parity, data_bit, stop_bit );
+            mRoboController = new QRoboControllerInterface( mBoardIdx, port, serialbaudrate, parity, data_bit, stop_bit, mTestMode );
         }
         catch( RcException &e)
         {
@@ -239,7 +246,7 @@ QRobotServer::QRobotServer(quint16 serverUdpControl/*=14560*/, quint16 statusMul
     // Start Server Thread
     this->start();
 
-    if(!mTestMode)
+    //if(!mTestMode)
     {
         // Start Ping Timer
         mBoardTestTimerId = startTimer( TEST_TIMER_INTERVAL_MSEC, Qt::PreciseTimer );
@@ -574,14 +581,14 @@ void QRobotServer::onTcpReadyRead()
                 vals << data;
             }
 
-            if( mTestMode )
+            /*if( mTestMode )
             {
                 QVector<quint16> vec;
                 vec << startAddr;
                 vec << nReg;
                 sendBlockTCP( MSG_WRITE_OK, vec );
                 break;
-            }
+            }*/
 
             bool commOk = mRoboController->writeMultiReg( startAddr, nReg, vals );
 
@@ -850,11 +857,11 @@ void QRobotServer::timerEvent(QTimerEvent *event)
 {
     if( event->timerId() == mBoardTestTimerId )
     {
-        if(mTestMode)
+        /*if(mTestMode)
         {
             qDebug() << "TEST MODE - Ping Ok";
             return;
-        }
+        }*/
 
         if( !mRoboController->testBoardConnection() )
         {

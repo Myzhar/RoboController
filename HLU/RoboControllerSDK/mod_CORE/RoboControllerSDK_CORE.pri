@@ -20,4 +20,6 @@ HEADERS += \
 win32 {
 #to avoid error with qdatetime.h
     DEFINES += NOMINMAX
+
+    DEFINES += _CRT_SECURE_NO_WARNINGS
 }

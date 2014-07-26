@@ -38,7 +38,9 @@
 #define _MODBUS_RTU_CHECKSUM_LENGTH    2
 
 #if defined(_WIN32)
+#ifndef ENOTSUP
 #define ENOTSUP WSAEOPNOTSUPP
+#endif
 
 /* WIN32: struct containing serial handle and a receive buffer */
 #define PY_BUF_SIZE 512

@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <QThread>
 #include <rcexception.h>
+#include <loghandler.h>
 
 namespace roboctrl
 {
@@ -11,11 +12,12 @@ namespace roboctrl
 
 QRoboControllerInterface::QRoboControllerInterface(int boardIdx, QString serialPort,
                                                    int serialbaudrate, char parity,
-                                                   int data_bit, int stop_bit,
+                                                   int data_bit, int stop_bit, bool boardSimulation,
                                                    QObject *parent) :
     QObject(parent),
     mModbus(NULL),
-    mReplyBuffer(NULL)
+    mReplyBuffer(NULL),
+    mSimulActive(boardSimulation)
 {
     mBoardConnected = false;
 
@@ -25,49 +27,60 @@ QRoboControllerInterface::QRoboControllerInterface(int boardIdx, QString serialP
     mBoardIdx = boardIdx;
     int count = 0;
 
-    qDebug() << tr("#%1 - Initializing connection to RoboController Id: %2").arg(count+1).arg(mBoardIdx);
-
-    while( !initializeSerialModbus( serialPort.toLatin1().data(),
-                                    serialbaudrate, parity, data_bit, stop_bit ) &&
-           count < 10 )
+    if( !mSimulActive )
     {
-        qWarning() << tr( "Failed to initialize mod_bus on port: %1").arg(serialPort);
-        qWarning() << tr("Trying again in one second...");
+        // >>>>> MOD_BUS serial communication settings
 
-        count++;
-
-        QThread::msleep( 1000 );
         qDebug() << tr("#%1 - Initializing connection to RoboController Id: %2").arg(count+1).arg(mBoardIdx);
-    }
 
-    if( count > 10 )
+        while( !initializeSerialModbus( serialPort.toLatin1().data(),
+                                        serialbaudrate, parity, data_bit, stop_bit ) &&
+               count < 10 )
+        {
+            qWarning() << tr( "Failed to initialize mod_bus on port: %1").arg(serialPort);
+            qWarning() << tr("Trying again in one second...");
+
+            count++;
+
+            QThread::msleep( 1000 );
+            qDebug() << tr("#%1 - Initializing connection to RoboController Id: %2").arg(count+1).arg(mBoardIdx);
+        }
+
+        if( count > 10 )
+        {
+            QString err = tr("* Robocontroller not connected in 10 seconds. Server not started!");
+            qCritical() << " ";
+            qCritical() << err;
+
+            roboctrl::RcException exc(excRoboControllerNotFound, err.toStdString().c_str() );
+
+            throw exc;
+        }
+        // <<<<< MOD_BUS serial communication settings
+
+        // >>>>> Board connection
+        bool res = connectModbus( 10 );
+        if( !res )
+        {
+            QString err = tr("Failed to connect to modbus on port: %1").arg(serialPort);
+            qCritical() << "Server not started";
+            qCritical() << err;
+
+            roboctrl::RcException exc(excRoboControllerNotFound, err.toStdString().c_str() );
+
+            throw exc;
+        }
+
+        qDebug() << tr("RoboController connected");
+        // <<<<< Board connection
+    }
+    else
     {
-        QString err = tr("* Robocontroller not connected in 10 seconds. Server not started!");
-        qCritical() << " ";
-        qCritical() << err;
-
-        roboctrl::RcException exc(excRoboControllerNotFound, err.toStdString().c_str() );
-
-        throw exc;
+        qDebug() << tr("### RoboController is working in simulated mode ###");
+        QThread::msleep( 500 );
     }
 
-    // >>>>> Board connection
-    bool res = connectModbus( 10 );
-    if( !res )
-    {
-        QString err = tr("Failed to connect to modbus on port: %1").arg(serialPort);
-        qCritical() << "Server not started";
-        qCritical() << err;
 
-        roboctrl::RcException exc(excRoboControllerNotFound, err.toStdString().c_str() );
-
-        throw exc;
-    }
-
-    qDebug() << tr("RoboController connected");
-    // <<<<< Board connection
-
-    // <<<<< MOD_BUS serial communication settings
 }
 
 QRoboControllerInterface::~QRoboControllerInterface()
@@ -83,9 +96,14 @@ QRoboControllerInterface::~QRoboControllerInterface()
 }
 
 modbus_t* QRoboControllerInterface::initializeSerialModbus( const char *device,
-                                                int baud, char parity, int data_bit,
-                                                int stop_bit )
+                                                            int baud, char parity, int data_bit,
+                                                            int stop_bit )
 {
+    // >>>>> Simulation?
+    if(mSimulActive)
+        return NULL;
+    // <<<<< Simulation?
+
     if( mModbus )
     {
         modbus_close( mModbus );
@@ -100,9 +118,18 @@ modbus_t* QRoboControllerInterface::initializeSerialModbus( const char *device,
 
 bool QRoboControllerInterface::connectModbus( int retryCount/*=-1*/)
 {
+    // >>>>> Simulation?
+    if(mSimulActive)
+    {
+        qWarning() << PREFIX << "ModBus replies are simulated!";
+        QThread::msleep( 1000 );
+        return true;
+    }
+    // <<<<< Simulation?
+
     if( !mModbus )
     {
-        qCritical() /*<< PREFIX*/ << "ModBus data structure not initialized!";
+        qCritical() << PREFIX << "ModBus data structure not initialized!";
         return false;
     }
 
@@ -112,7 +139,7 @@ bool QRoboControllerInterface::connectModbus( int retryCount/*=-1*/)
 
     if( modbus_connect( mModbus ) == -1 )
     {
-        qCritical() /*<< PREFIX*/ << "Modbus connection failed";
+        qCritical() << PREFIX << "Modbus connection failed";
         mBoardConnected = false;
         return false;
     }
@@ -131,14 +158,14 @@ bool QRoboControllerInterface::connectModbus( int retryCount/*=-1*/)
     res = modbus_set_slave( mModbus, mBoardIdx );
     if( res != 0 )
     {
-        qCritical() /*<< PREFIX*/ << ": modbus_set_slave error -> " <<  modbus_strerror( errno );
+        qCritical() << PREFIX << ": modbus_set_slave error -> " <<  modbus_strerror( errno );
 
         modbus_flush( mModbus );
 
         mBoardConnected = false;
         return false;
     }
-    //qDebug() /*<< PREFIX*/ << "Modbus connected";
+    //qDebug() << PREFIX << "Modbus connected";
 
     int tryCount=0;
     bool ok = false;
@@ -170,6 +197,17 @@ bool QRoboControllerInterface::connectModbus( int retryCount/*=-1*/)
 
 bool QRoboControllerInterface::testBoardConnection()
 {
+    // >>>>> Simulation?
+    if(mSimulActive)
+    {
+        //qWarning() << PREFIX << "ModBus replies are simulated!";
+        QThread::msleep( 1 );
+
+        mBoardConnected = true;
+        return true;
+    }
+    // <<<<< Simulation?
+
     quint16 startAddr = WORD_TEST_BOARD;
     quint16 nReg = 1;
 
@@ -177,7 +215,7 @@ bool QRoboControllerInterface::testBoardConnection()
 
     if(reply.isEmpty())
     {
-        qCritical() /*<< PREFIX*/ << "Board Ping failed!!!";
+        qCritical() << PREFIX << "Board Ping failed!!!";
         /*qCritical() << PREFIX << "modbus_read_input_registers error -> " <<  modbus_strerror( errno )
                     << "[First regAddress: " << WORD_TEST_BOARD << "- #reg: " << nReg <<  "]";*/
 
@@ -191,6 +229,42 @@ bool QRoboControllerInterface::testBoardConnection()
 
 QVector<quint16> QRoboControllerInterface::readMultiReg(quint16 startAddr, quint16 nReg)
 {
+    // >>>>> Simulation?
+    if(mSimulActive)
+    {
+        QVector<quint16> readRegReply;
+
+        mBoardMutex.lock();
+        {
+            // >>>>> Reply buffer resize if needed
+            if( nReg > mReplyBufSize )
+            {
+                mReplyBufSize *= 2;
+                delete [] mReplyBuffer;
+                mReplyBuffer = new quint16[mReplyBufSize];
+            }
+            // <<<<< Reply buffer resize if needed
+
+
+
+            readRegReply.resize( nReg+2 );
+
+            readRegReply[0] = (quint16)startAddr;
+            readRegReply[1] = (quint16)nReg;
+            for( int i=0; i<nReg; i++ )
+            {
+               readRegReply[2+i] = i;
+            }
+
+            //qWarning() << PREFIX << "ModBus replies are simulated!";
+            QThread::msleep( 1 );
+        }
+        mBoardMutex.unlock();
+
+        return readRegReply;
+    }
+    // <<<<< Simulation?
+
     QVector<quint16> readRegReply;
 
     mBoardMutex.lock();
@@ -208,8 +282,8 @@ QVector<quint16> QRoboControllerInterface::readMultiReg(quint16 startAddr, quint
 
         if(res!=nReg)
         {
-            qCritical() /*<< PREFIX*/ << "modbus_read_input_registers error -> " <<  modbus_strerror( errno )
-                        << "[First regAddress: " << startAddr << "- #reg: " << nReg <<  "]";
+            qCritical() << PREFIX << "modbus_read_input_registers error -> " <<  modbus_strerror( errno )
+                                      << "[First regAddress: " << startAddr << "- #reg: " << nReg <<  "]";
 
             mBoardMutex.unlock();
             return readRegReply;
@@ -227,16 +301,25 @@ QVector<quint16> QRoboControllerInterface::readMultiReg(quint16 startAddr, quint
 }
 
 bool QRoboControllerInterface::writeMultiReg( quint16 startAddr, quint16 nReg,
-                                  QVector<quint16> vals )
+                                              QVector<quint16> vals )
 {
+    if(mSimulActive)
+    {
+        mBoardMutex.lock();
+        {
+            QThread::msleep( 1 );
+            return true;
+        }
+    }
+
     mBoardMutex.lock();
     {
         int res = modbus_write_registers( mModbus, startAddr, nReg, vals.data() );
 
         if(res!=nReg)
         {
-            qCritical() /*<< PREFIX*/ << "modbus_write_registers error -> " <<  modbus_strerror( errno )
-                        << "[First regAddress: " << startAddr << "- #reg: " << nReg <<  "]";
+            qCritical() << PREFIX << "modbus_write_registers error -> " <<  modbus_strerror( errno )
+                                      << "[First regAddress: " << startAddr << "- #reg: " << nReg <<  "]";
 
             mBoardMutex.unlock();
             return false;

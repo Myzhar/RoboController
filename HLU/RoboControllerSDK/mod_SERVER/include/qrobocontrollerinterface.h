@@ -15,7 +15,7 @@ class QRoboControllerInterface : public QObject
 public:
     explicit QRoboControllerInterface(int boardIdx, QString serialPort,
                                       int serialbaudrate, char parity,
-                                      int data_bit, int stop_bit,
+                                      int data_bit, int stop_bit, bool simulMode = false,
                                       QObject *parent = 0);
     virtual ~QRoboControllerInterface();
 
@@ -49,6 +49,8 @@ private:
     quint16*        mReplyBuffer;  ///< dinamic reply buffer (resized only if necessary)
 
     bool            mBoardConnected; ///< Indicates if the RoboController board is connected
+
+    bool            mSimulActive; ///< Indicates if RoboController is simulated
 };
 
 }
