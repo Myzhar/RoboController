@@ -224,21 +224,18 @@ void QRobotCtrlServer::onUdpCtrlReadyRead()
                 killTimer( mControlTimeoutTimerId );
             mControlTimeoutTimerId = startTimer( SRV_CONTROL_UDP_TIMEOUT_MSEC );
 
-            if( mControllerClientIp.isEmpty() || mControllerClientIp!=addr.toString() )
+            if( mControllerClientIp.isEmpty() || mControllerClientIp==addr.toString() )
             {
-                qDebug() << tr("mControllerClientIp: %1").arg(mControllerClientIp);
+                //qDebug() << tr("mControllerClientIp: %1").arg(mControllerClientIp);
 
                 mControllerClientIp = addr.toString();
-                /*QVector<quint16> vec;
-                sendInfoBlockUDP( addr, MSG_ROBOT_CTRL_OK, vec ); // Robot control taken*/
+
                 emit clientGainedControl( mControllerClientIp );
 
                 qDebug() << tr("The client %1 has taken the control of the robot").arg(addr.toString());
             }
             else
             {
-                /*QVector<quint16> vec;
-                sendInfoBlockUDP( addr, MSG_ROBOT_CTRL_KO, vec ); // Robot not free*/
                 emit clientControlRefused( addr.toString());
             }
             break;

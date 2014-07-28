@@ -118,7 +118,7 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
         }
         else
         {
-            qDebug() << tr("Connected to Multicast server. Listening on port %1. Sending on port %2")
+            qDebug() << tr("Connected to Multicast Webcam Server. Listening on port %1. Sending on port %2")
                         .arg(mListenPort).arg(mSendPort);
             mConnected = true;
 

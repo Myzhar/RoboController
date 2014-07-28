@@ -244,16 +244,29 @@ void RoboControllerSDK::connectToUdpServers()
 {
     mUdpConnected = false;
 
-    if( !mUdpStatusSocket->bind( /*QHostAddress(mServerAddr),*/ mUdpStatusPortListen, /*QAbstractSocket::ReuseAddressHint|*/QAbstractSocket::ShareAddress ) )
+    if( !mUdpStatusSocket->bind( /*QHostAddress(mServerAddr),*/
+                                 mUdpStatusPortListen,
+                                 QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint ) )
     {
         throw RcException( excUdpNotConnected, tr("It is not possible to bind UDP Status server: %1")
                            .arg(mUdpControlSocket->errorString() ).toLocal8Bit() );
+    }
+
+    // To connect to multicast server we need that the client socket is binded
+    if( !mUdpMulticastTelemetrySocket->bind( QHostAddress::AnyIPv4,
+                                 mUdpTelemetryMulticastPort,
+                                 QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint ) )
+    {
+        throw RcException( excUdpNotConnected, tr("It is not possible to bind UDP Telemetry server: %1")
+                           .arg(mUdpMulticastTelemetrySocket->errorString() ).toLocal8Bit() );
     }
 
     connect( &mUdpPingTimer, SIGNAL(timeout()),
              this, SLOT(onUdpTestTimerTimeout()) );
 
     mUdpPingTimer.start(UDP_PING_TIME_MSEC);
+
+    mUdpConnected = true;
 
     emit udpConnected();
 }
@@ -1155,6 +1168,7 @@ void RoboControllerSDK::setMotorSpeeds( double speed0, double speed1 )
     if( mMotorCtrlMode != mcPID )
     {
         qWarning() << PREFIX << tr("Function available only in mcPID mode");
+        return;
     }
 
     // >>>>> 16 bit saturation

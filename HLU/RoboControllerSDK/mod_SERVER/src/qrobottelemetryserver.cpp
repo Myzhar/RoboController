@@ -110,9 +110,13 @@ void QRobotTelemetryServer::multicastSendTelemetry()
 
     if( -1==res )
     {
-        qDebug() << tr("[%1] Missed telemetry sending")
+        qDebug() << PREFIX << tr("[%1] Missed telemetry sending")
                     .arg(QDateTime::fromMSecsSinceEpoch(timestamp).toString(Qt::ISODate));
     }
+    /*else
+    {
+        qDebug() << PREFIX << tr("Sent telemetry to port %1:%2").arg(MULTICAST_DATA_SERVER_IP).arg(mMulticastUdpTelemetryServerPort);
+    }*/
 }
 
 void QRobotTelemetryServer::run()

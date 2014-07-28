@@ -37,6 +37,8 @@ CMainWindow::CMainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    mHasRobotCtrl = false;
+
     //mOpenCVWidget = NULL;
 
     // >>>>> Video Widget
@@ -61,6 +63,7 @@ CMainWindow::CMainWindow(QWidget *parent) :
     ui->widget_ramp_status->setPalette( pal );
     ui->widget_save_EEPROM_status->setPalette( pal );
     ui->widget_WD_status->setPalette( pal );
+    ui->widget_robot_ctrl->setPalette( pal );
     // >>>>> Board Status Widgets
 
     // >>>>> File INI
@@ -210,6 +213,7 @@ CMainWindow::CMainWindow(QWidget *parent) :
     ui->label_ramp_status->setFont( font );
     ui->label_WD_status->setFont( font );
     ui->label_save_EEPROM_status->setFont( font );
+    ui->label_robot_control->setFont( font );
     // <<<<< Fonts
 
     connect( mPushButtonConnect, SIGNAL(clicked()),
@@ -275,16 +279,13 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         {
             try
             {
-                // If the robot was stopped its good to try to take the control again
-                if(mLastJoyMot[0]==0.0 || mLastJoyMot[1]==0.0)
-                {
-                    // >>>>> Taking robot control
-                    mRoboCtrl->getRobotControl();
-                    // <<<<< Taking robot control
-                }
-
                 if( mJoyMot[0] != mLastJoyMot[0] || mJoyMot[1] != mLastJoyMot[1] )
                 {
+                    // >>>>> Taking robot control
+                    if( !mHasRobotCtrl )
+                        mRoboCtrl->getRobotControl();
+                    // <<<<< Taking robot control
+
                     double speed0 = mJoyMot[0]/scale*mMaxMotorSpeed;
                     double speed1 = mJoyMot[1]/scale*mMaxMotorSpeed;
 
@@ -308,16 +309,13 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         {
             try
             {
-                // If the robot was stopped its good to try to take the control again
-                if(mLastJoyMot[0]==0.0 || mLastJoyMot[1]==0.0)
-                {
-                    // >>>>> Taking robot control
-                    mRoboCtrl->getRobotControl();
-                    // <<<<< Taking robot control
-                }
-
                 if( mJoyMot[0] != mLastJoyMot[0] || mJoyMot[1] != mLastJoyMot[1] )
                 {
+                    // >>>>> Taking robot control
+                    if( !mHasRobotCtrl )
+                        mRoboCtrl->getRobotControl();
+                    // <<<<< Taking robot control
+
                     int pwm0 = (int)(mJoyMot[0]/scale*2047.0f+0.5f);
                     int pwm1 = (int)(mJoyMot[1]/scale*2047.0f+0.5f);
 
@@ -541,15 +539,15 @@ void CMainWindow::onConnectButtonClicked()
     mPushButtonFindServer->setEnabled(false);
     mPushButtonConnect->setEnabled(false);
 
-//    // >>>>> Webcam Client
-//    QCoreApplication::processEvents( QEventLoop::AllEvents, 1500 );
-//    QThread::msleep(500);
+    // >>>>> Webcam Client
+    QCoreApplication::processEvents( QEventLoop::AllEvents, 1500 );
+    QThread::msleep(500);
 
-//    mWebcamClient = new QWebcamClient( /*mRobIpAddress,*/ 55554, 55555, this );
+    mWebcamClient = new QWebcamClient( /*mRobIpAddress,*/ 55554, 55555, this );
 
-//    connect( mWebcamClient, SIGNAL(newImageReceived()),
-//             this, SLOT(onNewImage()) );
-//    // <<<<< Webcam Client
+    connect( mWebcamClient, SIGNAL(newImageReceived()),
+             this, SLOT(onNewImage()) );
+    // <<<<< Webcam Client
 
     startTimers();
 }
@@ -623,6 +621,8 @@ void CMainWindow::onRobotControlTaken()
 
     pal.setColor( QPalette::Window, Qt::green );
     ui->widget_robot_ctrl->setPalette( pal );
+
+    mHasRobotCtrl = true;
 }
 
 void CMainWindow::onRobotControlReleased()
@@ -632,6 +632,8 @@ void CMainWindow::onRobotControlReleased()
 
     pal.setColor( QPalette::Window, Qt::gray );
     ui->widget_robot_ctrl->setPalette( pal );
+
+    mHasRobotCtrl = false;
 }
 
 void CMainWindow::onRobotControlNotTaken()
@@ -641,6 +643,8 @@ void CMainWindow::onRobotControlNotTaken()
 
     pal.setColor( QPalette::Window, Qt::red );
     ui->widget_robot_ctrl->setPalette( pal );
+
+    mHasRobotCtrl = false;
 }
 
 void CMainWindow::on_actionPidEnabled_triggered()

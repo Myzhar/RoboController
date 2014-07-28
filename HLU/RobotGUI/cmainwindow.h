@@ -111,6 +111,8 @@ private:
     double mMotorSpeedRight;
     double mMotorSpeedLeft;
 
+    bool mHasRobotCtrl; ///< Indicates if the GUI has control of the robot
+
     RoboControllerSDK* mRoboCtrl; /*!< Pointer to RoboControllerSDK object */
     RobotConfiguration mRoboConf; /*!< Robot Configuration */
 
