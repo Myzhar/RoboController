@@ -1,8 +1,9 @@
 #ifndef NETWORK_MSG_H
 #define NETWORK_MSG_H
 
-#define TCP_START_VAL 0x55AA /*!< Start word for TCP data block */
-#define UDP_START_VAL 0xAA55 /*!< Start word for UDP data block */
+#define TCP_START_VAL       0x55AA /*!< Start word for TCP data block */
+#define UDP_START_VAL       0xAA55 /*!< Start word for UDP data block */
+#define UDP_TEL_START_VAL   0xBB66 /*!< Start word for TelemetryUDP data block */
 
 // ---> TCP Commands and Messages
 #define     MESSAGES                100

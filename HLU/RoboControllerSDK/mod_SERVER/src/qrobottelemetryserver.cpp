@@ -82,7 +82,7 @@ void QRobotTelemetryServer::multicastSendTelemetry()
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_2);
-    out << (quint16)UDP_START_VAL; // Start Word
+    out << (quint16)UDP_TEL_START_VAL; // Start Word
     out << (quint16)0;      // Block size
 
     qint64 timestamp = QDateTime::currentMSecsSinceEpoch();
@@ -100,8 +100,8 @@ void QRobotTelemetryServer::multicastSendTelemetry()
     // <<<<< Data
 
     out.device()->seek(0);          // Back to the beginning to set block size
-    int blockSize = (block.size() - 2*sizeof(quint16));
-    out << (quint16)UDP_START_VAL; // Start Word again
+    quint16 blockSize = (block.size() - 2*sizeof(quint16));
+    out << (quint16)UDP_TEL_START_VAL; // Start Word again
     out << (quint16)blockSize;
 
     int res = mUdpMulticastTelemetryServer->writeDatagram( block,
@@ -113,10 +113,10 @@ void QRobotTelemetryServer::multicastSendTelemetry()
         qDebug() << PREFIX << tr("[%1] Missed telemetry sending")
                     .arg(QDateTime::fromMSecsSinceEpoch(timestamp).toString(Qt::ISODate));
     }
-    /*else
-    {
-        qDebug() << PREFIX << tr("Sent telemetry to port %1:%2").arg(MULTICAST_DATA_SERVER_IP).arg(mMulticastUdpTelemetryServerPort);
-    }*/
+//    else
+//    {
+//        qDebug() << PREFIX << tr("Sent telemetry to port %1:%2").arg(MULTICAST_DATA_SERVER_IP).arg(mMulticastUdpTelemetryServerPort);
+//    }
 }
 
 void QRobotTelemetryServer::run()

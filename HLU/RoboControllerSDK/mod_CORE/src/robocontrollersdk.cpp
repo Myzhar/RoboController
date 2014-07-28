@@ -224,7 +224,7 @@ void RoboControllerSDK::connectToTcpServer()
 
     if( !mTcpConnected )
         throw RcException( excTcpNotConnected, tr("It is not possible to find a valid TCP server: %1")
-                           .arg(mTcpSocket->errorString() ).toLocal8Bit() );    
+                           .arg(mTcpSocket->errorString() ).toLocal8Bit() );
 
     emit tcpConnected();
 }
@@ -244,6 +244,8 @@ void RoboControllerSDK::connectToUdpServers()
 {
     mUdpConnected = false;
 
+    // >>>>> Connect to UDP Status Server
+
     if( !mUdpStatusSocket->bind( /*QHostAddress(mServerAddr),*/
                                  mUdpStatusPortListen,
                                  QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint ) )
@@ -251,14 +253,27 @@ void RoboControllerSDK::connectToUdpServers()
         throw RcException( excUdpNotConnected, tr("It is not possible to bind UDP Status server: %1")
                            .arg(mUdpControlSocket->errorString() ).toLocal8Bit() );
     }
+    // <<<<< Connect to UDP Status Server
 
+    // >>>>> Connect to UDP Multicast Telemetry Server
     // To connect to multicast server we need that the client socket is binded
     if( !mUdpMulticastTelemetrySocket->bind( QHostAddress::AnyIPv4,
-                                 mUdpTelemetryMulticastPort,
-                                 QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint ) )
+                                             mUdpTelemetryMulticastPort,
+                                             QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint ) )
     {
         throw RcException( excUdpNotConnected, tr("It is not possible to bind UDP Telemetry server: %1")
                            .arg(mUdpMulticastTelemetrySocket->errorString() ).toLocal8Bit() );
+    }
+
+
+    if( !mUdpMulticastTelemetrySocket->joinMulticastGroup( QHostAddress(MULTICAST_DATA_SERVER_IP) ) )
+    {
+        qDebug() << tr("Connection to Multicast telemetry server failed on port %1")
+                    .arg(mUdpTelemetryMulticastPort);
+    }
+    else
+    {
+        qDebug() << tr("Connected to Multicast Telemetry Server. Listening on port %1").arg(mUdpTelemetryMulticastPort);
     }
 
     connect( &mUdpPingTimer, SIGNAL(timeout()),
@@ -434,28 +449,30 @@ void RoboControllerSDK::onUdpTelemetryReadyRead()
 
     while( mUdpMulticastTelemetrySocket->hasPendingDatagrams() )
     {
-        qDebug() << tr("telemetryReadyReadCount: %1").arg(telemetryReadyReadCount);
+        qDebug() << tr("telemetryReadyReadCount: %1").arg(++telemetryReadyReadCount);
 
-        QByteArray buffer( mUdpStatusSocket->pendingDatagramSize(), 0 );
+        QByteArray datagram;
         qint64 datagramSize = mUdpStatusSocket->pendingDatagramSize();
 
-        if( buffer.size()< datagramSize )
-            buffer.resize( datagramSize );
+        if( datagram.size()< datagramSize )
+            datagram.resize( datagramSize );
+
+        datagram.resize( datagramSize );
+
+        QDataStream in( datagram );
+        in.setVersion(QDataStream::Qt_5_2);
 
         QHostAddress addr;
         quint16 port;
 
-        mUdpStatusSocket->readDatagram( buffer.data(), buffer.size(), &addr, &port );
-
-        QDataStream in( buffer );
-        in.setVersion(QDataStream::Qt_5_2);
+        mUdpStatusSocket->readDatagram( datagram.data(), datagram.size(), &addr, &port );
 
         int count = 0;
         quint16 val16;
         quint16 dataSize;
         in >> val16;
 
-        while( val16 != UDP_START_VAL )
+        while( val16 != UDP_TEL_START_VAL )
         {
             count++;
             if(count == datagramSize)
