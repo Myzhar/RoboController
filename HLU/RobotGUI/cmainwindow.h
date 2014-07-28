@@ -60,6 +60,10 @@ private slots:
     void onNewBoardStatus(BoardStatus& status);
     void onNewTelemetryAvailable();
 
+    void onRobotControlTaken();
+    void onRobotControlReleased();
+    void onRobotControlNotTaken();
+
     void on_actionRobot_Configuration_triggered();
 
     void on_actionBattery_Calibration_triggered();

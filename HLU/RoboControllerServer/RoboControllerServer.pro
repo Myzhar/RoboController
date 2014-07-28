@@ -8,7 +8,7 @@ QT       += testlib
 
 QT       -= gui
 
-TARGET = RobotTcpServer
+TARGET = RoboControllerServer
 CONFIG   += console
 CONFIG   -= app_bundle
 
@@ -19,7 +19,6 @@ ROBOCONTROLLERSDKPATH = ../RoboControllerSDK
 DEFINES += ROBOCONTROLLERSDK_LIBRARY
 
 include($$ROBOCONTROLLERSDKPATH/mod_CORE/RoboControllerSDK_CORE.pri)        # CORE module
-#include($$ROBOCONTROLLERSDKPATH/mod_VISION/RoboControllerSDK_VISION.pri)    # VISION module
 include($$ROBOCONTROLLERSDKPATH/mod_SERVER/RoboControllerSDK_SERVER.pri)    # SERVER module
 include($$ROBOCONTROLLERSDKPATH/mod_EXTERN/RoboControllerSDK_EXTERN.pri)    # EXTERN module
 

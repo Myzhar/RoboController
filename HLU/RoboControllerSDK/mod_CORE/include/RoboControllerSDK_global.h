@@ -44,6 +44,16 @@ typedef enum
 } MotorCtrlMode;
 
 /**
+ * @enum MotorCtrlMode
+ * @brief Motor control modes.
+ */
+typedef enum
+{
+    motLeft = 0,    /**< Used to indicate the left motor */
+    motRight = 1    /**< Used to indicate the right motor */
+} MotorPos;
+
+/**
  * @enum Option
  * @brief ON/OFF for toggle options
  */

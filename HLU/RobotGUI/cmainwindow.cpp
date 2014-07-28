@@ -11,6 +11,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include <loghandler.h>
+
 #include "qrobotconfigdialog.h"
 #include "qbatterycalibdialog.h"
 #include "qcommon.h"
@@ -203,7 +205,7 @@ CMainWindow::CMainWindow(QWidget *parent) :
 
     fontPx = COMMON->mScreen.cvtMm2Px( 2 );
     font.setPixelSize( fontPx );
-    font.setBold( QFont::Normal);
+    font.setBold( false );
     ui->label_PID_status->setFont( font );
     ui->label_ramp_status->setFont( font );
     ui->label_WD_status->setFont( font );
@@ -461,6 +463,14 @@ void CMainWindow::onConnectButtonClicked()
              this, SLOT(onNewBoardStatus(BoardStatus&)) );
     connect( mRoboCtrl, SIGNAL(newTelemetryAvailable()),
              this, SLOT(onNewTelemetryAvailable() ));
+
+    connect( mRoboCtrl, SIGNAL(robotControlTaken()),
+             this, SLOT(onRobotControlTaken()) );
+    connect( mRoboCtrl, SIGNAL(robotControlReleased()),
+             this, SLOT(onRobotControlReleased()) );
+    connect( mRoboCtrl, SIGNAL(robotControlNotTaken()),
+             this, SLOT(onRobotControlNotTaken()) );
+
     // <<<<< Signals/Slots connections
 
     // >>>>> Setting last PID state
@@ -489,7 +499,7 @@ void CMainWindow::onConnectButtonClicked()
     }
     // <<<<< Setting last PID state
 
-    QThread::msleep( 250 );
+    QThread::msleep( 500 );
 
     // >>>>> Requesting Robot Configuration
     try
@@ -504,7 +514,7 @@ void CMainWindow::onConnectButtonClicked()
     }
     // <<<<< Requesting Robot Configuration
 
-    QThread::msleep( 250 );
+    QThread::msleep( 500 );
 
     // >>>>> Requesting Robot Configuration
     try
@@ -528,20 +538,18 @@ void CMainWindow::onConnectButtonClicked()
     ui->actionBattery_Calibration->setEnabled(true);
     mStatusLabel->setText( tr("Connected to robot on IP: %1").arg(mRobIpAddress) );
 
-
-
     mPushButtonFindServer->setEnabled(false);
     mPushButtonConnect->setEnabled(false);
 
-    // >>>>> Webcam Client
-    QCoreApplication::processEvents( QEventLoop::AllEvents, 1500 );
-    QThread::msleep(500);
+//    // >>>>> Webcam Client
+//    QCoreApplication::processEvents( QEventLoop::AllEvents, 1500 );
+//    QThread::msleep(500);
 
-    mWebcamClient = new QWebcamClient( /*mRobIpAddress,*/ 55554, 55555, this );
+//    mWebcamClient = new QWebcamClient( /*mRobIpAddress,*/ 55554, 55555, this );
 
-    connect( mWebcamClient, SIGNAL(newImageReceived()),
-             this, SLOT(onNewImage()) );
-    // <<<<< Webcam Client */
+//    connect( mWebcamClient, SIGNAL(newImageReceived()),
+//             this, SLOT(onNewImage()) );
+//    // <<<<< Webcam Client
 
     startTimers();
 }
@@ -606,6 +614,33 @@ void CMainWindow::onNewBoardStatus(BoardStatus& status)
     else
         pal.setColor( QPalette::Window, Qt::red );
     ui->widget_WD_status->setPalette( pal );
+}
+
+void CMainWindow::onRobotControlTaken()
+{
+    QPalette pal;
+    pal = ui->widget_robot_ctrl->palette();
+
+    pal.setColor( QPalette::Window, Qt::green );
+    ui->widget_robot_ctrl->setPalette( pal );
+}
+
+void CMainWindow::onRobotControlReleased()
+{
+    QPalette pal;
+    pal = ui->widget_robot_ctrl->palette();
+
+    pal.setColor( QPalette::Window, Qt::gray );
+    ui->widget_robot_ctrl->setPalette( pal );
+}
+
+void CMainWindow::onRobotControlNotTaken()
+{
+    QPalette pal;
+    pal = ui->widget_robot_ctrl->palette();
+
+    pal.setColor( QPalette::Window, Qt::red );
+    ui->widget_robot_ctrl->setPalette( pal );
 }
 
 void CMainWindow::on_actionPidEnabled_triggered()
@@ -753,6 +788,8 @@ void CMainWindow::onNewImage()
 
 void CMainWindow::onNewTelemetryAvailable()
 {
+    qDebug() << PREFIX << tr("New Telemetry available");
+
     mNewTelemetryAvailable = true;
 }
 

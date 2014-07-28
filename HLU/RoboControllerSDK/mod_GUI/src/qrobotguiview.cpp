@@ -84,6 +84,8 @@ void QRobotGUIView::mousePressEvent(QMouseEvent *event)
 
 void QRobotGUIView::mouseReleaseEvent(QMouseEvent *event)
 {
+    Q_UNUSED(event);
+
     mScene->buttonUp();
 
     //qDebug() << Q_FUNC_INFO;

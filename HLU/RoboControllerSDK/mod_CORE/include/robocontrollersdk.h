@@ -43,13 +43,13 @@ public:
 
     /** @brief Sets the speed of the motor in m/sec
      *
-     * @param motorIdx Index of the motor (0 or 1)
+     * @param motorIdx Index of the motor (@ref MotorPos)
      * @param speed The speed in m/sec - Speed range: [-32.768/+32.767] m/sec
      *
      * @note This function works only when @ref mMotorCtrlMode is
      *       equal to @ref mcPid, else it does nothing
      */
-    void setMotorSpeed( quint16 motorIdx, double speed );
+    void setMotorSpeed( MotorPos motorIdx, double speed );
 
     /** @brief Sets the speed of the motors in m/sec
      *
@@ -63,13 +63,13 @@ public:
 
     /** @brief Sets the PWM of the motor
      *
-     * @param motorIdx Index of the motor (0 or 1)
+     * @param motorIdx Index of the motor (@ref MotorPos)
      * @param pwm PWM range: [-2048/2047]
      *
      * @note This function works only when @ref mMotorCtrlMode is
      *       equal to @ref mcDirectPWM, else it does nothing
      */
-    void setMotorPWM( quint16 motorIdx, int pwm ); // Tested
+    void setMotorPWM( MotorPos motorIdx, int pwm ); // Tested
 
     /** @brief Sets the PWMs of both motors
      *
@@ -83,20 +83,20 @@ public:
 
     /** @brief Sets motor PID Controllers parameters.
      *
-     * @param motorIdx Index of the motor (0 or 1)
+     * @param motorIdx Index of the motor (@ref MotorPos)
      * @param Kp Proportional Action gain
      * @param Ki Integral Action gain
      * @param Kd Derivative Action gain
      */
-    void setMotorPidGains( quint16 motorIdx, quint16 Kp, quint16 Ki, quint16 Kd );
+    void setMotorPidGains( MotorPos motorIdx, quint16 Kp, quint16 Ki, quint16 Kd );
 
     /** @brief Send a request for motor PID gains.
      *         The reply is received with @ref newMotorPIDGains
      *         signal
      *
-     * @param motorIdx Index of the motor (0 or 1)
+     * @param motorIdx Index of the motor (@ref MotorPos)
      */
-    void getMotorPidGains( quint16 motorIdx );
+    void getMotorPidGains( MotorPos motorIdx );
 
     /** @brief Gets current board status (@ref BoardStatus)
      *         The reply is received with @ref newBoardStatus
@@ -230,9 +230,6 @@ protected slots:
     /// Send Test ping to UDP Servers
     void onUdpTestTimerTimeout();
 
-    /// Called if a client that took control of the robot does not send command for @ref CONTROL_UDP_TIMEOUT msec
-    void onControlTimerTimeout();
-
     /// Ping Timer handler
     void onPingTimerTimeout();
 
@@ -247,7 +244,7 @@ signals:
     void udpDisconnected();
 
     /// Signal emitted when new PID gains are received
-    void newMotorPIDGains( quint16 motorIdx, quint16 Kp, quint16 Ki, quint16 Kd );
+    void newMotorPIDGains( MotorPos motorIdx, quint16 Kp, quint16 Ki, quint16 Kd );
     /// Signal emitted when a new Robot Configuration is received from robot
     void newRobotConfiguration( RobotConfiguration& robConf );
     /// Signal emitted when a new Board Status is ready
@@ -283,8 +280,6 @@ private:
     QUdpSocket* mUdpMulticastTelemetrySocket; /**< UDP Socket to receive telemetry */
 
     quint16 mNextTcpBlockSize;      /**< Used to recover incomplete TCP block */
-    //quint16 mNextUdpStBlockSize;    /**< Used to recover incomplete UDP Status block */
-    quint16 mNextUdpCtrlBlockSize;  /**< Used to recover incomplete UDP Control block */
 
     bool mTcpConnected;     /**< Indicates if TCP Socket is connected */
     bool mUdpConnected;     /**< Indicates if UDP Socket is connected */
@@ -304,7 +299,6 @@ private:
     bool mStopped; /**< Thread stopped */
     quint64 mWatchDogTimeMsec; /**< Board WatchDog Time in millisecond*/
     QTimer mPingTimer; /** Id of the ping timer. Ping is called with a time smaller of 10% than watchdog time to mantain the board active */
-    QTimer mUdpControlDisconnectTimer; ///< If a client does not send command to Control Server for @ref CONTROL_UDP_TIMEOUT millisecond, the server automatically release the exclusive control.
 
     bool            mWatchDogEnable;
     bool            mNewStatusBit1Received;

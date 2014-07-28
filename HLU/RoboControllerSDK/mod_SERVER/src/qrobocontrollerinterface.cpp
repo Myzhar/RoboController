@@ -307,9 +307,11 @@ bool QRoboControllerInterface::writeMultiReg( quint16 startAddr, quint16 nReg,
     {
         mBoardMutex.lock();
         {
-            QThread::msleep( 1 );
-            return true;
+            QThread::msleep( 1 );            
         }
+        mBoardMutex.unlock();
+
+        return true;
     }
 
     mBoardMutex.lock();

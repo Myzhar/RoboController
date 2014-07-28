@@ -28,7 +28,7 @@ protected slots:
     void onUdpCtrlReadyRead(); ///< Called when a new data from UDP Control socket is available
 
 signals:
-    void clientGainedControl( QString clientIp); ///< Client gained the control of the robot
+    void clientGainedControl( QString clientIp ); ///< Client gained the control of the robot
     void clientLostControl( QString clientIp); ///< Client lost the control of the robot
     void clientControlRefused( QString clientIp); ///< Client control of the robot refused because another client is controlling
 

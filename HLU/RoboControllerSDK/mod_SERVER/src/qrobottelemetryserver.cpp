@@ -4,6 +4,8 @@
 #include <QTimerEvent>
 #include "modbus_registers.h"
 
+#include <loghandler.h>
+
 namespace roboctrl
 {
 
@@ -75,6 +77,8 @@ void QRobotTelemetryServer::setCtrlIP( QString clientIP)
 
 void QRobotTelemetryServer::multicastSendTelemetry()
 {
+    //qDebug() << PREFIX;
+
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_2);
@@ -128,13 +132,17 @@ void QRobotTelemetryServer::run()
 
 void QRobotTelemetryServer::onUpdateTimerTimeout()
 {
+    //qDebug() << PREFIX;
+
     if( updateTelemetry() )
         multicastSendTelemetry();
 }
 
 bool QRobotTelemetryServer::updateTelemetry()
 {
-    quint16 replyBuffer[4];
+     //qDebug() << PREFIX;
+
+    //quint16 replyBuffer[4];
 
     // >>>>> Telemetry update
     // WORD_TENSIONE_ALIM 8
@@ -152,21 +160,21 @@ bool QRobotTelemetryServer::updateTelemetry()
         return false;
 
     double speed0;
-    if(replyBuffer[0] < 32768)  // Speed is integer 2-complement!
+    if(reply[0] < 32767)  // Speed is integer 2-complement!
         speed0 = ((double)reply[0])/1000.0;
     else
         speed0 = ((double)(reply[0]-65536))/1000.0;
     mTelemetry.LinSpeedLeft = speed0;
 
     double speed1;
-    if(replyBuffer[1] < 32768)  // Speed is integer 2-complement!
-        speed1 = ((double)replyBuffer[1])/1000.0;
+    if(reply[1] < 32768)  // Speed is integer 2-complement!
+        speed1 = ((double)reply[1])/1000.0;
     else
-        speed1 = ((double)(replyBuffer[1]-65536))/1000.0;
+        speed1 = ((double)(reply[1]-65536))/1000.0;
     mTelemetry.LinSpeedRight = speed1;
 
-    mTelemetry.PwmLeft = replyBuffer[2];
-    mTelemetry.PwmRight = replyBuffer[3];
+    mTelemetry.PwmLeft = reply[2];
+    mTelemetry.PwmRight = reply[3];
 
     // TODO mTelemetry.RpmLeft = // CALCULATE!!!
     // TODO mTelemetry.RpmRight = // CALCULATE!!!
