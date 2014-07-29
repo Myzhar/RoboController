@@ -296,6 +296,8 @@ void QRobotCtrlServer::releaseControl( )
 
         mControllerClientIp = "";
     }    
+
+
 }
 
 }

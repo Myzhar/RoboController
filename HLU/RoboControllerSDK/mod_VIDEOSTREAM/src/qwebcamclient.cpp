@@ -23,31 +23,31 @@ QWebcamClient::QWebcamClient( int listenPort, int sendPort, QObject *parent) :
     mSendPort = sendPort;
     mServerIp = QString(MULTICAST_WEBCAM_SERVER_IP);
 
-    connectToServer( sendPort, listenPort );
+    start();
 }
 
 QWebcamClient::~QWebcamClient()
 {
-//    if(mUdpSocketSend)
-//    {
-//        /*char cmd = CMD_REMOVE_CLIENT;
-//        mUdpSocketSend->writeDatagram( &cmd,
-//                                       QHostAddress(mServerIp),
-//                                       mSendPort );
-//        mUdpSocketSend->flush();*/
+    //    if(mUdpSocketSend)
+    //    {
+    //        /*char cmd = CMD_REMOVE_CLIENT;
+    //        mUdpSocketSend->writeDatagram( &cmd,
+    //                                       QHostAddress(mServerIp),
+    //                                       mSendPort );
+    //        mUdpSocketSend->flush();*/
 
 
-//        delete mUdpSocketSend;
-//    }
+    //        delete mUdpSocketSend;
+    //    }
 
-//    if(mUdpSocketListen)
-//    {
-//        mUdpSocketListen->leaveMulticastGroup( QHostAddress(MULTICAST_WEBCAM_SERVER_IP) );
-//        delete mUdpSocketListen;
-//    }
+    //    if(mUdpSocketListen)
+    //    {
+    //        mUdpSocketListen->leaveMulticastGroup( QHostAddress(MULTICAST_WEBCAM_SERVER_IP) );
+    //        delete mUdpSocketListen;
+    //    }
 
-//    mConnected = false;
-//
+    //    mConnected = false;
+    //
     disconnectServer();
 }
 
@@ -99,8 +99,8 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
 
     // To connect to multicast server we need that the client socket is binded
     bool binded = mUdpSocketListen->bind( QHostAddress::AnyIPv4,
-                                            mListenPort,
-                                            QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint );
+                                          mListenPort,
+                                          QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint );
 
     // >>>> Trying connection
     if(!binded)
@@ -123,8 +123,8 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
                         .arg(mListenPort).arg(mSendPort);
             mConnected = true;
 
-            connect(mUdpSocketListen, SIGNAL(readyRead()),
-                    this, SLOT(processPendingDatagrams()) );
+            /*connect(mUdpSocketListen, SIGNAL(readyRead()),
+                    this, SLOT(onReadyRead()) );*/
         }
     }
     // <<<< Trying connection
@@ -132,126 +132,153 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
     mFrameReceived = 0;
     mFrameComplete = 0;
 
-    if(mConnected)
-        start();
-
     return mConnected;
 }
 
-void QWebcamClient::processPendingDatagrams()
+void QWebcamClient::run()
+{
+    connectToServer( mSendPort, mListenPort );
+
+    qDebug() << tr("Webcam Client Thread started");
+
+    forever
+    {
+        if( mUdpSocketListen->hasPendingDatagrams() )
+        {
+            QByteArray datagram;
+
+            qint64 datagramSize = mUdpSocketListen->pendingDatagramSize();
+
+            datagram.resize( datagramSize );
+
+            QDataStream stream( &datagram, QIODevice::ReadOnly );
+            stream.setVersion( QDataStream::Qt_5_3 );
+
+            mUdpSocketListen->readDatagram( datagram.data(), datagram.size() );
+
+            processDatagram( datagram );
+        }
+    }
+
+    qDebug() << tr("Webcam Client Thread finished");
+}
+
+void QWebcamClient::onReadyRead()
 {
     while(mUdpSocketListen->hasPendingDatagrams())
     {
         QByteArray datagram;
         datagram.resize( mUdpSocketListen->pendingDatagramSize() );
 
-        QDataStream stream( &datagram, QIODevice::ReadOnly );
-        stream.setVersion( QDataStream::Qt_5_3 );
+
 
         QHostAddress serverAddr;
-        mUdpSocketListen->readDatagram( datagram.data(), datagram.size(),
-                                        &serverAddr );
+        mUdpSocketListen->readDatagram( datagram.data(), datagram.size() );
 
-        mServerIp = serverAddr.toString();
-        //qDebug() << mServerIp;
+        processDatagram( datagram );
+    }
+}
 
-        quint8 id;
-        stream >> id;
+void QWebcamClient::processDatagram( QByteArray& datagram )
+{
+    QDataStream stream( &datagram, QIODevice::ReadOnly );
+    stream.setVersion( QDataStream::Qt_5_3 );
 
-        int infoSize = 9; // Packet info header size
+    quint8 id;
+    stream >> id;
 
-        if( id != mCurrentId )
+    int infoSize = 9; // Packet info header size
+
+    if( id != mCurrentId )
+    {
+        if(!mLastImageState)
+            qDebug() << PREFIX << tr("Id received: %4 - Frame #%1 lost. Received %2/%3 fragments").arg(mCurrentId).arg(mCurrentFragmentCount).arg(mNumFrag).arg(id);
+
+        mLastImageState = false;
+
+        mFrameReceived++;
+
+        mCurrentId = id;
+
+        //qDebug() << tr( "New frame id: %1").arg(mCurrentId);
+
+        stream >> mPacketSize;
+        stream >> mNumFrag;
+
+        //qDebug() << tr(" Received frag #%1").arg((unsigned int)mNumFrag);
+
+        stream >> mTailSize;
+
+        int dataSize;
+        if( mTailSize==0 )
+            dataSize = mNumFrag*mPacketSize;
+        else
+            dataSize = (mNumFrag-1)*(mPacketSize-infoSize)+mTailSize;
+
+        mCurrentFragmentCount = 0;
+        mCurrentBuffer.clear();
+        mCurrentBuffer.resize(dataSize);
+
+        //            qDebug() << tr( "Fragment count: %1 - Tail Size: %2 - Full Data Size: %3")
+        //                        .arg(mNumFrag).arg(mTailSize).arg(dataSize);
+    }
+    else
+    {
+        // >>>> Removing info data from stream and verifying of correctness
+        quint16 packetSize;
+        stream >> packetSize;
+        quint16 numFrag;
+        stream >> numFrag;
+        quint16 tailSize;
+        stream >> tailSize;
+
+        if( packetSize!=mPacketSize || numFrag!=mNumFrag || tailSize!=mTailSize )
         {
-            if(!mLastImageState)
-                qDebug() << PREFIX << tr("Id received: %4 - Frame #%1 lost. Received %2/%3 fragments").arg(mCurrentId).arg(mCurrentFragmentCount).arg(mNumFrag).arg(id);
+            qDebug() << tr( "Packet error" );
+            return;
+        }
+        // <<<< Removing info data from stream and verifying of correctness
+    }
 
-            mLastImageState = false;
+    quint16 fragIdx;
+    stream >> fragIdx;
+    int fragDataSize = mPacketSize-infoSize;
 
-            mFrameReceived++;
+    int startIdx = fragIdx*fragDataSize;
+    int endIdx = (fragIdx==mNumFrag-1)?(startIdx+mTailSize):(startIdx+fragDataSize);
 
-            mCurrentId = id;
+    for( int d=startIdx; d<endIdx; d++ )
+    {
+        quint8 elem;
+        stream >> elem;
 
-            //qDebug() << tr( "New frame id: %1").arg(mCurrentId);
+        mCurrentBuffer[d] = elem;
+    }
 
-            stream >> mPacketSize;
-            stream >> mNumFrag;
+    mCurrentFragmentCount++;
 
-            //qDebug() << tr(" Received frag #%1").arg((unsigned int)mNumFrag);
+    if(mCurrentFragmentCount==mNumFrag) // Image is ready
+    {
+        //mImgMutex.lock();
+        {
+            mLastImageState = true;
+            mLastCompleteFrame = cv::imdecode( cv::Mat( mCurrentBuffer ), 1 );
+        }
+        //mImgMutex.unlock();
 
-            stream >> mTailSize;
+        if(!mLastCompleteFrame.empty())
+        {
+            mFrameComplete++;
 
-            int dataSize;
-            if( mTailSize==0 )
-                dataSize = mNumFrag*mPacketSize;
-            else
-                dataSize = (mNumFrag-1)*(mPacketSize-infoSize)+mTailSize;
+            //cv::imshow( "Stream", mLastCompleteFrame );
+            emit newImageReceived();
 
-            mCurrentFragmentCount = 0;
-            mCurrentBuffer.clear();
-            mCurrentBuffer.resize(dataSize);
-
-            //            qDebug() << tr( "Fragment count: %1 - Tail Size: %2 - Full Data Size: %3")
-            //                        .arg(mNumFrag).arg(mTailSize).arg(dataSize);
+            //cv::waitKey( 1 );
+            //QCoreApplication::processEvents( QEventLoop::AllEvents, 50 );
+            //qDebug() << tr( "Frame #%1 ready" ).arg((int)id);
         }
         else
-        {
-            // >>>> Removing info data from stream and verifying of correctness
-            quint16 packetSize;
-            stream >> packetSize;
-            quint16 numFrag;
-            stream >> numFrag;
-            quint16 tailSize;
-            stream >> tailSize;
-
-            if( packetSize!=mPacketSize || numFrag!=mNumFrag || tailSize!=mTailSize )
-            {
-                qDebug() << tr( "Packet error" );
-                continue;
-                //return;
-            }
-            // <<<< Removing info data from stream and verifying of correctness
-        }
-
-        quint16 fragIdx;
-        stream >> fragIdx;
-        int fragDataSize = mPacketSize-infoSize;
-
-        int startIdx = fragIdx*fragDataSize;
-        int endIdx = (fragIdx==mNumFrag-1)?(startIdx+mTailSize):(startIdx+fragDataSize);
-
-        for( int d=startIdx; d<endIdx; d++ )
-        {
-            quint8 elem;
-            stream >> elem;
-
-            mCurrentBuffer[d] = elem;
-        }
-
-        mCurrentFragmentCount++;
-
-        if(mCurrentFragmentCount==mNumFrag) // Image is ready
-        {
-            //mImgMutex.lock();
-            {
-                mLastImageState = true;
-                mLastCompleteFrame = cv::imdecode( cv::Mat( mCurrentBuffer ), 1 );
-            }
-            //mImgMutex.unlock();
-
-            if(!mLastCompleteFrame.empty())
-            {
-                mFrameComplete++;
-
-                //cv::imshow( "Stream", mLastCompleteFrame );
-                emit newImageReceived();
-
-                //cv::waitKey( 1 );
-                //QCoreApplication::processEvents( QEventLoop::AllEvents, 50 );
-                //qDebug() << tr( "Frame #%1 ready" ).arg((int)id);
-            }
-            else
-                qDebug() << tr( "Frame #%1 error: Wrong encoding" ).arg((int)id);
-        }
+            qDebug() << tr( "Frame #%1 error: Wrong encoding" ).arg((int)id);
     }
 }
 

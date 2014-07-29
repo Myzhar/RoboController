@@ -282,6 +282,9 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         {
             try
             {
+                if( mJoyMot[0]==0 &&  mJoyMot[1]==0)
+                    mRoboCtrl->releaseRobotControl();
+
                 if( mJoyMot[0] != mLastJoyMot[0] || mJoyMot[1] != mLastJoyMot[1] )
                 {
                     // >>>>> Taking robot control
@@ -291,7 +294,6 @@ void CMainWindow::timerEvent( QTimerEvent* event )
 
                     double speed0 = mJoyMot[0]/scale*mMaxMotorSpeed;
                     double speed1 = mJoyMot[1]/scale*mMaxMotorSpeed;
-
 
                     {
                         mRoboCtrl->setMotorSpeeds( speed0, speed1 );
@@ -310,6 +312,9 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         {
             try
             {
+                if( mJoyMot[0]==0 &&  mJoyMot[1]==0)
+                    mRoboCtrl->releaseRobotControl();
+
                 if( mJoyMot[0] != mLastJoyMot[0] || mJoyMot[1] != mLastJoyMot[1] )
                 {
                     // >>>>> Taking robot control

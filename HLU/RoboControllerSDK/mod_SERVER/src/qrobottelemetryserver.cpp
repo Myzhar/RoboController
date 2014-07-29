@@ -19,7 +19,7 @@ QRobotTelemetryServer::QRobotTelemetryServer(QRoboControllerInterface* robocontr
 {
     mMulticastUdpTelemetryServerPort = sendPort;
 
-   openUdpServerSession();
+    openUdpServerSession();
 }
 
 QRobotTelemetryServer::~QRobotTelemetryServer()
@@ -56,7 +56,7 @@ void QRobotTelemetryServer::openUdpServerSession()
 void QRobotTelemetryServer::closeUdpServerSession()
 {
     disconnect( mUpdateTimer, SIGNAL(timeout()),
-             this, SLOT(onUpdateTimerTimeout()) );
+                this, SLOT(onUpdateTimerTimeout()) );
 
     if(mUpdateTimer)
         delete mUpdateTimer;
@@ -113,10 +113,10 @@ void QRobotTelemetryServer::multicastSendTelemetry()
         qDebug() << PREFIX << tr("[%1] Missed telemetry sending")
                     .arg(QDateTime::fromMSecsSinceEpoch(timestamp).toString(Qt::ISODate));
     }
-//    else
-//    {
-//        qDebug() << PREFIX << tr("Sent telemetry to port %1:%2").arg(MULTICAST_DATA_SERVER_IP).arg(mMulticastUdpTelemetryServerPort);
-//    }
+    //    else
+    //    {
+    //        qDebug() << PREFIX << tr("Sent telemetry to port %1:%2").arg(MULTICAST_DATA_SERVER_IP).arg(mMulticastUdpTelemetryServerPort);
+    //    }
 }
 
 void QRobotTelemetryServer::run()
@@ -138,7 +138,7 @@ void QRobotTelemetryServer::onUpdateTimerTimeout()
 
 bool QRobotTelemetryServer::updateTelemetry()
 {
-     //qDebug() << PREFIX;
+    // qDebug() << PREFIX;
 
     //quint16 replyBuffer[4];
 
@@ -158,21 +158,21 @@ bool QRobotTelemetryServer::updateTelemetry()
         return false;
 
     double speed0;
-    if(reply[0] < 32767)  // Speed is integer 2-complement!
+    if(reply[2] < 32767)  // Speed is integer 2-complement!
         speed0 = ((double)reply[0])/1000.0;
     else
         speed0 = ((double)(reply[0]-65536))/1000.0;
     mTelemetry.LinSpeedLeft = speed0;
 
     double speed1;
-    if(reply[1] < 32768)  // Speed is integer 2-complement!
+    if(reply[3] < 32768)  // Speed is integer 2-complement!
         speed1 = ((double)reply[1])/1000.0;
     else
         speed1 = ((double)(reply[1]-65536))/1000.0;
     mTelemetry.LinSpeedRight = speed1;
 
-    mTelemetry.PwmLeft = reply[2];
-    mTelemetry.PwmRight = reply[3];
+    mTelemetry.PwmLeft = reply[4];
+    mTelemetry.PwmRight = reply[5];
 
     // TODO mTelemetry.RpmLeft = // CALCULATE!!!
     // TODO mTelemetry.RpmRight = // CALCULATE!!!
@@ -181,7 +181,7 @@ bool QRobotTelemetryServer::updateTelemetry()
     nReg = 1;
     reply = mRoboController->readMultiReg( startAddr, nReg );
 
-    mTelemetry.Battery = ((double)reply[0])/1000.0;
+    mTelemetry.Battery = ((double)reply[2])/1000.0;
 
     return true;
 

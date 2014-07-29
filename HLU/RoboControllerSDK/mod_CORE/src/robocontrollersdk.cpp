@@ -1472,6 +1472,12 @@ void RoboControllerSDK::releaseRobotControl()
     if(!mUdpStatusSocket)
         return;
 
+    if( mMotorCtrlMode == mcPID )
+        setMotorSpeeds( 0.0, 0.0 );
+    else
+        setMotorPWMs( 0, 0 );
+
+
     QVector<quint16> vec;
     sendBlockUDP( mUdpControlSocket, QHostAddress(mServerAddr), mUdpControlPortSend, CMD_REL_ROBOT_CTRL, vec, false );
 }

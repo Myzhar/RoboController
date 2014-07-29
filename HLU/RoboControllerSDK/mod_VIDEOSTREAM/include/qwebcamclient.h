@@ -31,11 +31,16 @@ public:
     cv::Mat getLastFrame();
     void getStats( quint64& frmCount, quint64& frmComplete){frmCount=mFrameReceived;frmComplete=mFrameComplete;}
 
+protected:
+    void run() Q_DECL_OVERRIDE;
+    void processDatagram(QByteArray &datagram);
+
 signals:
     void newImageReceived();
 
-public slots:
-    void processPendingDatagrams();
+protected slots:
+    void onReadyRead();
+
 
 private:
     QUdpSocket *mUdpSocketSend;
