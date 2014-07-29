@@ -17,7 +17,8 @@ namespace roboctrl
 
 RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/,
                                      quint16 udpStatusPortSend/*=14550*/,
-                                     quint16 udpStatusPortListen/*=14555*/, quint16 multicastUdpPort/*=14565*/,
+                                     quint16 udpStatusPortListen/*=14555*/,
+                                     quint16 multicastUdpPort/*=14565*/,
                                      quint16 udpControlPort/*=14560*/,
                                      quint16 tcpPort/*=14500*/) :
     mTcpSocket(NULL),
@@ -303,6 +304,15 @@ void RoboControllerSDK::disconnectUdpServers()
                 mUdpStatusSocket->waitForDisconnected(1000) )
             qDebug() << tr("UDP Status Socket Disconnected");
     }
+
+    if(mUdpMulticastTelemetrySocket)
+    {
+        mUdpMulticastTelemetrySocket->leaveMulticastGroup( QHostAddress(MULTICAST_DATA_SERVER_IP) );
+        mUdpStatusSocket->close();
+        if( mUdpMulticastTelemetrySocket->state() == QAbstractSocket::UnconnectedState ||
+                mUdpMulticastTelemetrySocket->waitForDisconnected(1000) )
+            qDebug() << tr("UDP Telemetry Socket Disconnected");
+    }
 }
 
 void RoboControllerSDK::onTcpReadyRead()
@@ -445,27 +455,27 @@ void RoboControllerSDK::onTcpReadyRead()
 
 void RoboControllerSDK::onUdpTelemetryReadyRead()
 {
-    quint32 telemetryReadyReadCount = 0;
+    //quint32 telemetryReadyReadCount = 0;
 
     while( mUdpMulticastTelemetrySocket->hasPendingDatagrams() )
     {
-        qDebug() << tr("telemetryReadyReadCount: %1").arg(++telemetryReadyReadCount);
+        //qDebug() << tr("telemetryReadyReadCount: %1").arg(++telemetryReadyReadCount);
 
         QByteArray datagram;
-        qint64 datagramSize = mUdpStatusSocket->pendingDatagramSize();
+        qint64 datagramSize = mUdpMulticastTelemetrySocket->pendingDatagramSize();
 
         if( datagram.size()< datagramSize )
             datagram.resize( datagramSize );
 
         datagram.resize( datagramSize );
 
-        QDataStream in( datagram );
-        in.setVersion(QDataStream::Qt_5_2);
-
         QHostAddress addr;
         quint16 port;
 
-        mUdpStatusSocket->readDatagram( datagram.data(), datagram.size(), &addr, &port );
+        mUdpMulticastTelemetrySocket->readDatagram( datagram.data(), datagram.size(), &addr, &port );
+
+        QDataStream in( datagram );
+        in.setVersion(QDataStream::Qt_5_2);               
 
         int count = 0;
         quint16 val16;
@@ -479,7 +489,7 @@ void RoboControllerSDK::onUdpTelemetryReadyRead()
             {
                 QDataStream::Status st = in.status();
 
-                qCritical() << PREFIX << tr("Read %1 bytes not founding UDP_START_VAL. Stream status: %2")
+                qCritical() << PREFIX << tr("Read %1 bytes not founding UDP_TEL_START_VAL. Stream status: %2")
                                .arg(datagramSize).arg(st);
                 return;
             }

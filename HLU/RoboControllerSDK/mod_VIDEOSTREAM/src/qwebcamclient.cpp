@@ -128,6 +128,9 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
     }
     // <<<< Trying connection
 
+    mFrameReceived = 0;
+    mFrameComplete = 0;
+
     if(mConnected)
         start();
 
@@ -163,6 +166,8 @@ void QWebcamClient::processPendingDatagrams()
             if(!mLastImageState)
                 qDebug() << tr("Frame #%1 lost. Received %2/%3").arg(mCurrentId).arg(mCurrentFragmentCount).arg(mNumFrag);
             mLastImageState = false;
+
+            mFrameReceived++;
 
             mCurrentId = id;
 
@@ -235,6 +240,8 @@ void QWebcamClient::processPendingDatagrams()
 
             if(!mLastCompleteFrame.empty())
             {
+                mFrameComplete++;
+
                 //cv::imshow( "Stream", mLastCompleteFrame );
                 emit newImageReceived();
 

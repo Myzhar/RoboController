@@ -97,8 +97,10 @@ private:
 
     QLabel* mStatusLabel;
     QLabel* mBatteryLabel;
+    QLabel* mVideoStats;
 
     QProgressBar* mStatusBattLevelProgr;
+
     // <<<< GUI Objects
 
     bool mPidEnabled;

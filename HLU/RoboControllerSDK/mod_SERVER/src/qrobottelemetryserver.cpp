@@ -123,15 +123,9 @@ void QRobotTelemetryServer::run()
 {
     qDebug() << tr("Telemetry Server Thread started");
 
-    //openUdpServerSession();
-
     exec();
 
-    //closeUdpServerSession();
-
     qDebug() << tr("Telemetry Server Thread finished.");
-
-
 }
 
 void QRobotTelemetryServer::onUpdateTimerTimeout()

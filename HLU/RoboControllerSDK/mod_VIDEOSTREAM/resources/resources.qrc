@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/img">
+        <file>MyzharBot_DEFAULT.png</file>
+        <file>MyzharBot_DEFAULT.jpg</file>
+    </qresource>
+</RCC>

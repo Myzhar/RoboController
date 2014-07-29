@@ -30,33 +30,16 @@ QWebcamServer::QWebcamServer(int camIdx, int sendPort,
     mMaxPacketSize=udpPacketSize;
     mMaxClientCount=maxClientCount;
 
-    mFps = 25;
+    mWebcamConnected = false;
 
-    if( mCap.open( mCamIdx ) )
-    {
-        mCap.set( CV_CAP_PROP_FRAME_WIDTH, 640  );
-        mCap.set( CV_CAP_PROP_FRAME_HEIGHT, 480 );
+    QImage img( ":/img/MyzharBot_DEFAULT.jpg" );
+    mDefImage = img.convertToFormat( QImage::Format_RGB888 );
+    mDefImage = mDefImage.rgbSwapped();
 
-        qDebug() << tr("Camera %1 opened").arg(mCamIdx);
-        qDebug() << tr("Server started. Sending on port %1. Listening on port %2")
-                    .arg(mSendPort).arg(mListenPort);
+    mFps = 10;
 
-        mStopped = false;
-
-        // Starting!
-        start();
-    }
-    else
-    {
-        QString err = tr("Failed starting webcam %1").arg(mCamIdx);
-        qCritical() << err;
-        qDebug() << "Server not started";
-        qDebug() << " ";
-
-        roboctrl::RcException exc(excNoWebcamFound, err.toStdString().c_str() );
-
-        throw exc;
-    }
+    // Starting!
+    start();
 }
 
 QWebcamServer::~QWebcamServer()
@@ -78,6 +61,43 @@ void QWebcamServer::stop()
         mStopped = true;
     }
     mStopMutex.unlock();
+}
+
+bool QWebcamServer::connectWebcam()
+{
+    static bool infoOut = false;
+    if( mCap.open( mCamIdx ) )
+    {
+        mCap.set( CV_CAP_PROP_FRAME_WIDTH, 640  );
+        mCap.set( CV_CAP_PROP_FRAME_HEIGHT, 480 );
+
+        qDebug() << tr("Camera %1 opened").arg(mCamIdx);
+        qDebug() << tr("Server started. Sending on port %1. Listening on port %2")
+                    .arg(mSendPort).arg(mListenPort);
+
+        mStopped = false;
+        infoOut = false;
+
+        return true;
+    }
+    else
+    {
+        if( !infoOut )
+        {
+            QString err = tr("Webcam not found (%1). Please connect a Webcam to USB").arg(mCamIdx);
+            qWarning() << err;
+
+            infoOut = true;
+            /*qDebug() << "Server not started";
+            qDebug() << " ";
+
+            roboctrl::RcException exc(excNoWebcamFound, err.toStdString().c_str() );
+
+            throw exc;*/
+        }
+
+        return false;
+    }
 }
 
 void QWebcamServer::sendFragmentedData( QByteArray data, char fragID )
@@ -148,7 +168,12 @@ void QWebcamServer::run()
 
     connect( mUdpSocketReceiver, SIGNAL(readyRead()),
              this, SLOT(onReadyRead() ) );
+
+    mStopped = false;
     // <<<<< Thread Initialization
+
+    cv::Mat frame;
+    vector<uchar> compressed;
 
     // >>>>> Thread Loop
     forever
@@ -169,13 +194,32 @@ void QWebcamServer::run()
         }
         mStopMutex.unlock();
 
-        cv::Mat frame;
-        vector<uchar> compressed;
 
-        mCap >> frame;
+
+        if( !mWebcamConnected )
+            mWebcamConnected = connectWebcam();
+
+        if(mWebcamConnected)
+            mCap >> frame;
+        else
+        {
+            int h = mDefImage.height();
+            int w = mDefImage.width();
+
+            cv::Mat img( h, w, CV_8UC3, mDefImage.bits() );
+            frame = img.clone();
+        }
+
         frameCount++;
 
         //qDebug() << tr( "Frame %1").arg( frameCount );
+
+#ifdef WIN32
+        if( !frame.empty() )
+        {
+            cv::imshow( "Frame", frame );
+        }
+#endif
 
         // JPG Compression in memory
         if( !frame.empty() )
@@ -190,14 +234,7 @@ void QWebcamServer::run()
             // <<<<< UDP Sending
         }
 
-#ifdef WIN32
-        if( !frame.empty() )
-        {
-            cv::imshow( "Frame", frame );
-        }
-#endif
-
-        QCoreApplication::processEvents( /*QEventLoop::AllEvents, 50*/ );
+        //QCoreApplication::processEvents( /*QEventLoop::AllEvents, 50*/ );
 
         int wait = waitMsec - chrono.elapsed(); // to grant maximum FPS
         if( wait>0 )
@@ -209,7 +246,7 @@ void QWebcamServer::run()
 
     // >>>>> Thread deinitialization
     disconnect( mUdpSocketReceiver, SIGNAL(readyRead()),
-             this, SLOT(onReadyRead() ) );
+                this, SLOT(onReadyRead() ) );
 
     if(mUdpSocketSender)
         delete mUdpSocketSender;

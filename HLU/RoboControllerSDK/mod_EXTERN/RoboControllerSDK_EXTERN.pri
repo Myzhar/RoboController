@@ -49,7 +49,7 @@ CONFIG(opencv)
         message(Using OpenCV for Windows)
         OPENCV_LIB_PATH = $$ROBOCONTROLLERSDKPATH/mod_EXTERN/opencv-2.4.9/bin/vc12/lib
 
-        #LIBS += \
+        #☼LIBS += \
         #        $$OPENCV_LIB_PATH/opencv_core249d.lib \
         #        $$OPENCV_LIB_PATH/opencv_highgui249d.lib
 

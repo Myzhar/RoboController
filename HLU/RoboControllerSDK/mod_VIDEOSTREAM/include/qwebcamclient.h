@@ -29,6 +29,7 @@ public:
     void disconnectServer();
 
     cv::Mat getLastFrame();
+    void getStats( quint64& frmCount, quint64& frmComplete){frmCount=mFrameReceived;frmComplete=mFrameComplete;}
 
 signals:
     void newImageReceived();
@@ -56,6 +57,9 @@ private:
     QMutex mImgMutex;
     cv::Mat mLastCompleteFrame;
     bool mLastImageState;
+
+    quint64 mFrameReceived;
+    quint64 mFrameComplete;
 };
 
 }

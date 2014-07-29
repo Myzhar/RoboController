@@ -177,6 +177,9 @@ CMainWindow::CMainWindow(QWidget *parent) :
     ui->statusBar->addWidget( mStatusBattLevelProgr);
     mStatusBattLevelProgr->setTextVisible(false);
     mStatusBattLevelProgr->setRange(0,100);
+
+    mVideoStats = new QLabel(tr("Video: ---/---"));
+    ui->statusBar->addWidget( mVideoStats );
     // <<<<< Status Bar
 
     // >>>>> Fonts
@@ -322,7 +325,7 @@ void CMainWindow::timerEvent( QTimerEvent* event )
                     mRoboCtrl->setMotorPWMs( pwm0, pwm1 );
                     mLastJoyMot[0] = mJoyMot[0];
                     mLastJoyMot[1] = mJoyMot[1];
-                }               
+                }
             }
             catch( RcException &e)
             {
@@ -337,19 +340,26 @@ void CMainWindow::timerEvent( QTimerEvent* event )
 
         //qDebug() << Q_FUNC_INFO <<  "mFrameReqTimer";
 
-        if( mWebcamClient!=NULL && mNewImageAvailable   )
+        if( mWebcamClient!=NULL )
         {
+            quint64 frmCount,frmComplete;
+            mWebcamClient->getStats( frmCount, frmComplete );
 
-            mNewImageAvailable = false;
-            cv::Mat frame = mWebcamClient->getLastFrame();
+            mVideoStats->setText( tr("Video: %1/%2").arg(frmComplete).arg(frmCount) );
 
-            ui->widget_video_container->scene()->setBgImage( frame );
-
-            if( mDefaultBgImg.rows!=frame.rows || mDefaultBgImg.cols!=frame.cols  )
+            if( mNewImageAvailable )
             {
-                mDefaultBgImg = frame;
-                ui->widget_video_container->fitInView(QRectF(0,0, frame.cols, frame.rows),
-                                                      Qt::KeepAspectRatio );
+                mNewImageAvailable = false;
+                cv::Mat frame = mWebcamClient->getLastFrame();
+
+                ui->widget_video_container->scene()->setBgImage( frame );
+
+                if( mDefaultBgImg.rows!=frame.rows || mDefaultBgImg.cols!=frame.cols  )
+                {
+                    mDefaultBgImg = frame;
+                    ui->widget_video_container->fitInView(QRectF(0,0, frame.cols, frame.rows),
+                                                          Qt::KeepAspectRatio );
+                }
             }
         }
     }
@@ -454,9 +464,9 @@ void CMainWindow::onConnectButtonClicked()
         return;
     }
 
-    // >>>>> Signals/Slots connections    
+    // >>>>> Signals/Slots connections
     connect( mRoboCtrl, SIGNAL(newRobotConfiguration(RobotConfiguration&)) ,
-             this, SLOT(onNewRobotConfiguration(RobotConfiguration&)) );    
+             this, SLOT(onNewRobotConfiguration(RobotConfiguration&)) );
     connect( mRoboCtrl, SIGNAL(newBoardStatus(BoardStatus&)),
              this, SLOT(onNewBoardStatus(BoardStatus&)) );
     connect( mRoboCtrl, SIGNAL(newTelemetryAvailable()),
@@ -792,7 +802,7 @@ void CMainWindow::onNewImage()
 
 void CMainWindow::onNewTelemetryAvailable()
 {
-    qDebug() << PREFIX << tr("New Telemetry available");
+    //qDebug() << PREFIX << tr("New Telemetry available");
 
     mNewTelemetryAvailable = true;
 }

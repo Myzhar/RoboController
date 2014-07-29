@@ -7,11 +7,15 @@
 #include <QStringList>
 #include <QTimerEvent>
 #include <QMutex>
+#include <QImage>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 #include "RoboControllerSDK_global.h"
+
+//#define DEFAULT_IMAGE "MyzharBot_DEFAULT.png"
+#define DEFAULT_IMAGE "MyzharBot_DEFAULT.jpg"
 
 using namespace std;
 
@@ -42,6 +46,8 @@ protected:
     void sendFragmentedData( QByteArray data, char fragID );
     void run();
 
+    bool connectWebcam();
+
 private:
     int mCamIdx;
     int mSendPort;
@@ -60,7 +66,11 @@ private:
     QMutex mStopMutex;
     bool mStopped;
 
+    bool mWebcamConnected;
+
     quint8 mFps;
+
+    QImage mDefImage;
 };
 
 }

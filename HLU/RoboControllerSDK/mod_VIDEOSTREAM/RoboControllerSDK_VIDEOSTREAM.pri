@@ -20,3 +20,6 @@ CONFIG(opencv) {
   message(The Module VIDEOSTREAM requires VISION module to be include before in PRO file)
 }
 
+RESOURCES += \
+    ../RoboControllerSDK/mod_VIDEOSTREAM/resources/resources.qrc
+
