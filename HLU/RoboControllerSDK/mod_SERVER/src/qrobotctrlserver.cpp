@@ -105,7 +105,7 @@ void QRobotCtrlServer::onUdpCtrlReadyRead()
         mUdpCtrlReceiver->readDatagram( buffer.data(), buffer.size(), &addr, &port );
 
         QDataStream in( buffer );
-        in.setVersion(QDataStream::Qt_5_2);
+        in.setVersion(QDataStream::Qt_5_3);
 
         // >>>>> Searching for start character
         int count = 0;

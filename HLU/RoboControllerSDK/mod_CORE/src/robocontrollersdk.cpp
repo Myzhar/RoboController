@@ -138,7 +138,7 @@ QString RoboControllerSDK::findServer(quint16 udpSendPort/*=14550*/ , quint64 ud
     // >>>>> sendCommand( udp, CMD_SERVER_PING_REQ, vec  );
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_2);
+    out.setVersion(QDataStream::Qt_5_3);
     out << (quint16)UDP_START_VAL; // Start word
     out << (quint16)0;    // Block size
     out << (quint16)1;    // Message counter
@@ -318,7 +318,7 @@ void RoboControllerSDK::disconnectUdpServers()
 void RoboControllerSDK::onTcpReadyRead()
 {
     QDataStream in(mTcpSocket);
-    in.setVersion(QDataStream::Qt_5_2);
+    in.setVersion(QDataStream::Qt_5_3);
 
     // mNextTcpBlockSize=0; WRONG!!!!!!!!
     quint16 msgCode;
@@ -475,7 +475,7 @@ void RoboControllerSDK::onUdpTelemetryReadyRead()
         mUdpMulticastTelemetrySocket->readDatagram( datagram.data(), datagram.size(), &addr, &port );
 
         QDataStream in( datagram );
-        in.setVersion(QDataStream::Qt_5_2);               
+        in.setVersion(QDataStream::Qt_5_3);
 
         int count = 0;
         quint16 val16;
@@ -542,7 +542,7 @@ void RoboControllerSDK::onUdpStatusReadyRead()
         mUdpStatusSocket->readDatagram( buffer.data(), buffer.size(), &addr, &port );
 
         QDataStream in( buffer );
-        in.setVersion(QDataStream::Qt_5_2);
+        in.setVersion(QDataStream::Qt_5_3);
 
         quint16 dataSize;
 
@@ -869,7 +869,7 @@ void RoboControllerSDK::sendBlockUDP( QUdpSocket *socket, QHostAddress addr, qui
 
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_2);
+    out.setVersion(QDataStream::Qt_5_3);
     out << (quint16)UDP_START_VAL; // Start word
     out << (quint16)0;     // Block size
     out << mMsgCounter;    // Message counter
@@ -927,7 +927,7 @@ bool RoboControllerSDK::sendBlockTCP(quint16 msgCode, QVector<quint16> &data )
 
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_2);
+    out.setVersion(QDataStream::Qt_5_3);
     out << (quint16)TCP_START_VAL; // Start word
     out << (quint16)0;     // Block size
     out << mMsgCounter;    // Message counter

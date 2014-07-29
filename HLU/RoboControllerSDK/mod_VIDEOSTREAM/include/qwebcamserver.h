@@ -68,7 +68,7 @@ private:
 
     bool mWebcamConnected;
 
-    quint8 mFps;
+    double mFps;
 
     QImage mDefImage;
 };

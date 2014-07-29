@@ -5,8 +5,10 @@
 #include <QTime>
 #include <QCoreApplication>
 #include <QTime>
+#include <loghandler.h>
 
 using namespace std;
+#define MAX_FPS 25.0
 
 namespace roboctrl
 {
@@ -36,7 +38,7 @@ QWebcamServer::QWebcamServer(int camIdx, int sendPort,
     mDefImage = img.convertToFormat( QImage::Format_RGB888 );
     mDefImage = mDefImage.rgbSwapped();
 
-    mFps = 10;
+    mFps = MAX_FPS;
 
     // Starting!
     start();
@@ -88,12 +90,6 @@ bool QWebcamServer::connectWebcam()
             qWarning() << err;
 
             infoOut = true;
-            /*qDebug() << "Server not started";
-            qDebug() << " ";
-
-            roboctrl::RcException exc(excNoWebcamFound, err.toStdString().c_str() );
-
-            throw exc;*/
         }
 
         return false;
@@ -111,13 +107,13 @@ void QWebcamServer::sendFragmentedData( QByteArray data, char fragID )
     int numFrag = dataSize/fragDataSize; // packet count
 
     if(tailSize > 0) // if there is a not complete tail we must send a packet not full
-        numFrag++;
+        numFrag++;    
 
     for( int i=0; i<numFrag; i++ )
     {
         QByteArray buffer( mMaxPacketSize, 0 );
         QDataStream stream( &buffer, QIODevice::WriteOnly );
-        stream.setVersion( QDataStream::Qt_4_0 );
+        stream.setVersion( QDataStream::Qt_5_3 );
 
         stream << (quint8)fragID << (quint16)mMaxPacketSize << (quint16)numFrag << (quint16)tailSize << (quint16)i;
 
@@ -125,20 +121,20 @@ void QWebcamServer::sendFragmentedData( QByteArray data, char fragID )
         int endIdx = (i==numFrag-1)?(startIdx+tailSize):(startIdx+fragDataSize);
         for( int d=startIdx; d<endIdx; d++ )
         {
-            quint8 noise=0;
-            quint8 val = (quint8)data[d]+noise;
-            stream << val;
+            stream << (quint8)data[d];
         }
 
         int res = mUdpSocketSender->writeDatagram( buffer, QHostAddress(MULTICAST_WEBCAM_SERVER_IP), mSendPort );
+        mUdpSocketSender->flush();
 
         if( -1==res )
         {
-            qDebug() << tr("Frame #%3: Missed fragment %1/%2 to Broadcast")
-                        .arg(i).arg(numFrag).arg((quint8)fragID);
+            qDebug() << tr("Frame #%3: Missed fragment %1/%2 to Broadcast. Error: %1")
+                        .arg(i).arg(numFrag).arg((quint8)fragID).arg(mUdpSocketSender->errorString());
         }
 
-        //QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
+        usleep(1);
+        //msleep(1);
     }
 
     //    qDebug() << tr("Sent frame #%1 - size: %2 bytes").arg((int)fragID).arg(data.size() );
@@ -153,7 +149,7 @@ void QWebcamServer::run()
     // >>>>> Frame compression parameters
     vector<int> params;
     params.push_back(CV_IMWRITE_JPEG_QUALITY);
-    params.push_back(75);
+    params.push_back(85);
     // <<<<< Frame compression parameters
 
     quint8 frameCount = 0;
@@ -175,11 +171,13 @@ void QWebcamServer::run()
     cv::Mat frame;
     vector<uchar> compressed;
 
+    setPriority( QThread::TimeCriticalPriority );
+
     // >>>>> Thread Loop
     forever
     {
-        // Waiting between loops according to FPS set by user
-        double waitMsec = 1000.0/((double)mFps);
+        // Waiting between loops according to FPS
+        double sleepMsec = 1000.0/((double)mFps);
 
         QTime chrono;
         chrono.start();
@@ -193,8 +191,6 @@ void QWebcamServer::run()
             }
         }
         mStopMutex.unlock();
-
-
 
         if( !mWebcamConnected )
             mWebcamConnected = connectWebcam();
@@ -221,6 +217,8 @@ void QWebcamServer::run()
         }
 #endif
 
+        //QTime chrono_elab;
+        //chrono_elab.start();
         // JPG Compression in memory
         if( !frame.empty() )
         {
@@ -233,12 +231,40 @@ void QWebcamServer::run()
             sendFragmentedData( fullDatagram, frameCount );
             // <<<<< UDP Sending
         }
+        //qDebug() << tr("Elaboration time: %1 msec").arg(chrono_elab.elapsed());
 
-        //QCoreApplication::processEvents( /*QEventLoop::AllEvents, 50*/ );
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 1 );
 
-        int wait = waitMsec - chrono.elapsed(); // to grant maximum FPS
-        if( wait>0 )
-            msleep(wait);
+        int elapsed = chrono.elapsed();
+        //qDebug() << tr("Elapsed: %1 msec").arg(elapsed);
+
+        int sleep = sleepMsec - elapsed;
+
+       // >>>>> FPS auto-tuning
+        // Note FPS are tuned such to give to client at 10msec between
+        // two consecutive frames
+        if( sleep<0 )
+        {
+            mFps -= 1.0;
+            qDebug() << PREFIX << tr("New FPS %1 (Sleep: %2)").arg(mFps).arg(sleep);
+        }
+        else if( sleep<1 )
+        {
+            mFps -= 0.05;
+            qDebug() << PREFIX << tr("New FPS %1 (Sleep: %2)").arg(mFps).arg(sleep);
+        }
+        else if( sleep>3 )
+        {
+            mFps += 0.05;
+            if( mFps>MAX_FPS )
+                mFps = MAX_FPS;
+            qDebug() << PREFIX << tr("New FPS %1 (Sleep: %2)").arg(mFps).arg(sleep);
+        }
+        // <<<<< FPS auto-tuning
+
+        if( sleep>0 )
+            msleep(sleep);
+
 
         //qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz") << tr("Wait: %1msec").arg(wait);
     }
@@ -274,7 +300,7 @@ void QWebcamServer::onReadyRead()
         datagram.resize( mUdpSocketReceiver->pendingDatagramSize() );
 
         QDataStream stream( &datagram, QIODevice::ReadOnly );
-        stream.setVersion( QDataStream::Qt_4_0 );
+        stream.setVersion( QDataStream::Qt_5_3 );
 
         QHostAddress senderIP;
         mUdpSocketReceiver->readDatagram( datagram.data(), datagram.size(),

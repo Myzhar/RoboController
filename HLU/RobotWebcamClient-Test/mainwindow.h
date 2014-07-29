@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <qopencvscene.h>
 #include <qwebcamclient.h>
+#include <QLabel>
 
 namespace Ui {
 class MainWindow;
@@ -33,6 +34,8 @@ private:
 
     QOpenCVScene* mScene; ///< Default scene to be rendered
     QWebcamClient* mWebcamClient;
+
+    QLabel* mStatusInfo;
 };
 
 #endif // MAINWINDOW_H

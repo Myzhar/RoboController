@@ -81,7 +81,7 @@ void QRobotTelemetryServer::multicastSendTelemetry()
 
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_2);
+    out.setVersion(QDataStream::Qt_5_3);
     out << (quint16)UDP_TEL_START_VAL; // Start Word
     out << (quint16)0;      // Block size
 

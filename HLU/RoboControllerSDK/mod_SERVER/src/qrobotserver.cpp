@@ -374,7 +374,7 @@ void QRobotServer::sendBlockTCP(quint16 msgCode, QVector<quint16>& data )
 {
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_2);
+    out.setVersion(QDataStream::Qt_5_3);
     out << (quint16)TCP_START_VAL; // Start word
     out << (quint16)0;      // Block size
     out << mMsgCounter;     // Message counter
@@ -404,7 +404,7 @@ void QRobotServer::sendInfoBlockUDP( QHostAddress addr, quint16 msgCode, QVector
 {
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_2);
+    out.setVersion(QDataStream::Qt_5_3);
     out << (quint16)UDP_START_VAL; // Start Word
     out << (quint16)0;      // Block size
     out << mMsgCounter;     // Message counter
@@ -433,7 +433,7 @@ void QRobotServer::sendInfoBlockUDP( QHostAddress addr, quint16 msgCode, QVector
 void QRobotServer::onTcpReadyRead()
 {
     QDataStream in(mTcpSocket);
-    in.setVersion(QDataStream::Qt_5_2);
+    in.setVersion(QDataStream::Qt_5_3);
 
     int headerSize = 3; // [blockSize][msgIdx][msgCode] {[start_word] is ignored in block size}
 
@@ -664,7 +664,7 @@ void QRobotServer::onUdpInfoServerReadyRead()
         // addr = QHostAddress( )
 
         QDataStream in( buffer );
-        in.setVersion(QDataStream::Qt_5_2);
+        in.setVersion(QDataStream::Qt_5_3);
 
         // >>>>> Searching for start character
         int count = 0;

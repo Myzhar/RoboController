@@ -553,7 +553,8 @@ void CMainWindow::onConnectButtonClicked()
     QCoreApplication::processEvents( QEventLoop::AllEvents, 1500 );
     QThread::msleep(500);
 
-    mWebcamClient = new QWebcamClient( /*mRobIpAddress,*/ 55554, 55555, this );
+    mWebcamClient = new QWebcamClient( /*mRobIpAddress,*/ 55554, 55555 );
+    //mWebcamClient->setPriority( QThread::TimeCriticalPriority );
 
     connect( mWebcamClient, SIGNAL(newImageReceived()),
              this, SLOT(onNewImage()) );
@@ -695,8 +696,8 @@ void CMainWindow::startTimers()
 {
 #ifndef ANDROID
     mSpeedSendTimer = this->startTimer( 30, Qt::PreciseTimer );
-    mStatusReqTimer = this->startTimer( 50, Qt::CoarseTimer );
-    mFrameReqTimer = this->startTimer( 100, Qt::PreciseTimer );
+    mStatusReqTimer = this->startTimer( 30, Qt::CoarseTimer );
+    mFrameReqTimer = this->startTimer( 40, Qt::PreciseTimer );
 #else
     mSpeedSendTimer = this->startTimer( 60, Qt::PreciseTimer );
     mStatusReqTimer = this->startTimer( 100, Qt::CoarseTimer );

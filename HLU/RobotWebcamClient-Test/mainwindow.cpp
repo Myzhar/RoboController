@@ -12,6 +12,9 @@ MainWindow::MainWindow(QWidget *parent) :
     mScene = new QOpenCVScene();
 
     ui->graphicsView->setScene( mScene );
+
+    mStatusInfo = new QLabel( tr("Video stats:----/---- ") );
+    ui->statusBar->addPermanentWidget( mStatusInfo );
 }
 
 MainWindow::~MainWindow()
@@ -36,6 +39,11 @@ void MainWindow::onNewImageReceived()
     cv::Mat img = mWebcamClient->getLastFrame();
 
     mScene->setBgImage( img );
+
+    quint64 frm,frmComplete;
+
+    mWebcamClient->getStats( frm, frmComplete );
+    mStatusInfo->setText( tr("Video stats: %1/%2").arg(frmComplete).arg(frm) );
 }
 
 void MainWindow::on_actionConnect_triggered()

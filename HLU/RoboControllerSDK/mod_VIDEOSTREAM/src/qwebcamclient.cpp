@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <QCoreApplication>
+#include <loghandler.h>
 
 
 using namespace std;
@@ -123,7 +124,7 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
             mConnected = true;
 
             connect(mUdpSocketListen, SIGNAL(readyRead()),
-                    this, SLOT(processPendingDatagrams()));
+                    this, SLOT(processPendingDatagrams()) );
         }
     }
     // <<<< Trying connection
@@ -141,13 +142,11 @@ void QWebcamClient::processPendingDatagrams()
 {
     while(mUdpSocketListen->hasPendingDatagrams())
     {
-        //QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
-
         QByteArray datagram;
         datagram.resize( mUdpSocketListen->pendingDatagramSize() );
 
         QDataStream stream( &datagram, QIODevice::ReadOnly );
-        stream.setVersion( QDataStream::Qt_4_0 );
+        stream.setVersion( QDataStream::Qt_5_3 );
 
         QHostAddress serverAddr;
         mUdpSocketListen->readDatagram( datagram.data(), datagram.size(),
@@ -164,7 +163,8 @@ void QWebcamClient::processPendingDatagrams()
         if( id != mCurrentId )
         {
             if(!mLastImageState)
-                qDebug() << tr("Frame #%1 lost. Received %2/%3").arg(mCurrentId).arg(mCurrentFragmentCount).arg(mNumFrag);
+                qDebug() << PREFIX << tr("Id received: %4 - Frame #%1 lost. Received %2/%3 fragments").arg(mCurrentId).arg(mCurrentFragmentCount).arg(mNumFrag).arg(id);
+
             mLastImageState = false;
 
             mFrameReceived++;
@@ -231,12 +231,12 @@ void QWebcamClient::processPendingDatagrams()
 
         if(mCurrentFragmentCount==mNumFrag) // Image is ready
         {
-            mImgMutex.lock();
+            //mImgMutex.lock();
             {
                 mLastImageState = true;
                 mLastCompleteFrame = cv::imdecode( cv::Mat( mCurrentBuffer ), 1 );
             }
-            mImgMutex.unlock();
+            //mImgMutex.unlock();
 
             if(!mLastCompleteFrame.empty())
             {
