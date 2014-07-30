@@ -9,6 +9,7 @@
 
 using namespace std;
 #define MAX_FPS 25.0
+#define MIN_FPS 5.0
 
 namespace roboctrl
 {
@@ -243,23 +244,27 @@ void QWebcamServer::run()
        // >>>>> FPS auto-tuning
         // Note FPS are tuned such to give to client at 10msec between
         // two consecutive frames
+        double oldFps = mFps;
         if( sleep<0 )
         {
             mFps -= 1.0;
-            qDebug() << PREFIX << tr("New FPS %1 (Sleep: %2)").arg(mFps).arg(sleep);
+
         }
         else if( sleep<1 )
         {
             mFps -= 0.05;
-            qDebug() << PREFIX << tr("New FPS %1 (Sleep: %2)").arg(mFps).arg(sleep);
+            if( mFps<MIN_FPS )
+                mFps = MIN_FPS;
         }
         else if( sleep>3 )
         {
             mFps += 0.05;
             if( mFps>MAX_FPS )
                 mFps = MAX_FPS;
-            qDebug() << PREFIX << tr("New FPS %1 (Sleep: %2)").arg(mFps).arg(sleep);
         }
+
+        if( mFps!=oldFps )
+            qDebug() << PREFIX << tr("New FPS %1 (Sleep: %2)").arg(mFps).arg(sleep);
         // <<<<< FPS auto-tuning
 
         if( sleep>0 )

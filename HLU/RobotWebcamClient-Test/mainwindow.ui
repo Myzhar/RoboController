@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Video Client - Test</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -34,6 +34,7 @@
      <string>Server</string>
     </property>
     <addaction name="actionConnect"/>
+    <addaction name="actionDisconnect"/>
    </widget>
    <addaction name="menuServer"/>
   </widget>
@@ -49,6 +50,11 @@
   <action name="actionConnect">
    <property name="text">
     <string>Connect</string>
+   </property>
+  </action>
+  <action name="actionDisconnect">
+   <property name="text">
+    <string>Disconnect</string>
    </property>
   </action>
  </widget>

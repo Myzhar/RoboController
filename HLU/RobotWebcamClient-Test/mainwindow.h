@@ -5,6 +5,8 @@
 #include <qopencvscene.h>
 #include <qwebcamclient.h>
 #include <QLabel>
+#include <QProgressBar>
+#include <QTime>
 
 namespace Ui {
 class MainWindow;
@@ -29,13 +31,19 @@ protected slots:
 private slots:
     void on_actionConnect_triggered();
 
+    void on_actionDisconnect_triggered();
+
 private:
     Ui::MainWindow *ui;
 
     QOpenCVScene* mScene; ///< Default scene to be rendered
     QWebcamClient* mWebcamClient;
 
-    QLabel* mStatusInfo;
+    QLabel* mFpsInfo;
+    QProgressBar* mStatusProgr;
+
+    QTime mTime;
+    qint64 mLastFrmTime;
 };
 
 #endif // MAINWINDOW_H

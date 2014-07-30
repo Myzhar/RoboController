@@ -298,8 +298,6 @@ void CMainWindow::timerEvent( QTimerEvent* event )
                         mLastJoyMot[0] = mJoyMot[0];
                         mLastJoyMot[1] = mJoyMot[1];
                     }
-
-                    mSpeedRequested = true; // Must be set because setMotorSpeeds replies on Status UDP with the speeds of the motors
                 }
 
             }
@@ -489,7 +487,6 @@ void CMainWindow::onConnectButtonClicked()
     status.saveToEeprom = true;
     status.wdEnable = true;
 
-    mSpeedRequested = false;
     mMotorSpeedLeftValid=false;
     mMotorSpeedRightValid=false;
     mMotorSpeedRight=0;
@@ -572,9 +569,7 @@ void CMainWindow::updateSpeedInfo( )
         mMotorSpeedRight = mTelemetry.LinSpeedLeft;
         mMotorSpeedRightValid = true;
 
-        mSpeedRequested = false;
-
-        double fwSpeed = mMotorSpeedLeft+mMotorSpeedRight/2.0;
+        double fwSpeed = (mMotorSpeedLeft+mMotorSpeedRight)/2.0;
         ui->lcdNumber_fw_speed->display( fwSpeed ); // m/sec
 
         double rotSpeed = (mMotorSpeedLeft-mMotorSpeedRight)/(mRoboConf.WheelBase/1000.0); // Wheelbase is in mm

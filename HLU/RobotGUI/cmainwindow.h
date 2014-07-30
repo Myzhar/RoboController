@@ -107,7 +107,6 @@ private:
     bool mOpenRobotConfig; /*!< Indicates that Robot Configuration dlg must be opened when receiving a new configuration message */
     bool mRobotConfigValid; /*!< Indicates that a new valid Robot Configuration has been received */
 
-    bool mSpeedRequested; /*! Indicates that the speeds of the motors have been requested and we are waiting for reply */
     bool mMotorSpeedLeftValid;
     bool mMotorSpeedRightValid;
     double mMotorSpeedRight;
