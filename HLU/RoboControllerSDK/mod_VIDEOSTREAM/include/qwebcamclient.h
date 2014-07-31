@@ -23,10 +23,7 @@ public:
                            QObject *parent = 0);
     virtual ~QWebcamClient();
 
-    bool isConnected(){return mConnected;}
-
-    bool connectToServer(int sendPort, int listenPort);
-    void disconnectServer();
+    bool isConnected(){return mConnected;}    
 
     cv::Mat getLastFrame();
     void getStats( quint64& frmCount, quint64& frmComplete){frmCount=mFrameReceived;frmComplete=mFrameComplete;}
@@ -34,6 +31,9 @@ public:
 protected:
     void run() Q_DECL_OVERRIDE;
     void processDatagram(QByteArray &datagram);
+
+    bool connectToServer(int sendPort, int listenPort);
+    void disconnectServer();
 
 signals:
     void newImageReceived();
@@ -50,17 +50,19 @@ private:
     int mSendPort;
 
     bool mConnected;
+    bool mStopped;
 
     quint8 mCurrentId;
     int mCurrentFragmentCount;
-    vector<uchar> mCurrentBuffer;
+    vector< vector<uchar> > mRecTripleBuffer;
 
     quint16 mPacketSize;
     quint16 mNumFrag;
     quint16 mTailSize;
 
-    QMutex mImgMutex;
-    cv::Mat mLastCompleteFrame;
+    vector<cv::Mat> mFrmTripleBuf;
+    int mFrmBufIdx;
+
     bool mLastImageState;
 
     quint64 mFrameReceived;

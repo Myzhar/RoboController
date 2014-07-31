@@ -161,7 +161,6 @@ CMainWindow::CMainWindow(QWidget *parent) :
     mPushButtonConnect = new QPushButton( tr("Connect"), ui->mainToolBar );
     ui->mainToolBar->addWidget( mPushButtonConnect );
 
-
     mPushButtonFindServer->setDefault(true);
     mPushButtonFindServer->setFocus();
     // <<<<< Main Toolbar
@@ -170,16 +169,25 @@ CMainWindow::CMainWindow(QWidget *parent) :
     mStatusLabel = new QLabel(tr("Unconnected"));
     ui->statusBar->addPermanentWidget( mStatusLabel );
 
-    mBatteryLabel = new QLabel(tr("Battery: --.--V/--.--V"));
-    ui->statusBar->addWidget( mBatteryLabel );
+    QString batStr = tr("Battery: --.--V/--.--V");
 
     mStatusBattLevelProgr = new QProgressBar(ui->statusBar);
     ui->statusBar->addWidget( mStatusBattLevelProgr);
-    mStatusBattLevelProgr->setTextVisible(false);
     mStatusBattLevelProgr->setRange(0,100);
+    mStatusBattLevelProgr->setValue(0);
+    mStatusBattLevelProgr->setFormat( batStr );
+    mStatusBattLevelProgr->setTextVisible( true );
+    mStatusBattLevelProgr->setAlignment(Qt::AlignCenter);
 
-    mVideoStats = new QLabel(tr("Video: ---/---"));
-    ui->statusBar->addWidget( mVideoStats );
+    QString videoStr = tr("Frames: ---/---");
+
+    mStatusVideoStreamProgr = new QProgressBar(ui->statusBar);
+    ui->statusBar->addWidget( mStatusVideoStreamProgr );
+    mStatusVideoStreamProgr->setRange(0,100);
+    mStatusVideoStreamProgr->setValue(0);
+    mStatusVideoStreamProgr->setFormat( videoStr );
+    mStatusVideoStreamProgr->setTextVisible(true);
+    mStatusVideoStreamProgr->setAlignment(Qt::AlignCenter);
     // <<<<< Status Bar
 
     // >>>>> Fonts
@@ -192,10 +200,15 @@ CMainWindow::CMainWindow(QWidget *parent) :
 #endif
     font.setPixelSize( fontPx );
     mStatusLabel->setFont( font );
-    mBatteryLabel->setFont( font );
+
     mPushButtonConnect->setFont( font );
     mPushButtonFindServer->setFont( font );
     mRobIpLineEdit->setFont( font );
+
+    fontPx = COMMON->mScreen.cvtMm2Px( 2 );
+    font.setPixelSize( fontPx );
+    mStatusBattLevelProgr->setFont( font );
+    mStatusVideoStreamProgr->setFont( font );
 
 #ifndef ANDROID
     QFont unitFont("Monospace");
@@ -245,11 +258,11 @@ CMainWindow::CMainWindow(QWidget *parent) :
 
 CMainWindow::~CMainWindow()
 {
-    if(mRoboCtrl)
-        delete mRoboCtrl;
-
     if(mWebcamClient)
         delete mWebcamClient;
+
+    if(mRoboCtrl)
+        delete mRoboCtrl;    
 
     delete ui;
 }
@@ -282,14 +295,19 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         {
             try
             {
-                if( mJoyMot[0]==0 &&  mJoyMot[1]==0)
-                    mRoboCtrl->releaseRobotControl();
-
-                if( mJoyMot[0] != mLastJoyMot[0] || mJoyMot[1] != mLastJoyMot[1] )
+                if( mJoyMot[0]==0 &&  mJoyMot[1]==0 )
+                {
+                    if(mHasRobotCtrl)
+                        mRoboCtrl->releaseRobotControl();
+                }
+                else
                 {
                     // >>>>> Taking robot control
-                    if( !mHasRobotCtrl )
+                    while( !mHasRobotCtrl )
+                    {
                         mRoboCtrl->getRobotControl();
+                        QApplication::processEvents( QEventLoop::AllEvents, 1);
+                    }
                     // <<<<< Taking robot control
 
                     double speed0 = mJoyMot[0]/scale*mMaxMotorSpeed;
@@ -301,7 +319,6 @@ void CMainWindow::timerEvent( QTimerEvent* event )
                         mLastJoyMot[1] = mJoyMot[1];
                     }
                 }
-
             }
             catch( RcException &e)
             {
@@ -312,14 +329,19 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         {
             try
             {
-                if( mJoyMot[0]==0 &&  mJoyMot[1]==0)
-                    mRoboCtrl->releaseRobotControl();
-
-                if( mJoyMot[0] != mLastJoyMot[0] || mJoyMot[1] != mLastJoyMot[1] )
+                if( mJoyMot[0]==0 &&  mJoyMot[1]==0 )
+                {
+                    if(mHasRobotCtrl)
+                        mRoboCtrl->releaseRobotControl();
+                }
+                else
                 {
                     // >>>>> Taking robot control
-                    if( !mHasRobotCtrl )
+                    while( !mHasRobotCtrl )
+                    {
                         mRoboCtrl->getRobotControl();
+                        QApplication::processEvents( QEventLoop::AllEvents, 1);
+                    }
                     // <<<<< Taking robot control
 
                     int pwm0 = (int)(mJoyMot[0]/scale*2047.0f+0.5f);
@@ -348,7 +370,10 @@ void CMainWindow::timerEvent( QTimerEvent* event )
             quint64 frmCount,frmComplete;
             mWebcamClient->getStats( frmCount, frmComplete );
 
-            mVideoStats->setText( tr("Video: %1/%2").arg(frmComplete).arg(frmCount) );
+            mStatusVideoStreamProgr->setFormat( tr("Video: %1/%2").arg(frmComplete).arg(frmCount) );
+
+            int perc = (int)((double)frmComplete/(double)frmCount*100.0+0.5);
+            mStatusVideoStreamProgr->setValue(perc);
 
             if( mNewImageAvailable )
             {
@@ -571,7 +596,7 @@ void CMainWindow::updateSpeedInfo( )
     {
         mMotorSpeedLeft = mTelemetry.LinSpeedLeft;
         mMotorSpeedLeftValid = true;
-        mMotorSpeedRight = mTelemetry.LinSpeedLeft;
+        mMotorSpeedRight = mTelemetry.LinSpeedRight;
         mMotorSpeedRightValid = true;
 
         double fwSpeed = (mMotorSpeedLeft+mMotorSpeedRight)/2.0;
@@ -764,9 +789,9 @@ void CMainWindow::onNewRobotConfiguration( RobotConfiguration& robConf )
 
 void CMainWindow::updateBatteryInfo( )
 {
-    mBatteryLabel->setText( tr("Battery: %1V/%2V")
+    QString batStr = tr("Battery: %1V/%2V")
                             .arg( mTelemetry.Battery, 5,'f', 2, ' ' )
-                            .arg( (double)(mRoboConf.MaxChargedBatteryLevel)/100.0f, 5,'f', 2, ' ' ));
+                            .arg( (double)(mRoboConf.MaxChargedBatteryLevel)/100.0f, 5,'f', 2, ' ' );
 
     double perc = 100.0*(mTelemetry.Battery-((double)mRoboConf.MinChargedBatteryLevel/100.0))/
             ((double)(mRoboConf.MaxChargedBatteryLevel-mRoboConf.MinChargedBatteryLevel)/100.0);
@@ -776,6 +801,7 @@ void CMainWindow::updateBatteryInfo( )
     //qDebug() << tr("Battery: %2V %1%").arg(perc).arg(battVal);
 
     mStatusBattLevelProgr->setValue(perc);
+    mStatusBattLevelProgr->setFormat(batStr);
 
     mStatusBattLevelProgr->setProperty("defaultStyleSheet",
                                        mStatusBattLevelProgr->styleSheet());

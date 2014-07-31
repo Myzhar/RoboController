@@ -165,7 +165,7 @@ bool QRobotTelemetryServer::updateTelemetry()
     mTelemetry.LinSpeedLeft = speed0;
 
     double speed1;
-    if(reply[3] < 32768)  // Speed is integer 2-complement!
+    if(reply[3] < 32767)  // Speed is integer 2-complement!
         speed1 = ((double)reply[1])/1000.0;
     else
         speed1 = ((double)(reply[1]-65536))/1000.0;

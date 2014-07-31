@@ -44,6 +44,10 @@ private:
 
     QTime mTime;
     qint64 mLastFrmTime;
+
+    QVector<double> mFpsVec;
+    double mFpsSum;
+    int mFpsIdx;
 };
 
 #endif // MAINWINDOW_H

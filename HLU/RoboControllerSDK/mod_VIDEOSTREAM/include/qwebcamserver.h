@@ -41,6 +41,7 @@ signals:
     
 protected slots:
     void onReadyRead();
+    void onUdpError();
 
 protected:
     void sendFragmentedData( QByteArray data, char fragID );

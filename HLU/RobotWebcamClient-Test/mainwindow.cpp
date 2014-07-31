@@ -1,5 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QVector>
+
+#define FPS_VEC_SIZE 100
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -22,9 +25,16 @@ MainWindow::MainWindow(QWidget *parent) :
     mStatusProgr = new QProgressBar();
     mStatusProgr->setRange(0,100);
     mStatusProgr->setTextVisible( true );
-    mStatusProgr->setMaximumWidth( 200 );
+    mStatusProgr->setMaximumWidth( 400 );
     mStatusProgr->setAlignment(Qt::AlignCenter);
     ui->statusBar->addPermanentWidget( mStatusProgr );
+
+    mFpsVec.resize(FPS_VEC_SIZE);
+    for( int i=0; i<FPS_VEC_SIZE; i++ )
+        mFpsVec[i]=0.0;
+
+    mFpsIdx=0;
+    mFpsSum=0.0;
 }
 
 MainWindow::~MainWindow()
@@ -50,14 +60,24 @@ void MainWindow::onNewImageReceived()
 
     mScene->setBgImage( img );
 
-    quint64 frm,frmComplete;
+    quint64 frm,frmComplete;    
+    mWebcamClient->getStats( frm, frmComplete );
+
+    // >>>>> FPS Calculation
     qint64 totElapsed = mTime.elapsed();
     qint64 elapsed = totElapsed-mLastFrmTime;
     double fps = 1000.0/elapsed;
     mLastFrmTime = totElapsed;
 
-    mWebcamClient->getStats( frm, frmComplete );    
-    mFpsInfo->setText(tr("FPS: %1").arg(fps,2,'f',3,'0'));
+    mFpsSum -= mFpsVec[mFpsIdx];
+    mFpsVec[mFpsIdx] = fps;
+    mFpsSum += fps;
+    double tot = qMin((quint64)FPS_VEC_SIZE,frmComplete);
+    double fpsMean = mFpsSum/tot;
+    mFpsIdx = (++mFpsIdx)%FPS_VEC_SIZE;
+    // <<<<< FPS Calculation
+
+    mFpsInfo->setText(tr("FPS: %1").arg(fpsMean,2,'f',3,'0'));
 
     int perc = (int)(((double)frmComplete/(double)frm*100.0)+0.5);
 

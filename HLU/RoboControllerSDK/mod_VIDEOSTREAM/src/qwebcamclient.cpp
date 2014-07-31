@@ -18,56 +18,31 @@ QWebcamClient::QWebcamClient( int listenPort, int sendPort, QObject *parent) :
     mCurrentId = 0;
     mCurrentFragmentCount = 0;
 
+    mFrmBufIdx = 0;
+
     mLastImageState=true;
     mListenPort = listenPort;
     mSendPort = sendPort;
     mServerIp = QString(MULTICAST_WEBCAM_SERVER_IP);
 
+    mFrmTripleBuf.resize(3);
+    mRecTripleBuffer.resize(3);
+
     start();
 }
 
 QWebcamClient::~QWebcamClient()
-{
-    //    if(mUdpSocketSend)
-    //    {
-    //        /*char cmd = CMD_REMOVE_CLIENT;
-    //        mUdpSocketSend->writeDatagram( &cmd,
-    //                                       QHostAddress(mServerIp),
-    //                                       mSendPort );
-    //        mUdpSocketSend->flush();*/
-
-
-    //        delete mUdpSocketSend;
-    //    }
-
-    //    if(mUdpSocketListen)
-    //    {
-    //        mUdpSocketListen->leaveMulticastGroup( QHostAddress(MULTICAST_WEBCAM_SERVER_IP) );
-    //        delete mUdpSocketListen;
-    //    }
-
-    //    mConnected = false;
-    //
-    disconnectServer();
+{    
+    mStopped = true;
+    this->terminate();
+    this->wait( 1000 );
 }
 
 void QWebcamClient::disconnectServer()
 {
 
-    if( this->isRunning() )
-    {
-        this->terminate();
-        this->wait( 1000 );
-    }
-
     if(mUdpSocketSend)
     {
-        /*char cmd = CMD_REMOVE_CLIENT;
-        mUdpSocketSend->writeDatagram( &cmd,
-                                       QHostAddress(mServerIp),
-                                       mListenPort );
-        mUdpSocketSend->flush();*/
-
         delete mUdpSocketSend;
         mUdpSocketSend = NULL;
     }
@@ -76,8 +51,8 @@ void QWebcamClient::disconnectServer()
     {
         mUdpSocketListen->leaveMulticastGroup( QHostAddress(MULTICAST_WEBCAM_SERVER_IP) );
         delete mUdpSocketListen;
+        mUdpSocketListen = false;
     }
-
 
     mConnected = false;
 }
@@ -132,6 +107,8 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
     mFrameReceived = 0;
     mFrameComplete = 0;
 
+    mStopped = false;
+
     return mConnected;
 }
 
@@ -143,6 +120,9 @@ void QWebcamClient::run()
 
     forever
     {
+        if( mStopped )
+            break;
+
         if( mUdpSocketListen->hasPendingDatagrams() )
         {
             QByteArray datagram;
@@ -159,6 +139,8 @@ void QWebcamClient::run()
             processDatagram( datagram );
         }
     }
+
+    disconnectServer();
 
     qDebug() << tr("Webcam Client Thread finished");
 }
@@ -216,8 +198,8 @@ void QWebcamClient::processDatagram( QByteArray& datagram )
             dataSize = (mNumFrag-1)*(mPacketSize-infoSize)+mTailSize;
 
         mCurrentFragmentCount = 0;
-        mCurrentBuffer.clear();
-        mCurrentBuffer.resize(dataSize);
+        mRecTripleBuffer[mFrmBufIdx].clear();
+        mRecTripleBuffer[mFrmBufIdx].resize(dataSize);
 
         //            qDebug() << tr( "Fragment count: %1 - Tail Size: %2 - Full Data Size: %3")
         //                        .arg(mNumFrag).arg(mTailSize).arg(dataSize);
@@ -252,23 +234,20 @@ void QWebcamClient::processDatagram( QByteArray& datagram )
         quint8 elem;
         stream >> elem;
 
-        mCurrentBuffer[d] = elem;
+        mRecTripleBuffer[mFrmBufIdx][d] = elem;
     }
 
     mCurrentFragmentCount++;
 
     if(mCurrentFragmentCount==mNumFrag) // Image is ready
     {
-        //mImgMutex.lock();
-        {
-            mLastImageState = true;
-            mLastCompleteFrame = cv::imdecode( cv::Mat( mCurrentBuffer ), 1 );
-        }
-        //mImgMutex.unlock();
+        mLastImageState = true;
+        mFrmTripleBuf[mFrmBufIdx] = cv::imdecode( cv::Mat( mRecTripleBuffer[mFrmBufIdx] ), 1 );
 
-        if(!mLastCompleteFrame.empty())
+        if(!mFrmTripleBuf[mFrmBufIdx].empty())
         {
             mFrameComplete++;
+            mFrmBufIdx = (++mFrmBufIdx)%3;
 
             //cv::imshow( "Stream", mLastCompleteFrame );
             emit newImageReceived();
@@ -286,11 +265,10 @@ cv::Mat QWebcamClient::getLastFrame()
 {
     //qDebug() << Q_FUNC_INFO;
 
-    //mImgMutex.lock();
-    {
-        return mLastCompleteFrame;
-    }
-    //mImgMutex.unlock();
+    int idx = mFrmBufIdx-1;
+    if(idx<0)
+        idx = 2;
+    return mFrmTripleBuf[idx];
 }
 
 }

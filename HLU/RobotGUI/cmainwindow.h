@@ -96,10 +96,11 @@ private:
     QPushButton* mPushButtonFindServer;
 
     QLabel* mStatusLabel;
-    QLabel* mBatteryLabel;
-    QLabel* mVideoStats;
+    //QLabel* mBatteryLabel;
+    //QLabel* mVideoStats;
 
     QProgressBar* mStatusBattLevelProgr;
+    QProgressBar* mStatusVideoStreamProgr;
 
     // <<<< GUI Objects
 

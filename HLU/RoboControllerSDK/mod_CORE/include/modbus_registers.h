@@ -231,12 +231,12 @@
 */
 #define WORD_ENC2_SPEED                 21
 
-/*! \def WORD_RD_PWM_CH1 : Mi permette in ogni istante di leggere il dato effettivo di PWM, utile per il touning
+/*! \def WORD_RD_PWM_CH1 : Mi permette in ogni istante di leggere il dato effettivo di PWM, utile per il tuning
 \brief	( R )
 */
 #define WORD_RD_PWM_CH1                 22
 
-/*! \def WORD_RD_PWM_CH2 : Mi permette in ogni istante di leggere il dato effettivo di PWM, utile per il touning
+/*! \def WORD_RD_PWM_CH2 : Mi permette in ogni istante di leggere il dato effettivo di PWM, utile per il tuning
 \brief	( R )
 */
 #define WORD_RD_PWM_CH2                 23

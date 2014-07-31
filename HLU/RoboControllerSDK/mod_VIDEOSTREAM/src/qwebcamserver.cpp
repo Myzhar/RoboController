@@ -291,6 +291,18 @@ void QWebcamServer::run()
     qDebug() << tr("Webcam Server Thread finished");
 }
 
+void QWebcamServer::onUdpError()
+{
+    if( mUdpSocketSender->error() == QUdpSocket::DatagramTooLargeError )
+    {
+        mMaxPacketSize -= 512;
+        if( mMaxPacketSize<512 )
+            mMaxPacketSize = 512;
+
+        qDebug() << tr("New packet size: %1 bytes").arg(mMaxPacketSize);
+    }
+}
+
 void QWebcamServer::onReadyRead()
 {
     if( !mUdpSocketReceiver->hasPendingDatagrams() )

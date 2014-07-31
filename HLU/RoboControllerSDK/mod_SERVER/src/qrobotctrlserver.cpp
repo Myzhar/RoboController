@@ -2,11 +2,12 @@
 #include "network_msg.h"
 #include <QCoreApplication>
 #include <loghandler.h>
+#include <modbus_registers.h>
 
 namespace roboctrl
 {
 
-#define SRV_CONTROL_UDP_TIMEOUT_MSEC 10000
+#define SRV_CONTROL_UDP_TIMEOUT_MSEC 1500
 
 QRobotCtrlServer::QRobotCtrlServer( QRoboControllerInterface *robocontroller, quint16 listenPort, QObject *parent ):
     QThread(parent),
@@ -73,7 +74,7 @@ void QRobotCtrlServer::closeUdpControlSession()
     wait(5000);
 
     disconnect( mUdpCtrlReceiver, SIGNAL(readyRead()),
-             this, SLOT(onUdpCtrlReadyRead()) );
+                this, SLOT(onUdpCtrlReadyRead()) );
 
     if( mUdpCtrlReceiver )
         delete mUdpCtrlReceiver;
@@ -278,6 +279,8 @@ void QRobotCtrlServer::timerEvent(QTimerEvent *event)
     {
         qDebug() << tr("Control timeout. Elapsed %1 msec since last control command").arg(SRV_CONTROL_UDP_TIMEOUT_MSEC);
 
+
+
         releaseControl();
     }
 }
@@ -290,12 +293,27 @@ void QRobotCtrlServer::releaseControl( )
             killTimer( mControlTimeoutTimerId );
         mControlTimeoutTimerId = 0;
 
+        // >>>>> Motor stop!
+        if( mRoboController && mRoboController->isConnected() )
+        {
+            QVector<quint16> vals;
+            vals << (quint16)0;
+            vals << (quint16)0;
+            bool commOk = mRoboController->writeMultiReg( WORD_PWM_CH1, 2, vals );
+
+            if( !commOk )
+            {
+                qDebug() << tr("Error stopping motors!!!");
+            }
+        }
+        // <<<<< Motor stop!
+
         emit clientLostControl( mControllerClientIp );
 
         qDebug() << tr("The client %1 has released the control of the robot").arg(mControllerClientIp);
 
         mControllerClientIp = "";
-    }    
+    }
 
 
 }
