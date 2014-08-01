@@ -25,6 +25,8 @@
 #define DEFAULT_UDP_STAT_PORT_SEND 14550
 #define DEFAULT_UDP_STAT_PORT_LISTEN 14555
 
+#define FPS_VEC_SIZE 10
+
 CMainWindow::CMainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::CMainWindow),
@@ -262,7 +264,7 @@ CMainWindow::~CMainWindow()
         delete mWebcamClient;
 
     if(mRoboCtrl)
-        delete mRoboCtrl;    
+        delete mRoboCtrl;
 
     delete ui;
 }
@@ -367,13 +369,16 @@ void CMainWindow::timerEvent( QTimerEvent* event )
 
         if( mWebcamClient!=NULL )
         {
-            quint64 frmCount,frmComplete;
-            mWebcamClient->getStats( frmCount, frmComplete );
+            /*quint64 frmCount,frmComplete;
+            mWebcamClient->getStats( frmCount, frmComplete );*/
 
-            mStatusVideoStreamProgr->setFormat( tr("Video: %1/%2").arg(frmComplete).arg(frmCount) );
+            //mStatusVideoStreamProgr->setFormat( tr("Video: %1/%2").arg(frmComplete).arg(frmCount) );
 
-            int perc = (int)((double)frmComplete/(double)frmCount*100.0+0.5);
+            /*int perc = (int)(((double)frmComplete/(double)frmCount)*100.0);
             mStatusVideoStreamProgr->setValue(perc);
+            mStatusVideoStreamProgr->setFormat( "%p%" );*/
+
+            //qDebug() << tr("Video: %1/%2 - %3%").arg(frmComplete).arg(frmCount).arg(perc);
 
             if( mNewImageAvailable )
             {
@@ -388,6 +393,32 @@ void CMainWindow::timerEvent( QTimerEvent* event )
                     ui->widget_video_container->fitInView(QRectF(0,0, frame.cols, frame.rows),
                                                           Qt::KeepAspectRatio );
                 }
+
+                quint64 frmCount,frmComplete;
+                mWebcamClient->getStats( frmCount, frmComplete );
+
+                // >>>>> FPS Calculation
+                qint64 totElapsed = mTime.elapsed();
+                qint64 elapsed = totElapsed-mLastFrmTime;
+                if( elapsed!=0 )
+                {
+                    double fps = 1000.0/elapsed;
+                    mLastFrmTime = totElapsed;
+
+                    mFpsSum -= mFpsVec[mFpsIdx];
+                    mFpsVec[mFpsIdx] = fps;
+                    mFpsSum += fps;
+                    double tot = qMin((quint64)FPS_VEC_SIZE,frmComplete);
+                    double fpsMean = mFpsSum/tot;
+                    mFpsIdx = (++mFpsIdx)%FPS_VEC_SIZE;
+
+                    //qDebug() << mFpsVec;
+
+                    int perc = (int)(((double)frmComplete/(double)frmCount)*100.0);
+                    mStatusVideoStreamProgr->setValue(perc);
+                    mStatusVideoStreamProgr->setFormat( tr("FPS: %1 - Frm: %p%").arg(fpsMean,2,'f',1,'0') );
+                }
+                // <<<<< FPS Calculation
             }
         }
     }
@@ -583,8 +614,18 @@ void CMainWindow::onConnectButtonClicked()
     mWebcamClient = new QWebcamClient( /*mRobIpAddress,*/ 55554, 55555 );
     //mWebcamClient->setPriority( QThread::TimeCriticalPriority );
 
-    connect( mWebcamClient, SIGNAL(newImageReceived()),
-             this, SLOT(onNewImage()) );
+    connect( mWebcamClient, SIGNAL(newImageReceived( )),
+             this, SLOT(onNewImage( )) );
+
+    mFpsVec.resize(FPS_VEC_SIZE);
+    for( int i=0; i<FPS_VEC_SIZE; i++ )
+        mFpsVec[i]=0.0;
+
+    mFpsIdx=0;
+    mFpsSum=0.0;
+
+    mTime.start();
+    mLastFrmTime = 0;
     // <<<<< Webcam Client
 
     startTimers();
@@ -790,8 +831,8 @@ void CMainWindow::onNewRobotConfiguration( RobotConfiguration& robConf )
 void CMainWindow::updateBatteryInfo( )
 {
     QString batStr = tr("Battery: %1V/%2V")
-                            .arg( mTelemetry.Battery, 5,'f', 2, ' ' )
-                            .arg( (double)(mRoboConf.MaxChargedBatteryLevel)/100.0f, 5,'f', 2, ' ' );
+            .arg( mTelemetry.Battery, 5,'f', 2, ' ' )
+            .arg( (double)(mRoboConf.MaxChargedBatteryLevel)/100.0f, 5,'f', 2, ' ' );
 
     double perc = 100.0*(mTelemetry.Battery-((double)mRoboConf.MinChargedBatteryLevel/100.0))/
             ((double)(mRoboConf.MaxChargedBatteryLevel-mRoboConf.MinChargedBatteryLevel)/100.0);
@@ -822,7 +863,7 @@ void CMainWindow::updateBatteryInfo( )
                                              " QProgressBar::chunk { background: green; }");    }
 }
 
-void CMainWindow::onNewImage()
+void CMainWindow::onNewImage( )
 {
     mNewImageAvailable = true;
 }

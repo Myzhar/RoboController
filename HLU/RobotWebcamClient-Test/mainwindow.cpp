@@ -54,11 +54,14 @@ void MainWindow::changeEvent(QEvent *e)
     }
 }
 
-void MainWindow::onNewImageReceived()
+void MainWindow::onNewImageReceived(cv::Mat frame)
 {
-    cv::Mat img = mWebcamClient->getLastFrame();
+    //cv::Mat img = mWebcamClient->getLastFrame();
+    cv::Mat img = frame;
 
     mScene->setBgImage( img );
+    ui->graphicsView->fitInView(QRectF(0,0, img.cols, img.rows),
+                                          Qt::KeepAspectRatio );
 
     quint64 frm,frmComplete;    
     mWebcamClient->getStats( frm, frmComplete );
@@ -91,10 +94,10 @@ void MainWindow::on_actionConnect_triggered()
     if( mWebcamClient!=NULL )
         delete mWebcamClient;
 
-    mWebcamClient = new QWebcamClient( );
+    mWebcamClient = new QWebcamClient( );    
 
-    connect( mWebcamClient, SIGNAL(newImageReceived()),
-             this, SLOT(onNewImageReceived()) );
+    connect( mWebcamClient, SIGNAL(newImageReceived( cv::Mat )),
+             this, SLOT(onNewImageReceived( cv::Mat )) );
 
     ui->actionDisconnect->setEnabled(true);
     ui->actionConnect->setEnabled(false);
@@ -105,8 +108,8 @@ void MainWindow::on_actionConnect_triggered()
 
 void MainWindow::on_actionDisconnect_triggered()
 {
-    disconnect( mWebcamClient, SIGNAL(newImageReceived()),
-             this, SLOT(onNewImageReceived()) );
+    disconnect( mWebcamClient, SIGNAL(newImageReceived( cv::Mat )),
+             this, SLOT(onNewImageReceived( cv::Mat )) );
 
     if( mWebcamClient!=NULL )
         delete mWebcamClient;

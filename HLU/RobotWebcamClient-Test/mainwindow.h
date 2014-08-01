@@ -26,7 +26,7 @@ protected:
     void changeEvent(QEvent *e);    
 
 protected slots:
-    void onNewImageReceived();
+    void onNewImageReceived(cv::Mat frame );
 
 private slots:
     void on_actionConnect_triggered();

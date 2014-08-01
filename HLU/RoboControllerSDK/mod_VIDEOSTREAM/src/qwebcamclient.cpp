@@ -28,6 +28,8 @@ QWebcamClient::QWebcamClient( int listenPort, int sendPort, QObject *parent) :
     mFrmTripleBuf.resize(3);
     mRecTripleBuffer.resize(3);
 
+    qRegisterMetaType<cv::Mat>("cv::Mat");
+
     start();
 }
 
@@ -246,11 +248,14 @@ void QWebcamClient::processDatagram( QByteArray& datagram )
 
         if(!mFrmTripleBuf[mFrmBufIdx].empty())
         {
+            emit newImageReceived( mFrmTripleBuf[mFrmBufIdx] );
+            emit newImageReceived( );
+
             mFrameComplete++;
             mFrmBufIdx = (++mFrmBufIdx)%3;
 
             //cv::imshow( "Stream", mLastCompleteFrame );
-            emit newImageReceived();
+
 
             //cv::waitKey( 1 );
             //QCoreApplication::processEvents( QEventLoop::AllEvents, 50 );

@@ -16,7 +16,8 @@ namespace roboctrl
 
 class QWebcamClient : public QThread
 {
-    Q_OBJECT
+    Q_OBJECT    
+
 public:
     explicit QWebcamClient(int listenPort=55554,
                            int sendPort=55555,
@@ -36,7 +37,8 @@ protected:
     void disconnectServer();
 
 signals:
-    void newImageReceived();
+    void newImageReceived( cv::Mat frm );
+    void newImageReceived( );
 
 protected slots:
     void onReadyRead();

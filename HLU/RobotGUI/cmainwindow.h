@@ -7,6 +7,7 @@
 #include <QSettings>
 #include <QLabel>
 #include <QProgressBar>
+#include <QTime>
 
 #include <robocontrollersdk.h>
 #include <qwebcamclient.h>
@@ -46,7 +47,7 @@ public:
     ~CMainWindow();
 
 public slots:
-    void onNewImage();
+    void onNewImage( );
     
 private slots:
     void on_actionPidEnabled_triggered();
@@ -136,6 +137,13 @@ private:
     bool mFirstResize; /*!< Used to understand if @ref ResizeEvent is called for the first time */
 
     RobotTelemetry mTelemetry; /*! Contains the last telemetry value */
+
+    QTime mTime;
+    qint64 mLastFrmTime;
+
+    QVector<double> mFpsVec;
+    double mFpsSum;
+    int mFpsIdx;
 
 
 /*#ifndef android
