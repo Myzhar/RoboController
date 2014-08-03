@@ -12,8 +12,11 @@ QBatteryCalibDialog::QBatteryCalibDialog( RoboControllerSDK* robSdk, QWidget *pa
 {
     ui->setupUi(this);
 
-    connect( robSdk, SIGNAL(newBatteryValue(double)),
-             this, SLOT(onNewBatteryValue(double)) );
+    connect( robSdk, SIGNAL(newTelemetryAvailable()),
+             this, SLOT(onNewTelemetry()) );
+
+    connect(ui->pushButton_ok, SIGNAL(clicked()),
+                     this, SLOT(accept()));
 
     mRobCom = robSdk;
 }
@@ -23,9 +26,12 @@ QBatteryCalibDialog::~QBatteryCalibDialog()
     delete ui;
 }
 
-void QBatteryCalibDialog::onNewBatteryValue(double val )
+void QBatteryCalibDialog::onNewTelemetry()
 {
-    ui->lcdNumber_value->display( val );
+    RobotTelemetry telemetry;
+    mRobCom->getLastTelemetry( telemetry );
+    ui->lcdNumber_value->display( telemetry.Battery );
+    qDebug() << telemetry.Battery;
 }
 
 void QBatteryCalibDialog::on_pushButton_ok_clicked()

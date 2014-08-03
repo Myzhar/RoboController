@@ -38,6 +38,7 @@ public slots:
 private:
     bool mOpenGLActive; ///< Indicates if OpenGL is active
 
+    bool mButtonDown;
     QPoint mBnDownPos; ///< Holds the position of the mouse at ButtonDown event
     QPoint mLastPos; ///< Holds the last taken position of the mouse
 

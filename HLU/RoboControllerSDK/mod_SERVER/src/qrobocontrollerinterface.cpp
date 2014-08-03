@@ -253,7 +253,7 @@ QVector<quint16> QRoboControllerInterface::readMultiReg(quint16 startAddr, quint
             readRegReply[1] = (quint16)nReg;
             for( int i=0; i<nReg; i++ )
             {
-               readRegReply[2+i] = i;
+               readRegReply[2+i] = (i+1)*1000;
             }
 
             //qWarning() << PREFIX << "ModBus replies are simulated!";

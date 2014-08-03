@@ -23,6 +23,8 @@ QRobotGUIView::QRobotGUIView(QWidget *parent) :
     qDebug() << tr("OpenGL Vieport disabled");
 #endif
 
+    mButtonDown = false;
+
     setInteractive( true );
 
     mScene = new QOpenCVScene();
@@ -71,7 +73,9 @@ void QRobotGUIView::setJoypadSize( QSize bgSize, QSize thumbSize )
 }
 
 void QRobotGUIView::mousePressEvent(QMouseEvent *event)
-{
+{    
+    mButtonDown = true;
+
     mBnDownPos = event->pos();
     mLastPos = mBnDownPos;
 
@@ -85,6 +89,8 @@ void QRobotGUIView::mousePressEvent(QMouseEvent *event)
 void QRobotGUIView::mouseReleaseEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
+
+    mButtonDown = false;
 
     mScene->buttonUp();
 
@@ -103,6 +109,9 @@ void QRobotGUIView::mouseReleaseEvent(QMouseEvent *event)
 
 void QRobotGUIView::mouseMoveEvent(QMouseEvent *event)
 {
+    if( !mButtonDown )
+        return;
+
     mLastPos = event->pos();
 
     QPointF posScene = mapToScene( mLastPos );

@@ -360,6 +360,17 @@ void CMainWindow::timerEvent( QTimerEvent* event )
             }
         }
     }
+    else if( event->timerId() == mTelemetryReqTimer )
+    {
+        if( mNewTelemetryAvailable )
+        {
+            mNewTelemetryAvailable = false;
+            mRoboCtrl->getLastTelemetry( mTelemetry );
+
+            updateBatteryInfo();
+            updateSpeedInfo();
+        }
+    }
     else if( event->timerId() == mFrameReqTimer )
     {
         if( !mWebcamClient )
@@ -436,15 +447,6 @@ void CMainWindow::timerEvent( QTimerEvent* event )
         catch( RcException &e)
         {
             qWarning() << tr("Exception error: %1").arg(e.getExcMessage() );
-        }
-
-        if( mNewTelemetryAvailable )
-        {
-            mNewTelemetryAvailable = false;
-            mRoboCtrl->getLastTelemetry( mTelemetry );
-
-            updateBatteryInfo();
-            updateSpeedInfo();
         }
     }
 }
@@ -597,7 +599,7 @@ void CMainWindow::onConnectButtonClicked()
 
 
     // >>>>> Taking robot control
-    mRoboCtrl->getRobotControl();
+    //mRoboCtrl->getRobotControl();
     // <<<<< Taking robot control
 
     ui->actionRobot_Configuration->setEnabled(true);
@@ -756,18 +758,21 @@ void CMainWindow::stopTimers()
     this->killTimer( mSpeedSendTimer );
     this->killTimer( mStatusReqTimer );
     this->killTimer( mFrameReqTimer );
+    this->killTimer( mTelemetryReqTimer );
 }
 
 void CMainWindow::startTimers()
 {
 #ifndef ANDROID
     mSpeedSendTimer = this->startTimer( 30, Qt::PreciseTimer );
-    mStatusReqTimer = this->startTimer( 30, Qt::CoarseTimer );
+    mStatusReqTimer = this->startTimer( 100, Qt::CoarseTimer );
     mFrameReqTimer = this->startTimer( 40, Qt::PreciseTimer );
+    mTelemetryReqTimer = this->startTimer( 50, Qt::PreciseTimer );
 #else
     mSpeedSendTimer = this->startTimer( 60, Qt::PreciseTimer );
-    mStatusReqTimer = this->startTimer( 100, Qt::CoarseTimer );
-    mFrameReqTimer = this->startTimer( 200, Qt::PreciseTimer );
+    mStatusReqTimer = this->startTimer( 200, Qt::CoarseTimer );
+    mFrameReqTimer = this->startTimer( 80, Qt::PreciseTimer );
+    mTelemetryReqTimer = this->startTimer( 100, Qt::PreciseTimer );
 #endif
 }
 

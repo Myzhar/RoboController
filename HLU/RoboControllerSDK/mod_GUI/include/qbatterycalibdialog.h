@@ -23,7 +23,7 @@ public:
 signals:
 
 private slots:
-    void onNewBatteryValue(double val);
+    void onNewTelemetry();
     void on_pushButton_ok_clicked();
 
     void on_pushButton_set_lower_clicked();

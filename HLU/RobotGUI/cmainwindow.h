@@ -125,6 +125,7 @@ private:
 
     int mSpeedSendTimer; /*!< Timer to read Joypad position and send related speed to Robot */
     int mStatusReqTimer; /*!< Timer to request status of the robot to server */
+    int mTelemetryReqTimer; /* Timer to request the telemetry of the robot */
     int mFrameReqTimer; /*!< Timer to request frame to Webcam server */
 
     float mJoyMot[2]; /*!< Values of the joypad */
