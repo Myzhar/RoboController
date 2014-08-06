@@ -9,6 +9,7 @@
 #include <math.h>
 #include <QResource>
 #include <QString>
+#include <qmath.h>
 
 namespace roboctrl
 {
@@ -37,8 +38,8 @@ QJoypad::QJoypad(QWidget *parent) :
 
 void QJoypad::setJoypadValues( float x, float y )
 {
-//    if( !isVisible() )
-//        return;
+    //    if( !isVisible() )
+    //        return;
 
     static float oldX=0.0f,oldY=0.0f;
 
@@ -112,8 +113,8 @@ void QJoypad::mousePressEvent( QMouseEvent *event )
     QPoint pos = event->pos();
 
 
-//    fprintf( stderr, "Pos: (%3d,%3d)/n", (int)pos.x(), (int)pos.y());
-//    fflush(stderr);
+    //    fprintf( stderr, "Pos: (%3d,%3d)/n", (int)pos.x(), (int)pos.y());
+    //    fflush(stderr);
 
     float posX = pos.x() - width()/2;
     mJoyRelPos.setX( posX*mPxScaleX );
@@ -121,8 +122,8 @@ void QJoypad::mousePressEvent( QMouseEvent *event )
     float posY = (pos.y() - height()/2);
     mJoyRelPos.setY( posY*mPxScaleY );
 
-//    fprintf( stderr, "Rel Pos: (%g,%g)/n", posX, posY );
-//    fflush(stderr);
+    //    fprintf( stderr, "Rel Pos: (%g,%g)/n", posX, posY );
+    //    fflush(stderr);
 
     update();
 
@@ -137,35 +138,41 @@ void QJoypad::mouseMoveEvent( QMouseEvent *event )
 {
     QPoint pos = event->pos();
 
-//    fprintf( stderr, "Pos: (%3d,%3d)/n", (int)pos.x(), (int)pos.y());
-//    fflush(stderr);
+    //    fprintf( stderr, "Pos: (%3d,%3d)/n", (int)pos.x(), (int)pos.y());
+    //    fflush(stderr);
 
-    int minPos = (mBgSize-mPadSize)/2;
-    int maxPos = width()-minPos;
+    double minPos = (mBgSize-mPadSize)/4;
+    double maxPos = width()/2-minPos;
 
-    int X,Y;
-    if( pos.x()<minPos )
-        X=minPos;
-    else if( pos.x()>maxPos )
-        X = maxPos;
-    else
-        X = pos.x();
+    QPointF centerWidget;
+    centerWidget.setX( width()/2);
+    centerWidget.setY( height()/2 );
 
-    if( pos.y()<minPos )
-        Y=minPos;
-    else if( pos.y()>maxPos )
-        Y = maxPos;
-    else
-        Y = pos.y();
+    // >>>>> Let's keep the thumb inside the Joypad area
+    double rho = qSqrt( (centerWidget.x()-pos.x())*(centerWidget.x()-pos.x()) +
+                        (centerWidget.y()-pos.y())*(centerWidget.y()-pos.y()) );
 
-    float posX = X - width()/2  ;
-    mJoyRelPos.setX( posX * mPxScaleX);
+    qDebug() << centerWidget << rho << maxPos;
 
-    float posY = (Y - height()/2);
-    mJoyRelPos.setY( posY * mPxScaleY );
+    double X = pos.x()-centerWidget.x();
+    double Y = pos.y()-centerWidget.y();
 
-//    fprintf( stderr, "Rel Pos: (%g,%g)/n", posX, posY );
-//    fflush(stderr);
+    if( rho>maxPos )
+    {
+        double ratio = maxPos/rho;
+
+        X *= ratio;
+        Y *= ratio;
+
+    }
+    // <<<<< Let's keep the thumb inside the Joypad area
+
+    mJoyRelPos.setX( X * mPxScaleX);
+
+    mJoyRelPos.setY( Y * mPxScaleY );
+
+    //    fprintf( stderr, "Rel Pos: (%g,%g)/n", posX, posY );
+    //    fflush(stderr);
 
     update();
 
