@@ -30,19 +30,21 @@ QWebcamClient::QWebcamClient( int listenPort, int sendPort, QObject *parent) :
 
     qRegisterMetaType<cv::Mat>("cv::Mat");
 
+    connectToServer( mSendPort, mListenPort );
     start();
 }
 
 QWebcamClient::~QWebcamClient()
 {    
     mStopped = true;
-    this->terminate();
-    this->wait( 1000 );
+    //this->terminate();
+    this->wait( 200 );
+
+    disconnectServer();
 }
 
 void QWebcamClient::disconnectServer()
 {
-
     if(mUdpSocketSend)
     {
         delete mUdpSocketSend;
@@ -51,7 +53,8 @@ void QWebcamClient::disconnectServer()
 
     if(mUdpSocketListen)
     {
-        mUdpSocketListen->leaveMulticastGroup( QHostAddress(MULTICAST_WEBCAM_SERVER_IP) );
+        if( mUdpSocketListen->leaveMulticastGroup( QHostAddress(MULTICAST_WEBCAM_SERVER_IP) ) )
+            qDebug() << tr("UDP Webcam stream Multicast Group abandoned");
         delete mUdpSocketListen;
         mUdpSocketListen = false;
     }
@@ -96,7 +99,7 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
         }
         else
         {
-            qDebug() << tr("Connected to Multicast Webcam Server. Listening on port %1. Sending on port %2")
+            qDebug() << tr("Joined Multicast Webcam stream Group. Listening on port %1. Sending on port %2")
                         .arg(mListenPort).arg(mSendPort);
             mConnected = true;
 
@@ -116,7 +119,7 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
 
 void QWebcamClient::run()
 {
-    connectToServer( mSendPort, mListenPort );
+    //connectToServer( mSendPort, mListenPort );
 
     qDebug() << tr("Webcam Client Thread started");
 
@@ -142,7 +145,7 @@ void QWebcamClient::run()
         }
     }
 
-    disconnectServer();
+    //disconnectServer();
 
     qDebug() << tr("Webcam Client Thread finished");
 }

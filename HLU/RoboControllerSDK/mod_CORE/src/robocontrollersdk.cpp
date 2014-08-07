@@ -112,9 +112,11 @@ RoboControllerSDK::RoboControllerSDK(QString serverAddr/*=QString("127.0.0.1")*/
 
 RoboControllerSDK::~RoboControllerSDK()
 {
-    this->terminate();
+    terminate();
+    if( wait(1000) )
+        qDebug() << tr("RoboControllerSDK thread finished");
+    //while(this->isRunning());
 
-    while(this->isRunning());
     disconnectTcpServer();
     disconnectUdpServers();
 }
@@ -274,7 +276,7 @@ void RoboControllerSDK::connectToUdpServers()
     }
     else
     {
-        qDebug() << tr("Connected to Multicast Telemetry Server. Listening on port %1").arg(mUdpTelemetryMulticastPort);
+        qDebug() << tr("Joined Multicast Telemetry Group. Listening on port %1").arg(mUdpTelemetryMulticastPort);
     }
 
     connect( &mUdpPingTimer, SIGNAL(timeout()),
@@ -289,14 +291,6 @@ void RoboControllerSDK::connectToUdpServers()
 
 void RoboControllerSDK::disconnectUdpServers()
 {
-    /*if(mUdpControlSocket)
-    {
-        mUdpControlSocket->close();
-        if( mUdpControlSocket->state() == QAbstractSocket::UnconnectedState ||
-                mUdpControlSocket->waitForDisconnected(1000) )
-            qDebug() << tr("UDP Control Socket Disconnected");
-    }*/
-
     if(mUdpStatusSocket)
     {
         mUdpStatusSocket->close();
@@ -307,11 +301,8 @@ void RoboControllerSDK::disconnectUdpServers()
 
     if(mUdpMulticastTelemetrySocket)
     {
-        mUdpMulticastTelemetrySocket->leaveMulticastGroup( QHostAddress(MULTICAST_DATA_SERVER_IP) );
-        mUdpStatusSocket->close();
-        if( mUdpMulticastTelemetrySocket->state() == QAbstractSocket::UnconnectedState ||
-                mUdpMulticastTelemetrySocket->waitForDisconnected(1000) )
-            qDebug() << tr("UDP Telemetry Socket Disconnected");
+        if( mUdpMulticastTelemetrySocket->leaveMulticastGroup( QHostAddress(MULTICAST_DATA_SERVER_IP) ) )
+            qDebug() << tr("UDP Telemetry Multicast Group abandoned");
     }
 }
 

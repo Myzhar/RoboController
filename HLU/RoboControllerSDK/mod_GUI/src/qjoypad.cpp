@@ -103,7 +103,7 @@ void QJoypad::resizeEvent( QResizeEvent* event )
     emit newJoypadValues( 0.0, 0.0 );
     //qDebug() /*<< PREFIX*/ << "emitted newJoypadValues( 0.0, 0.0 );";
 
-    qDebug() << newSize;
+    //qDebug() << newSize;
 
     QWidget::resizeEvent(event);
 }
@@ -152,7 +152,7 @@ void QJoypad::mouseMoveEvent( QMouseEvent *event )
     double rho = qSqrt( (centerWidget.x()-pos.x())*(centerWidget.x()-pos.x()) +
                         (centerWidget.y()-pos.y())*(centerWidget.y()-pos.y()) );
 
-    qDebug() << centerWidget << rho << maxPos;
+    //qDebug() << centerWidget << rho << maxPos;
 
     double X = pos.x()-centerWidget.x();
     double Y = pos.y()-centerWidget.y();
