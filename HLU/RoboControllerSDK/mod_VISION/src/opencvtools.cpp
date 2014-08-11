@@ -3,6 +3,7 @@
 
 OpenCVTools::OpenCVTools()
 {
+    qRegisterMetaType<Q2dMap>("q2dMap");
 }
 
 cv::Mat OpenCVTools::QImageToCvMat( const QImage &inImage, bool inCloneImageData /*= true*/ )

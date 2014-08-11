@@ -8,6 +8,9 @@
 
 #include "opencv2/core/core.hpp"
 
+namespace roboctrl
+{
+
 class QOpenCVScene : public QGraphicsScene
 {
     Q_OBJECT
@@ -43,5 +46,7 @@ private:
     QGraphicsPixmapItem* mJoypadBgItem;
     QGraphicsPixmapItem* mJoypadThumbItem;
 };
+
+}
 
 #endif // QOPENCVSCENE_H

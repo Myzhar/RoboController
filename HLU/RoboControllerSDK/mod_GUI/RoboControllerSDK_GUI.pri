@@ -12,7 +12,8 @@ SOURCES += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qjoypad.cpp \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qrobotconfigdialog.cpp \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qbatterycalibdialog.cpp \
-            $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qscreentools.cpp
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/src/qscreentools.cpp \
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/src/q2dmapscene.cpp
 
 
 INCLUDEPATH += \
@@ -22,7 +23,8 @@ HEADERS += \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qjoypad.h \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qrobotconfigdialog.h \
             $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qbatterycalibdialog.h \
-            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qscreentools.h
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/qscreentools.h \
+            $$ROBOCONTROLLERSDKPATH/mod_GUI/include/q2dmapscene.h
 
 #android {
 #            message(Android GUI)

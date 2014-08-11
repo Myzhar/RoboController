@@ -13,6 +13,9 @@
 
 #define JOY_MOVE_STEP 5 ///< The virtual joypad sends new speed values only if different from the latest of at less 5
 
+namespace roboctrl
+{
+
 class QRobotGUIView : public QGraphicsView
 {
     Q_OBJECT
@@ -54,5 +57,7 @@ private:
     QGraphicsProxyWidget* mProxyLcdFwSpeed;
     QGraphicsProxyWidget* mProxyLcdRotSpeed;
 };
+
+}
 
 #endif // QROBOTGUIVIEW_H

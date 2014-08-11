@@ -1,5 +1,7 @@
 message(Added CORE module)
 
+QT += core network
+
 CONFIG += CORE
 
 SOURCES += \

@@ -6,6 +6,9 @@
 #include <QGLWidget>
 #endif
 
+namespace roboctrl
+{
+
 QRobotGUIView::QRobotGUIView(QWidget *parent) :
     QGraphicsView(parent),
     mLcdFwSpeed(NULL),
@@ -156,6 +159,8 @@ void QRobotGUIView::mouseMoveEvent(QMouseEvent *event)
 
         emit newJoypadValues(joyX, -joyY); // Remember that Y axis is inverted in Scene coordinates
     }
+}
+
 }
 
 

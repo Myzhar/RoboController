@@ -49,13 +49,15 @@ CONFIG(opencv)
         message(Using OpenCV for Windows)
         OPENCV_LIB_PATH = $$ROBOCONTROLLERSDKPATH/mod_EXTERN/opencv-2.4.9/bin/vc10/lib
 
-        #☼LIBS += \
-        #        $$OPENCV_LIB_PATH/opencv_core249d.lib \
-        #        $$OPENCV_LIB_PATH/opencv_highgui249d.lib
-
         LIBS += \
-            $$OPENCV_LIB_PATH/opencv_core249.lib \
-            $$OPENCV_LIB_PATH/opencv_highgui249.lib
+                $$OPENCV_LIB_PATH/opencv_core249d.lib \
+                $$OPENCV_LIB_PATH/opencv_highgui249d.lib \
+                $$OPENCV_LIB_PATH/opencv_imgproc249d.lib
+
+        #LIBS += \
+        #    $$OPENCV_LIB_PATH/opencv_core249.lib \
+        #    $$OPENCV_LIB_PATH/opencv_highgui249.lib \
+        #    $$OPENCV_LIB_PATH/opencv_imgproc249.lib
     }
 
     android {
@@ -86,7 +88,8 @@ CONFIG(opencv)
         
             LIBS += \
                 -lopencv_core \
-                -lopencv_highgui
+                -lopencv_highgui \
+                -lopencv_imgproc
         }
             
     }

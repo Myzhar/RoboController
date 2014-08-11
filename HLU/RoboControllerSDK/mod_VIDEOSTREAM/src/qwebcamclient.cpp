@@ -25,8 +25,8 @@ QWebcamClient::QWebcamClient( int listenPort, int sendPort, QObject *parent) :
     mSendPort = sendPort;
     mServerIp = QString(MULTICAST_WEBCAM_SERVER_IP);
 
-    mFrmTripleBuf.resize(3);
-    mRecTripleBuffer.resize(3);
+    mFrmBuf.resize(BUFFER_SIZE);
+    mRecBuffer.resize(BUFFER_SIZE);
 
     qRegisterMetaType<cv::Mat>("cv::Mat");
 
@@ -203,8 +203,8 @@ void QWebcamClient::processDatagram( QByteArray& datagram )
             dataSize = (mNumFrag-1)*(mPacketSize-infoSize)+mTailSize;
 
         mCurrentFragmentCount = 0;
-        mRecTripleBuffer[mFrmBufIdx].clear();
-        mRecTripleBuffer[mFrmBufIdx].resize(dataSize);
+        mRecBuffer[mFrmBufIdx].clear();
+        mRecBuffer[mFrmBufIdx].resize(dataSize);
 
         //            qDebug() << tr( "Fragment count: %1 - Tail Size: %2 - Full Data Size: %3")
         //                        .arg(mNumFrag).arg(mTailSize).arg(dataSize);
@@ -239,7 +239,7 @@ void QWebcamClient::processDatagram( QByteArray& datagram )
         quint8 elem;
         stream >> elem;
 
-        mRecTripleBuffer[mFrmBufIdx][d] = elem;
+        mRecBuffer[mFrmBufIdx][d] = elem;
     }
 
     mCurrentFragmentCount++;
@@ -247,15 +247,15 @@ void QWebcamClient::processDatagram( QByteArray& datagram )
     if(mCurrentFragmentCount==mNumFrag) // Image is ready
     {
         mLastImageState = true;
-        mFrmTripleBuf[mFrmBufIdx] = cv::imdecode( cv::Mat( mRecTripleBuffer[mFrmBufIdx] ), 1 );
+        mFrmBuf[mFrmBufIdx] = cv::imdecode( cv::Mat( mRecBuffer[mFrmBufIdx] ), 1 );
 
-        if(!mFrmTripleBuf[mFrmBufIdx].empty())
+        if(!mFrmBuf[mFrmBufIdx].empty())
         {
-            emit newImageReceived( mFrmTripleBuf[mFrmBufIdx] );
+            emit newImageReceived( mFrmBuf[mFrmBufIdx] );
             emit newImageReceived( );
 
             mFrameComplete++;
-            mFrmBufIdx = (++mFrmBufIdx)%3;
+            mFrmBufIdx = (++mFrmBufIdx)%BUFFER_SIZE;
 
             //cv::imshow( "Stream", mLastCompleteFrame );
 
@@ -276,7 +276,7 @@ cv::Mat QWebcamClient::getLastFrame()
     int idx = mFrmBufIdx-1;
     if(idx<0)
         idx = 2;
-    return mFrmTripleBuf[idx];
+    return mFrmBuf[idx];
 }
 
 }

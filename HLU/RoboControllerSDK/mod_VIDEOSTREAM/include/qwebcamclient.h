@@ -9,6 +9,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#define BUFFER_SIZE 3
+
 using namespace std;
 
 namespace roboctrl
@@ -56,13 +58,13 @@ private:
 
     quint8 mCurrentId;
     int mCurrentFragmentCount;
-    vector< vector<uchar> > mRecTripleBuffer;
+    vector< vector<uchar> > mRecBuffer;
 
     quint16 mPacketSize;
     quint16 mNumFrag;
     quint16 mTailSize;
 
-    vector<cv::Mat> mFrmTripleBuf;
+    vector<cv::Mat> mFrmBuf;
     int mFrmBufIdx;
 
     bool mLastImageState;

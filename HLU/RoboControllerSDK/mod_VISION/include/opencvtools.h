@@ -4,6 +4,8 @@
 #include <opencv2/core/core.hpp>
 #include <QImage>
 
+typedef QVector< cv::Point3f > Q2dMap;
+
 class OpenCVTools
 {
 public:

@@ -6,11 +6,14 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
+namespace roboctrl
+{
+
 QOpenCVScene::QOpenCVScene(QObject *parent) :
     QGraphicsScene(parent),
     mBgPixmapItem(NULL)
 {
-    setBackgroundBrush( QBrush(QColor(100,100,100)));
+    setBackgroundBrush( QBrush(QColor(200,200,200)));
 
     /*mJoypadBgItem = new QGraphicsEllipseItem(QRectF(0,0,100,100));
     mJoypadPadItem = new QGraphicsEllipseItem(QRectF(50,50,50,50));*/
@@ -132,4 +135,6 @@ QImage QOpenCVScene::cvMatToQImage( const cv::Mat &inMat )
 QPixmap QOpenCVScene::cvMatToQPixmap( const cv::Mat &inMat )
 {
     return QPixmap::fromImage( cvMatToQImage( inMat ) );
+}
+
 }
