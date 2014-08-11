@@ -4,6 +4,9 @@
 #define DEF_WIDTH   640
 #define DEF_HEIGHT  480
 
+namespace roboctrl
+{
+
 QOpenNI2Grabber::QOpenNI2Grabber(QObject *parent) :
     QThread(parent),
     mStreams(NULL)
@@ -84,9 +87,16 @@ bool QOpenNI2Grabber::setNewVideomode(int width, int height, int fps/*=30*/  )
     return true;
 }
 
+void QOpenNI2Grabber::outputInfo( QString infoStr )
+{
+    emit newInfoString( infoStr );
+    qDebug() << infoStr;
+}
+
 bool QOpenNI2Grabber::initSensor()
 {
     mStopped = true;
+    QString infoStr;
 
     openni::Status rc = openni::STATUS_OK;
     openni::Status rcC = openni::STATUS_OK;
@@ -97,7 +107,7 @@ bool QOpenNI2Grabber::initSensor()
 
     if (rc != openni::STATUS_OK)
     {
-        qDebug() << tr("OpenNI2 initialization failed: %1").arg(openni::OpenNI::getExtendedError());
+        outputInfo( tr("OpenNI2 initialization failed: %1").arg(openni::OpenNI::getExtendedError()) );
         return false;
     }
 
@@ -106,37 +116,24 @@ bool QOpenNI2Grabber::initSensor()
     rc = mDevice.open(deviceURI);
     if (rc != openni::STATUS_OK)
     {
-        qDebug() << tr("OpenNI2: Device open failed: %1", openni::OpenNI::getExtendedError());
+        outputInfo( tr("OpenNI2: Device open failed: %1", openni::OpenNI::getExtendedError()) );
         openni::OpenNI::shutdown();
         return false;
     }
 
-    QString infoStr;
     openni::DeviceInfo info = mDevice.getDeviceInfo();
-    qDebug() << tr("================================================");    
-    qDebug() << tr("Sensor Info:");
-    infoStr = tr("Name: %1").arg( info.getName() );
-    emit newInfoString( infoStr );
-    qDebug() << infoStr;
-    infoStr = tr("Vendor: %1").arg( info.getVendor() );
-    emit newInfoString( infoStr );
-    qDebug() << infoStr;
-    infoStr = tr("USB ID: %1/%2 ").arg( info.getUsbVendorId() ).arg( info.getUsbProductId() );
-    emit newInfoString( infoStr );
-    qDebug() << infoStr;
 
+    outputInfo( tr("========================") );
+    outputInfo( tr("Sensor Info:") );
+    outputInfo( tr("Name: %1").arg( info.getName() ) );
+    outputInfo( tr("Vendor: %1").arg( info.getVendor() ) );
+    outputInfo( tr("USB ID: %1/%2 ").arg( info.getUsbVendorId() ).arg( info.getUsbProductId() ) );
 
-    // Force Synchronization
-    /*rc = mDevice.setDepthColorSyncEnabled( true );
-    if (rc != openni::STATUS_OK)
-    {
-        qDebug() << tr("OpenNI2: Depth/Color Synchronization not available").arg( openni::OpenNI::getExtendedError());
-    }*/
     // Force Registration of Depth to Color
     mDevice.setImageRegistrationMode( openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR );
     if (rc != openni::STATUS_OK)
     {
-        qDebug() << tr("OpenNI2: Depth/Color Registration not available").arg( openni::OpenNI::getExtendedError());
+        outputInfo( tr("OpenNI2: Depth/Color Registration not available").arg( openni::OpenNI::getExtendedError()) );
     }
 
     // >>>>> Creation of the streams
@@ -153,7 +150,7 @@ bool QOpenNI2Grabber::initSensor()
         rc = mDepthVs.start();
         if (rc != openni::STATUS_OK)
         {
-            qDebug() << tr("OpenNI2: Couldn't start depth stream: %1").arg( openni::OpenNI::getExtendedError());
+            outputInfo(  tr("OpenNI2: Couldn't start depth stream: %1").arg( openni::OpenNI::getExtendedError() ) );
             mDepthVs.destroy();
         }
         else
@@ -162,11 +159,11 @@ bool QOpenNI2Grabber::initSensor()
         mMinDepth = mDepthVs.getMinPixelValue();
         mMaxDepth = mDepthVs.getMaxPixelValue();
 
-        qDebug() << tr("Depth range: [%1,%2] mm").arg(mMinDepth).arg(mMaxDepth);
+        outputInfo( tr("Depth range: [%1,%2] mm").arg(mMinDepth).arg(mMaxDepth) );
     }
     else
     {
-        qDebug() << tr("OpenNI2: Couldn't find depth stream: %1").arg(openni::OpenNI::getExtendedError());
+        outputInfo( tr("OpenNI2: Couldn't find depth stream: %1").arg(openni::OpenNI::getExtendedError()) );
     }
 
     if (rcC == openni::STATUS_OK)
@@ -174,7 +171,7 @@ bool QOpenNI2Grabber::initSensor()
         rc = mRgbVs.start();
         if (rc != openni::STATUS_OK)
         {
-            qDebug() << tr("OpenNI2: Couldn't start color stream: %1").arg(openni::OpenNI::getExtendedError());
+            outputInfo( tr("OpenNI2: Couldn't start color stream: %1").arg(openni::OpenNI::getExtendedError()) );
             mRgbVs.destroy();
         }
         else
@@ -182,14 +179,14 @@ bool QOpenNI2Grabber::initSensor()
     }
     else
     {
-        qDebug() << tr("OpenNI2: Couldn't find color stream: %1").arg(openni::OpenNI::getExtendedError());
+        outputInfo( tr("OpenNI2: Couldn't find color stream: %1").arg(openni::OpenNI::getExtendedError()) );
     }
     // <<<<< Starting streams
 
     // >>>>> Working tests
     if( !mDepthVs.isValid() || !mRgbVs.isValid() )
     {
-        printf("OpenNI2: No valid streams. Exiting");
+        outputInfo( tr("OpenNI2: No valid streams. Exiting") );
         openni::OpenNI::shutdown();
         return false;
     }
@@ -214,18 +211,18 @@ bool QOpenNI2Grabber::initSensor()
             mHeight = depthHeight;
 
             if( depthVideoMode.getPixelFormat() == openni::PIXEL_FORMAT_DEPTH_1_MM )
-                qDebug() << tr("Depth unit: 1mm (16 bit unsigned) @%1FPS").arg(depthVideoMode.getFps());
+                outputInfo( tr("Depth unit: 1mm (16 bit unsigned) @%1FPS").arg(depthVideoMode.getFps()) );
 
             if( colorVideoMode.getPixelFormat() == openni::PIXEL_FORMAT_RGB888 )
-                qDebug() << tr("RGB format: RGB888 @%1FPS").arg(colorVideoMode.getFps());
+                outputInfo( tr("RGB format: RGB888 @%1FPS").arg(colorVideoMode.getFps()) );
 
-            qDebug() << tr("Depth and RGB resolution: %1x%2").arg(mWidth).arg(mHeight);
+            outputInfo( tr("Depth and RGB resolution: %1x%2").arg(mWidth).arg(mHeight) );
         }
         else
         {
-            qDebug() << tr("OpenNI2: expected color and depth to be in same resolution: D: %1x%2 C: %3x%4")
+            outputInfo( tr("OpenNI2: expected color and depth to be in same resolution: D: %1x%2 C: %3x%4")
                         .arg(depthWidth).arg(depthHeight)
-                        .arg(colorWidth).arg(colorHeight);
+                        .arg(colorWidth).arg(colorHeight) );
 
             return false;
         }
@@ -244,7 +241,7 @@ bool QOpenNI2Grabber::initSensor()
     //mCvIr16u.create(mHeight,mWidth,CV_16U);
     // <<<<< OpenCV initialization
 
-    qDebug() << tr("================================================");
+    outputInfo( tr("========================") );
 
     mBufIdx = 0;
     mDepthValid = false;
@@ -373,3 +370,6 @@ void QOpenNI2Grabber::create2dMap()
         //qDebug() << mBufIdx;
     }
 }
+
+}
+

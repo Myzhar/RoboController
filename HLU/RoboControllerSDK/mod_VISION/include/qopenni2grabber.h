@@ -12,6 +12,9 @@
 
 #define BUFFER_SIZE 10
 
+namespace roboctrl
+{
+
 class QOpenNI2Grabber : public QThread
 {
     Q_OBJECT
@@ -35,6 +38,8 @@ public:
 private:
     bool initSensor(); ///< Initializes the sensor
     void create2dMap(); ///< Creates a 2D map from depth map
+
+    void outputInfo( QString infoStr ); ///< Emit a debug string
 
 protected:
     void run() Q_DECL_OVERRIDE;
@@ -85,5 +90,7 @@ private:
     double mMaxDepth; ///< Max depth available from depth stream
     double mMinDepth; ///< Min depth available from depth stream
 };
+
+}
 
 #endif // QOPENNI2SERVER_H

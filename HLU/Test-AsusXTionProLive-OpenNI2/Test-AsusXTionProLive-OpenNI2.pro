@@ -23,10 +23,8 @@ INCLUDEPATH += $$OPENNI_PATH/Include
 LIBS += $$OPENNI_PATH/Lib/OpenNI2.lib
 
 SOURCES +=  main.cpp\
-            mainwindow.cpp \
-            qopenni2grabber.cpp
+            mainwindow.cpp
 
-HEADERS  += mainwindow.h \
-            qopenni2grabber.h
+HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui

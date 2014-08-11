@@ -12,6 +12,8 @@ Q2dMapScene::Q2dMapScene()
     mWarningDist = 1500;
     mDangerDist = 1000;
 
+    mPtSize = 21;
+
     drawGrid();
     drawAreas();
 }
@@ -74,7 +76,7 @@ void Q2dMapScene::setMap(Q2dMap& map )
 
         for( int i=0; i<map.size(); i++ )
         {
-            QGraphicsEllipseItem* newPt = addEllipse( map[i].x, map[i].z, 11, 11,
+            QGraphicsEllipseItem* newPt = addEllipse( map[i].x, map[i].z, mPtSize, mPtSize,
                                                       QPen(QColor(50,155,50)),
                                                       QBrush(QColor(155,155,50)) ) ;
             mMapPoints.push_back( newPt );

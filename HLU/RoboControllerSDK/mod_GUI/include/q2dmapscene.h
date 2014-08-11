@@ -27,6 +27,8 @@ private:
 
     qreal mWarningDist;
     qreal mDangerDist;
+
+    qreal mPtSize;
 };
 
 }

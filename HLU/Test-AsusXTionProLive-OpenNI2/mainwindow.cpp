@@ -7,7 +7,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     mOpenNI2Grabber(NULL),
     mRgbScene(NULL),
-    mDepthScene(NULL)
+    mDepthScene(NULL),
+    mScanLine(NULL)
 {
     ui->setupUi(this);
 
@@ -69,7 +70,17 @@ void MainWindow::onNewColorImage( cv::Mat bgr )
     mRgbScene->setBgImage( bgr );
 
     ui->graphicsView_rgb->fitInView(QRectF(0,0, bgr.cols, bgr.rows),
-                                          Qt::KeepAspectRatio );
+                                    Qt::KeepAspectRatio );
+
+    if( !mScanLine )
+    {
+        QRectF rgbRect = mRgbScene->sceneRect();
+        QPen pen(QColor(255,0,0,100));
+        pen.setWidth(3);
+        mScanLine = mRgbScene->addLine( 0, rgbRect.height()/2, rgbRect.width(), rgbRect.height()/2, pen );
+        mScanLine->setZValue(10000);
+    }
+
 }
 
 void MainWindow::onNewDepthImage( cv::Mat depth )
@@ -77,7 +88,7 @@ void MainWindow::onNewDepthImage( cv::Mat depth )
     mDepthScene->setBgImage( depth );
 
     ui->graphicsView_depth->fitInView(QRectF(0,0, depth.cols, depth.rows),
-                                          Qt::KeepAspectRatio );
+                                      Qt::KeepAspectRatio );
 }
 
 void MainWindow::onNew2dMap(Q2dMap *map )
@@ -87,7 +98,7 @@ void MainWindow::onNew2dMap(Q2dMap *map )
 
 void MainWindow::onNewInfoStr( QString infoStr)
 {
-    ui->textEdit_info->insertPlainText( infoStr );
+    ui->plainTextEdit_info->appendPlainText( infoStr);
 }
 
 void MainWindow::on_splitter_2_splitterMoved(int pos, int index)
@@ -95,6 +106,7 @@ void MainWindow::on_splitter_2_splitterMoved(int pos, int index)
     QRectF sceneRect = m2dMapScene->sceneRect();
     ui->graphicsView_map_2D->fitInView( -(sceneRect.width()/5), 0, sceneRect.width()/2.5, sceneRect.width()/2.5,
                                         Qt::KeepAspectRatio );
+
 }
 
 void MainWindow::on_splitter_3_splitterMoved(int pos, int index)
@@ -109,4 +121,6 @@ void MainWindow::resizeEvent(QResizeEvent *e)
     QRectF sceneRect = m2dMapScene->sceneRect();
     ui->graphicsView_map_2D->fitInView( -(sceneRect.width()/5), 0, sceneRect.width()/2.5, sceneRect.width()/2.5,
                                         Qt::KeepAspectRatio );
+
+
 }

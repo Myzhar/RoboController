@@ -42,7 +42,6 @@ private slots:
     void onNewInfoStr( QString infoStr );
 
     void on_splitter_2_splitterMoved(int pos, int index);
-
     void on_splitter_3_splitterMoved(int pos, int index);
 
 private:
@@ -53,6 +52,8 @@ private:
     QOpenCVScene* mRgbScene;
     QOpenCVScene* mDepthScene;
     Q2dMapScene* m2dMapScene;
+
+    QGraphicsLineItem* mScanLine;
 };
 
 #endif // MAINWINDOW_H
