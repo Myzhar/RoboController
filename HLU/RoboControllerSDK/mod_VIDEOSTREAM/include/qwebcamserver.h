@@ -31,7 +31,7 @@ public:
                             int listenPort=55555,
                             int udpPacketSize=1500,
                             int maxClientCount=5,
-                            QObject *parent = 0);
+                            QObject *parent = 0 );
 
     virtual ~QWebcamServer();
     

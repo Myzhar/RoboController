@@ -1,4 +1,4 @@
-#include "qopencvscene.h"
+#include <qopencvscene.h>
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsView>
@@ -14,9 +14,6 @@ QOpenCVScene::QOpenCVScene(QObject *parent) :
     mBgPixmapItem(NULL)
 {
     setBackgroundBrush( QBrush(QColor(200,200,200)));
-
-    /*mJoypadBgItem = new QGraphicsEllipseItem(QRectF(0,0,100,100));
-    mJoypadPadItem = new QGraphicsEllipseItem(QRectF(50,50,50,50));*/
 
     mJoypadBgItem = new QGraphicsPixmapItem( QPixmap(":/joypad/images/joystick_background.png") );
     mJoypadBgItem->setOffset( -50, -50);

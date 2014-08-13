@@ -6,7 +6,7 @@
 #include <QImage>
 #include <QPixmap>
 
-#include "opencv2/core/core.hpp"
+#include <opencv2/core/core.hpp>
 
 namespace roboctrl
 {
@@ -41,8 +41,6 @@ signals:
 private:    
     QGraphicsPixmapItem* mBgPixmapItem; ///< Background image
 
-    /*QGraphicsEllipseItem* mJoypadBgItem; ///< Background of the joypad
-    QGraphicsEllipseItem* mJoypadPadItem; ///< Pad of the joypad*/
     QGraphicsPixmapItem* mJoypadBgItem;
     QGraphicsPixmapItem* mJoypadThumbItem;
 };

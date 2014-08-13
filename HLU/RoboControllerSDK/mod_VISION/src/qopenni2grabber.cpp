@@ -19,7 +19,8 @@ QOpenNI2Grabber::QOpenNI2Grabber(QObject *parent) :
     m2dMapBuf.resize(BUFFER_SIZE);
 
     qRegisterMetaType<cv::Mat>("cv::Mat");
-    qRegisterMetaType<Q2dMap*>("Q2dMap*");    
+    qRegisterMetaType<Q2dMap*>("Q2dMap*");
+
     start();
 }
 
@@ -32,6 +33,37 @@ QOpenNI2Grabber::~QOpenNI2Grabber()
 
     //openni::OpenNI::shutdown();
     //qDebug() << tr("OpenNI2 deinitialized");
+}
+
+bool QOpenNI2Grabber::setNewFps( int fps )
+{
+    openni::VideoMode depthVideoMode;
+    openni::VideoMode colorVideoMode;
+
+    depthVideoMode = mDepthVs.getVideoMode();
+    colorVideoMode = mRgbVs.getVideoMode();
+
+    depthVideoMode.setFps( fps );
+    colorVideoMode.setFps( fps );
+
+    openni::Status rcD, rcC;
+
+    rcD = mDepthVs.setVideoMode( depthVideoMode );
+    rcC = mRgbVs.setVideoMode( colorVideoMode );
+
+    if(rcD != openni::STATUS_OK || rcC != openni::STATUS_OK)
+    {
+        qDebug() << tr("New Videomodes not set: %1").arg(openni::OpenNI::getExtendedError());
+        return false;
+    }
+
+    depthVideoMode = mDepthVs.getVideoMode();
+    colorVideoMode = mRgbVs.getVideoMode();
+
+    outputInfo( tr("New Depth FPS: %1").arg(depthVideoMode.getFps()) );
+    outputInfo( tr("New RGB   FPS: %1").arg(colorVideoMode.getFps()) );
+
+    return true;
 }
 
 bool QOpenNI2Grabber::setNewVideomode(int width, int height, int fps/*=30*/  )
@@ -123,7 +155,7 @@ bool QOpenNI2Grabber::initSensor()
 
     openni::DeviceInfo info = mDevice.getDeviceInfo();
 
-    outputInfo( tr("========================") );
+    outputInfo( tr("============================") );
     outputInfo( tr("Sensor Info:") );
     outputInfo( tr("Name: %1").arg( info.getName() ) );
     outputInfo( tr("Vendor: %1").arg( info.getVendor() ) );
@@ -143,6 +175,9 @@ bool QOpenNI2Grabber::initSensor()
 
     // Forcing Resolutions
     setNewVideomode( DEF_WIDTH, DEF_HEIGHT);
+
+    mRgbVs.setMirroringEnabled( false );
+    mDepthVs.setMirroringEnabled( false );
 
     // >>>>> Starting streams
     if (rcD == openni::STATUS_OK)
@@ -241,7 +276,7 @@ bool QOpenNI2Grabber::initSensor()
     //mCvIr16u.create(mHeight,mWidth,CV_16U);
     // <<<<< OpenCV initialization
 
-    outputInfo( tr("========================") );
+    outputInfo( tr("============================") );
 
     mBufIdx = 0;
     mDepthValid = false;

@@ -26,7 +26,8 @@ CONFIG(server) {
     }
 
     win32 {
-        DEFINES += _TTY_WIN_  WINVER=0x0501 __WIN32__ _WIN32_WINNT=0x0501
+        DEFINES += _TTY_WIN_  \
+                    #WINVER=0x0501 __WIN32__ _WIN32_WINNT=0x0501
         LIBS += -lsetupapi \
                 -lwsock32 \
                 -lws2_32
@@ -49,15 +50,15 @@ CONFIG(opencv)
         message(Using OpenCV for Windows)
         OPENCV_LIB_PATH = $$ROBOCONTROLLERSDKPATH/mod_EXTERN/opencv-2.4.9/bin/vc10/lib
 
-        LIBS += \
-                $$OPENCV_LIB_PATH/opencv_core249d.lib \
-                $$OPENCV_LIB_PATH/opencv_highgui249d.lib \
-                $$OPENCV_LIB_PATH/opencv_imgproc249d.lib
-
         #LIBS += \
-        #    $$OPENCV_LIB_PATH/opencv_core249.lib \
-        #    $$OPENCV_LIB_PATH/opencv_highgui249.lib \
-        #    $$OPENCV_LIB_PATH/opencv_imgproc249.lib
+        #        $$OPENCV_LIB_PATH/opencv_core249d.lib \
+        #        $$OPENCV_LIB_PATH/opencv_highgui249d.lib \
+        #        $$OPENCV_LIB_PATH/opencv_imgproc249d.lib
+
+        LIBS += \
+            $$OPENCV_LIB_PATH/opencv_core249.lib \
+            $$OPENCV_LIB_PATH/opencv_highgui249.lib \
+            $$OPENCV_LIB_PATH/opencv_imgproc249.lib
     }
 
     android {
@@ -112,5 +113,42 @@ CONFIG(gui) {
     SOURCES += \
                 $$ROBOCONTROLLERSDKPATH/mod_EXTERN/qcustomplot-1.2.0/src/qcustomplot.cpp
 }
+
+#######################################################################################
+# LIB_OPENNI
+CONFIG(openni2)
+{
+    message(Building with OpenNI2 support)
+
+    INCLUDEPATH += \
+                $$ROBOCONTROLLERSDKPATH/mod_EXTERN/OpenNI2/include
+
+    win32 {
+        message(Using OpenNI2 for Windows)
+        OPENNI2_LIB_PATH = $$ROBOCONTROLLERSDKPATH/mod_EXTERN/OpenNI2/Lib/win32
+
+        LIBS += \
+                $$OPENNI2_LIB_PATH/OpenNI2.lib
+
+        #LIBS += \
+        #    $$OPENCV_LIB_PATH/opencv_core249.lib \
+        #    $$OPENCV_LIB_PATH/opencv_highgui249.lib \
+        #    $$OPENCV_LIB_PATH/opencv_imgproc249.lib
+    }
+
+    android {
+        message(Used OpenNI2 for Android)
+
+    }
+
+    linux {
+        !android {
+            message(Used OpenNI2 for Unix)
+
+        }
+
+    }
+}
+#######################################################################################
 
 message($$CONFIG)

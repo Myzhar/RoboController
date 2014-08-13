@@ -30,7 +30,7 @@ QWebcamClient::QWebcamClient( int listenPort, int sendPort, QObject *parent) :
 
     qRegisterMetaType<cv::Mat>("cv::Mat");
 
-    connectToServer( mSendPort, mListenPort );
+    //connectToServer( mSendPort, mListenPort );
     start();
 }
 
@@ -119,7 +119,7 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
 
 void QWebcamClient::run()
 {
-    //connectToServer( mSendPort, mListenPort );
+    connectToServer( mSendPort, mListenPort );
 
     qDebug() << tr("Webcam Client Thread started");
 
@@ -156,8 +156,6 @@ void QWebcamClient::onReadyRead()
     {
         QByteArray datagram;
         datagram.resize( mUdpSocketListen->pendingDatagramSize() );
-
-
 
         QHostAddress serverAddr;
         mUdpSocketListen->readDatagram( datagram.data(), datagram.size() );

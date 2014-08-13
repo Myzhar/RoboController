@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>753</width>
-    <height>554</height>
+    <width>923</width>
+    <height>716</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,7 +34,7 @@
         <property name="minimumSize">
          <size>
           <width>320</width>
-          <height>240</height>
+          <height>320</height>
          </size>
         </property>
        </widget>
@@ -48,7 +48,7 @@
         <property name="minimumSize">
          <size>
           <width>320</width>
-          <height>240</height>
+          <height>320</height>
          </size>
         </property>
        </widget>
@@ -73,7 +73,7 @@
         <property name="minimumSize">
          <size>
           <width>480</width>
-          <height>240</height>
+          <height>320</height>
          </size>
         </property>
        </widget>
@@ -107,13 +107,13 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>320</width>
+               <width>400</width>
                <height>0</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>320</width>
+               <width>400</width>
                <height>16777215</height>
               </size>
              </property>
@@ -137,13 +137,13 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>320</width>
+               <width>400</width>
                <height>0</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>320</width>
+               <width>400</width>
                <height>16777215</height>
               </size>
              </property>
@@ -151,6 +151,18 @@
               <font>
                <pointsize>12</pointsize>
               </font>
+             </property>
+             <property name="verticalScrollBarPolicy">
+              <enum>Qt::ScrollBarAlwaysOn</enum>
+             </property>
+             <property name="horizontalScrollBarPolicy">
+              <enum>Qt::ScrollBarAsNeeded</enum>
+             </property>
+             <property name="sizeAdjustPolicy">
+              <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
+             </property>
+             <property name="lineWrapMode">
+              <enum>QPlainTextEdit::NoWrap</enum>
              </property>
             </widget>
            </item>
@@ -168,7 +180,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>753</width>
+     <width>923</width>
      <height>21</height>
     </rect>
    </property>

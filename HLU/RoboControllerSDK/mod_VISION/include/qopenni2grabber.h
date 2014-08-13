@@ -35,6 +35,8 @@ public:
      */
     bool setNewVideomode( int width, int height, int fps=30 );
 
+    bool setNewFps( int fps );
+
 private:
     bool initSensor(); ///< Initializes the sensor
     void create2dMap(); ///< Creates a 2D map from depth map
@@ -52,6 +54,7 @@ signals:
     void newInfoString( QString infoStr );
 
 public slots:
+
 
 private:
     bool mStopped; ///< Used to exit the thread loop
