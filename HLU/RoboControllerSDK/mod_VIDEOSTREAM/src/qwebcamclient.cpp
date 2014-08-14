@@ -80,7 +80,7 @@ bool QWebcamClient::connectToServer(int sendPort,int listenPort)
     // To connect to multicast server we need that the client socket is binded
     bool binded = mUdpSocketListen->bind( QHostAddress::AnyIPv4,
                                           mListenPort,
-                                          QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint );
+                                          QUdpSocket::ShareAddress/*|QUdpSocket::ReuseAddressHint*/ );
 
     // >>>> Trying connection
     if(!binded)

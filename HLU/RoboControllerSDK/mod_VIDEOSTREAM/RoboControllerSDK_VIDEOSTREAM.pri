@@ -23,9 +23,12 @@ CONFIG(opencv) {
 RESOURCES += \
     ../RoboControllerSDK/mod_VIDEOSTREAM/resources/resources.qrc
 
-HEADERS += \
-    ../RoboControllerSDK/mod_VIDEOSTREAM/include/qrgbdserver.h
+!android {
+    CONFIG(openni2) {
+        HEADERS += \
+                ../RoboControllerSDK/mod_VIDEOSTREAM/include/qrgbdserver.h
 
-SOURCES += \
-    ../RoboControllerSDK/mod_VIDEOSTREAM/src/qrgbdserver.cpp
-
+        SOURCES += \
+                ../RoboControllerSDK/mod_VIDEOSTREAM/src/qrgbdserver.cpp
+    }
+}

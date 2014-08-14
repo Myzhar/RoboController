@@ -78,9 +78,6 @@ bool QRgbdServer::connectSensor()
     mSensorConnected = true;
     mStopped = false;
 
-    qDebug() << "Connected";
-
-
     return true;
 }
 
@@ -153,7 +150,7 @@ void QRgbdServer::run()
     // >>>>> RGB Frame compression parameters
     vector<int> params;
     params.push_back(CV_IMWRITE_JPEG_QUALITY);
-    params.push_back(85);
+    params.push_back(75);
     // <<<<< RGB Frame compression parameters
 
     quint8 frameCount = 0;
@@ -176,8 +173,6 @@ void QRgbdServer::run()
     vector<uchar> compressed;
 
     setPriority( QThread::TimeCriticalPriority );
-
-    qDebug() << "Starting";
 
     // >>>>> Thread Loop
     forever

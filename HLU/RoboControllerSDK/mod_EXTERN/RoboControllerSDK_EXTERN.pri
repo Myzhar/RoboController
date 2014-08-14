@@ -116,37 +116,39 @@ CONFIG(gui) {
 
 #######################################################################################
 # LIB_OPENNI
-CONFIG(openni2)
-{
-    message(Building with OpenNI2 support)
+android {
+    CONFIG -= openni2
+    message(OpenNI2 not supported under Android)
+} else {
+    CONFIG(openni2)
+    {
+        message(Building with OpenNI2 support)
 
-    INCLUDEPATH += \
-                $$ROBOCONTROLLERSDKPATH/mod_EXTERN/OpenNI2/include
+        INCLUDEPATH += \
+                    $$ROBOCONTROLLERSDKPATH/mod_EXTERN/OpenNI2/include
 
-    win32 {
-        message(Using OpenNI2 for Windows)
-        OPENNI2_LIB_PATH = $$ROBOCONTROLLERSDKPATH/mod_EXTERN/OpenNI2/Lib/win32
+        win32 {
+            message(Using OpenNI2 for Windows)
+            OPENNI2_LIB_PATH = $$ROBOCONTROLLERSDKPATH/mod_EXTERN/OpenNI2/Lib/win32
 
-        LIBS += \
-                $$OPENNI2_LIB_PATH/OpenNI2.lib
+            LIBS += \
+                    $$OPENNI2_LIB_PATH/OpenNI2.lib
 
-        #LIBS += \
-        #    $$OPENCV_LIB_PATH/opencv_core249.lib \
-        #    $$OPENCV_LIB_PATH/opencv_highgui249.lib \
-        #    $$OPENCV_LIB_PATH/opencv_imgproc249.lib
-    }
-
-    android {
-        message(Used OpenNI2 for Android)
-
-    }
-
-    linux {
-        !android {
-            message(Used OpenNI2 for Unix)
-
+            #LIBS += \
+            #    $$OPENCV_LIB_PATH/opencv_core249.lib \
+            #    $$OPENCV_LIB_PATH/opencv_highgui249.lib \
+            #    $$OPENCV_LIB_PATH/opencv_imgproc249.lib
         }
 
+
+
+        linux {
+            !android {
+                message(Used OpenNI2 for Unix)
+
+            }
+
+        }
     }
 }
 #######################################################################################
