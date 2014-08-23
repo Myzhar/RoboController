@@ -740,6 +740,8 @@ void RoboControllerSDK::processReplyMsg( QDataStream *inStream )
             *inStream >> value;
             quint64 boardIdx = value;
 
+            Q_UNUSED(boardIdx);
+
             // qDebug() << tr( "Board Idx: %1").arg(boardIdx);
         }
         else
@@ -1298,9 +1300,8 @@ void RoboControllerSDK::onPingTimerTimeout()
     pingData << (quint16)WORD_COMWATCHDOG_TIME;
     pingData << 1; // Only one register
 
-    quint64 elapsed = QDateTime::currentDateTime().toMSecsSinceEpoch() - mLastServerReqTime;
-
-    //qDebug() << tr(" Ping RC WatchDog - Elapsed: %1").arg(elapsed);
+//    quint64 elapsed = QDateTime::currentDateTime().toMSecsSinceEpoch() - mLastServerReqTime;
+//    qDebug() << tr(" Ping RC WatchDog - Elapsed: %1").arg(elapsed);
 
     // TODO Move this request to UDP?
     sendBlockTCP( CMD_RD_MULTI_REG, pingData );

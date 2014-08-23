@@ -640,7 +640,7 @@ void QRobotServer::onTcpReadyRead()
 
 void QRobotServer::onUdpInfoServerReadyRead()
 {
-    int headerSize = 3; // [blockSize][msgIdx][msgCode] {[start_word] is ignored in block size}
+    //int headerSize = 3; // [blockSize][msgIdx][msgCode] {[start_word] is ignored in block size}
 
     quint16 msgCode;
 
