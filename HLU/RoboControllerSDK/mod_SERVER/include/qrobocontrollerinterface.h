@@ -4,6 +4,7 @@
 #include <QObject>
 #include <modbus.h>
 #include <QVector>
+#include <QMutex>
 
 namespace roboctrl
 {

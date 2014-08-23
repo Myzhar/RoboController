@@ -3,6 +3,7 @@
 #include <QThread>
 #include <rcexception.h>
 #include <loghandler.h>
+#include <errno.h>
 
 namespace roboctrl
 {
