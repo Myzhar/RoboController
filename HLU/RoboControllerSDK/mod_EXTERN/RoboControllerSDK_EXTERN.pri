@@ -120,8 +120,7 @@ android {
     CONFIG -= openni2
     message(OpenNI2 not supported under Android)
 } else {
-    CONFIG(openni2)
-    {
+    CONFIG(openni2) {
         message(Building with OpenNI2 support)
 
         INCLUDEPATH += \
@@ -140,8 +139,6 @@ android {
             #    $$OPENCV_LIB_PATH/opencv_imgproc249.lib
         }
 
-
-
         linux {
             !android {
                 message(Used OpenNI2 for Unix)
@@ -152,5 +149,3 @@ android {
     }
 }
 #######################################################################################
-
-message($$CONFIG)

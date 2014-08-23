@@ -21,6 +21,7 @@ INCLUDEPATH += \
 
 include($$ROBOCONTROLLERSDKPATH/mod_CORE/RoboControllerSDK_CORE.pri) # Core module
 include($$ROBOCONTROLLERSDKPATH/mod_VISION/RoboControllerSDK_VISION.pri) # Vision module: to be included always before GUI module
+include($$ROBOCONTROLLERSDKPATH/mod_RGBD/RoboControllerSDK_RGBD.pri) # RGBD module
 include($$ROBOCONTROLLERSDKPATH/mod_VIDEOSTREAM/RoboControllerSDK_VIDEOSTREAM.pri) # VIDEOSTREAM module
 include($$ROBOCONTROLLERSDKPATH/mod_GUI/RoboControllerSDK_GUI.pri) # GUI module
 include($$ROBOCONTROLLERSDKPATH/mod_SERVER/RoboControllerSDK_SERVER.pri) # SERVER module

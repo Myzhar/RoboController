@@ -8,7 +8,6 @@ CONFIG(opencv) {
     INCLUDEPATH += \
         $$ROBOCONTROLLERSDKPATH/mod_VIDEOSTREAM/include/
 
-
     HEADERS += \
         $$ROBOCONTROLLERSDKPATH/mod_VIDEOSTREAM/include/qwebcamserver.h \
         $$ROBOCONTROLLERSDKPATH/mod_VIDEOSTREAM/include/qwebcamclient.h
@@ -17,11 +16,8 @@ CONFIG(opencv) {
         $$ROBOCONTROLLERSDKPATH/mod_VIDEOSTREAM/src/qwebcamserver.cpp \
         $$ROBOCONTROLLERSDKPATH/mod_VIDEOSTREAM/src/qwebcamclient.cpp
 } else {
-  message(The Module VIDEOSTREAM requires VISION module to be include before in PRO file)
+  message(ERROR: The Module VIDEOSTREAM requires VISION module to be include before it in PRO file)
 }
-
-RESOURCES += \
-    ../RoboControllerSDK/mod_VIDEOSTREAM/resources/resources.qrc
 
 !android {
     CONFIG(openni2) {
@@ -30,5 +26,12 @@ RESOURCES += \
 
         SOURCES += \
                 ../RoboControllerSDK/mod_VIDEOSTREAM/src/qrgbdserver.cpp
+    } else {
+        message(Warning: The Module VIDEOSTREAM requires RGBD module to be include before it in PRO file to use OpenNI2 Grabber)
     }
 }
+
+RESOURCES += \
+    ../RoboControllerSDK/mod_VIDEOSTREAM/resources/resources.qrc
+
+
