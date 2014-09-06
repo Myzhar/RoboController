@@ -1,4 +1,4 @@
-#include "robocontroller.h"
+#include "rbctrliface.h"
 
 #include <ros/ros.h>
 #include <errno.h>
@@ -8,7 +8,10 @@
 #define WORD_TEST_BOARD 0
 #define INITIAL_REPLY_BUFFER_SIZE 20
 
-RoboController::RoboController(int boardIdx, string serialPort,
+namespace RbCtrl
+{
+
+RbCtrlIface::RbCtrlIface(int boardIdx, string serialPort,
                                int serialbaudrate, char parity,
                                int data_bit, int stop_bit, bool boardSimulation ) :
     mModbus(NULL),
@@ -27,7 +30,7 @@ RoboController::RoboController(int boardIdx, string serialPort,
     {
         // >>>>> MOD_BUS serial communication settings
 
-        ROS_INFO_STREAM( (count+1) << "Initializing connection to RoboController Id: " << mBoardIdx );
+        ROS_INFO_STREAM( (count+1) << "Initializing connection to RbCtrlIface Id: " << mBoardIdx );
 
         while( !initializeSerialModbus( serialPort.c_str(),
                                         serialbaudrate, parity, data_bit, stop_bit ) &&
@@ -38,15 +41,15 @@ RoboController::RoboController(int boardIdx, string serialPort,
 
             count++;
 	    
-	    ROS_INFO_STREAM( (count+1) << "Initializing connection to RoboController Id: " << mBoardIdx );
+	    ROS_INFO_STREAM( (count+1) << "Initializing connection to RbCtrlIface Id: " << mBoardIdx );
             ros::Duration(1).sleep(); // sleep for a second
         }
 
         if( count > 10 )
         {
-            ROS_FATAL_STREAM("* Robocontroller not connected in 10 seconds. Server not started!");
+            ROS_FATAL_STREAM("* RbCtrlIface not connected in 10 seconds. Server not started!");
 
-            // TODO stop node!!!
+            return;
         }
         // <<<<< MOD_BUS serial communication settings
 
@@ -57,15 +60,15 @@ RoboController::RoboController(int boardIdx, string serialPort,
             ROS_FATAL_STREAM( "Failed to connect to modbus on port:" << serialPort );
             ROS_FATAL_STREAM( "Server not started" );
 
-            // TODO stop node!!!
+            return;
         }
 
-        ROS_INFO_STREAM( "RoboController connected" );
+        ROS_INFO_STREAM( "RbCtrlIface connected" );
         // <<<<< Board connection
     }
     else
     {
-        ROS_INFO_STREAM( "### RoboController is working in simulated mode ###" );
+        ROS_INFO_STREAM( "### RbCtrlIface is working in simulated mode ###" );
 	
 	ros::Duration(0.5).sleep(); // sleep for half a second
 
@@ -74,7 +77,7 @@ RoboController::RoboController(int boardIdx, string serialPort,
 
 }
 
-RoboController::~RoboController()
+RbCtrlIface::~RbCtrlIface()
 {
     if( mModbus )
     {
@@ -86,7 +89,7 @@ RoboController::~RoboController()
         delete [] mReplyBuffer;
 }
 
-modbus_t* RoboController::initializeSerialModbus( const char *device,
+modbus_t* RbCtrlIface::initializeSerialModbus( const char *device,
                                                             int baud, char parity, int data_bit,
                                                             int stop_bit )
 {
@@ -107,7 +110,7 @@ modbus_t* RoboController::initializeSerialModbus( const char *device,
     return mModbus;
 }
 
-bool RoboController::connectModbus( int retryCount/*=-1*/)
+bool RbCtrlIface::connectModbus( int retryCount/*=-1*/)
 {
     // >>>>> Simulation?
     if(mSimulActive)
@@ -184,7 +187,7 @@ bool RoboController::connectModbus( int retryCount/*=-1*/)
     return true;
 }
 
-bool RoboController::testBoardConnection()
+bool RbCtrlIface::testBoardConnection()
 {
     // >>>>> Simulation?
     if(mSimulActive)
@@ -195,6 +198,9 @@ bool RoboController::testBoardConnection()
         return true;
     }
     // <<<<< Simulation?
+    
+    if( !mBoardConnected )
+        return false;
 
     uint16_t startAddr = WORD_TEST_BOARD;
     uint16_t nReg = 1;
@@ -215,7 +221,7 @@ bool RoboController::testBoardConnection()
     return true;
 }
 
-vector<uint16_t> RoboController::readMultiReg(uint16_t startAddr, uint16_t nReg)
+vector<uint16_t> RbCtrlIface::readMultiReg(uint16_t startAddr, uint16_t nReg)
 {
     // >>>>> Simulation?
     if(mSimulActive)
@@ -232,9 +238,7 @@ vector<uint16_t> RoboController::readMultiReg(uint16_t startAddr, uint16_t nReg)
                 mReplyBuffer = new uint16_t[mReplyBufSize];
             }
             // <<<<< Reply buffer resize if needed
-
-
-
+                                                       
             readRegReply.resize( nReg+2 );
 
             readRegReply[0] = (uint16_t)startAddr;
@@ -252,8 +256,14 @@ vector<uint16_t> RoboController::readMultiReg(uint16_t startAddr, uint16_t nReg)
         return readRegReply;
     }
     // <<<<< Simulation?
-
+    
     vector<uint16_t> readRegReply;
+
+    if( !mBoardConnected )
+    {
+       ROS_ERROR_STREAM( "RoboController is not connected!" );
+       return readRegReply;
+    }
 
     //mBoardMutex.lock();
     {
@@ -288,7 +298,7 @@ vector<uint16_t> RoboController::readMultiReg(uint16_t startAddr, uint16_t nReg)
     return readRegReply;
 }
 
-bool RoboController::writeMultiReg( uint16_t startAddr, uint16_t nReg,
+bool RbCtrlIface::writeMultiReg( uint16_t startAddr, uint16_t nReg,
                                               vector<uint16_t> vals )
 {
     if(mSimulActive)
@@ -301,6 +311,12 @@ bool RoboController::writeMultiReg( uint16_t startAddr, uint16_t nReg,
 
         return true;
     }
+    
+    if( !mBoardConnected )
+    {
+       ROS_ERROR_STREAM( "RoboController is not connected!" );
+       return false;
+    }
 
     //mBoardMutex.lock();
     {
@@ -308,7 +324,7 @@ bool RoboController::writeMultiReg( uint16_t startAddr, uint16_t nReg,
 
         if(res!=nReg)
         {
-            ROS_FATAL_STREAM( "modbus_write_registers error -> " <<  modbus_strerror( errno )
+            ROS_ERROR_STREAM( "modbus_write_registers error -> " <<  modbus_strerror( errno )
                                       << "[First regAddress: " << startAddr << "- #reg: " << nReg <<  "]" );
 
             //mBoardMutex.unlock();
@@ -319,4 +335,4 @@ bool RoboController::writeMultiReg( uint16_t startAddr, uint16_t nReg,
     return true;
 }
 
-
+}
