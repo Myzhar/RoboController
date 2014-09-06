@@ -79,7 +79,7 @@ public:
      * @note This function works only when @ref mMotorCtrlMode is
      *       equal to @ref mcDirectPWM, else it does nothing
      */
-     void setMotorPWMs( quint16 pwmMotor0, quint16 pwmMotor1 );
+     void setMotorPWMs(qint16 pwmMotor0, qint16 pwmMotor1 );
 
     /** @brief Sets motor PID Controllers parameters.
      *

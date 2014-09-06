@@ -1148,7 +1148,7 @@ void RoboControllerSDK::setMotorPWM(MotorPos motorIdx, int pwm )
     // <<<<< New PWM to RoboController
 }
 
-void RoboControllerSDK::setMotorPWMs( quint16 pwmMotor0, quint16 pwmMotor1 )
+void RoboControllerSDK::setMotorPWMs( qint16 pwmMotor0, qint16 pwmMotor1 )
 {
     if( mMotorCtrlMode != mcDirectPWM )
     {
