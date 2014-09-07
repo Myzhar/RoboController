@@ -14,9 +14,11 @@ catkin_package()
 # Specify locations of header files.
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_library (robocontroller_lib rbctrliface/rbctrliface.cpp)
+add_library(robocontroller_lib
+            rbctrliface/rbctrliface.cpp
+            rbctrliface/robotctrl.cpp )
 
 add_executable(robocontroller_node robocontroller_node.cpp)
 
-target_link_libraries( robocontroller_node ${catkin_LIBRARIES} robocontroller_lib modbus)
+target_link_libraries(robocontroller_node ${catkin_LIBRARIES} robocontroller_lib modbus)
 
