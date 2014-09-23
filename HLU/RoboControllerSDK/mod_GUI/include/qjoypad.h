@@ -40,6 +40,7 @@ private:
     float   mPxScaleY; ///< Scale factor on Y axis
 
     float   mMaxAxis;  ///< Max abs axis value (100) -> range [-mMaxAxis, +mMaxAxis]
+    float   mMaxRho;   ///< Max radius of the joypad
 
     QPixmap mJoyBg; ///< Background Image
     QPixmap mJoypad;   ///< Joypad paddle

@@ -95,9 +95,11 @@ void QJoypad::resizeEvent( QResizeEvent* event )
     mBgSize = newSize.width();
     mPadSize = mJoypad.width();
 
+    mMaxRho = (mBgSize-mPadSize)/2;
+
     // ---> Pixel scale according to range
-    mPxScaleX = (mMaxAxis*2.0f/*+1.0f*/)/(float)newSize.width();
-    mPxScaleY = (mMaxAxis*2.0f/*+1.0f*/)/(float)newSize.height();
+    mPxScaleX = mMaxAxis/mMaxRho;
+    mPxScaleY = mMaxAxis/mMaxRho;
     // <--- Pixel scale according to range
 
     emit newJoypadValues( 0.0, 0.0 );
@@ -119,30 +121,6 @@ void QJoypad::mousePressEvent( QMouseEvent *event )
     float posX = pos.x() - width()/2;
     mJoyRelPos.setX( posX*mPxScaleX );
 
-    float posY = (pos.y() - height()/2);
-    mJoyRelPos.setY( posY*mPxScaleY );
-
-    //    fprintf( stderr, "Rel Pos: (%g,%g)/n", posX, posY );
-    //    fflush(stderr);
-
-    update();
-
-    emit mouseButtonDown( event );
-    emit newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );
-
-    //qDebug() /*<< PREFIX*/ << "emitted mouseButtonDown( event );";
-    //qDebug() /*<< PREFIX*/ << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
-}
-
-void QJoypad::mouseMoveEvent( QMouseEvent *event )
-{
-    QPoint pos = event->pos();
-
-    //    fprintf( stderr, "Pos: (%3d,%3d)/n", (int)pos.x(), (int)pos.y());
-    //    fflush(stderr);
-
-    double minPos = (mBgSize-mPadSize)/4;
-    double maxPos = width()/2-minPos;
 
     QPointF centerWidget;
     centerWidget.setX( width()/2);
@@ -157,9 +135,58 @@ void QJoypad::mouseMoveEvent( QMouseEvent *event )
     double X = pos.x()-centerWidget.x();
     double Y = pos.y()-centerWidget.y();
 
-    if( rho>maxPos )
+    if( rho>mMaxRho )
     {
-        double ratio = maxPos/rho;
+        double ratio = mMaxRho/rho;
+
+        X *= ratio;
+        Y *= ratio;
+
+    }
+    // <<<<< Let's keep the thumb inside the Joypad area
+
+    mJoyRelPos.setX( X * mPxScaleX);
+    mJoyRelPos.setY( Y * mPxScaleY );
+
+    //    fprintf( stderr, "Rel Pos: (%g,%g)/n", posX, posY );
+    //    fflush(stderr);
+
+    update();
+
+    emit newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );
+
+    emit mouseButtonDown( event );
+
+
+    //qDebug() /*<< PREFIX*/ << "emitted mouseButtonDown( event );";
+    //qDebug() /*<< PREFIX*/ << "emitted newJoypadValues( mJoyRelPos.x(), -mJoyRelPos.y() );";
+}
+
+void QJoypad::mouseMoveEvent( QMouseEvent *event )
+{
+    QPoint pos = event->pos();
+
+    //    fprintf( stderr, "Pos: (%3d,%3d)/n", (int)pos.x(), (int)pos.y());
+    //    fflush(stderr);
+
+    
+
+    QPointF centerWidget;
+    centerWidget.setX( width()/2);
+    centerWidget.setY( height()/2 );
+
+    // >>>>> Let's keep the thumb inside the Joypad area
+    double rho = qSqrt( (centerWidget.x()-pos.x())*(centerWidget.x()-pos.x()) +
+                        (centerWidget.y()-pos.y())*(centerWidget.y()-pos.y()) );
+
+    //qDebug() << centerWidget << rho << maxPos;
+
+    double X = pos.x()-centerWidget.x();
+    double Y = pos.y()-centerWidget.y();
+
+    if( rho>mMaxRho )
+    {
+        double ratio = mMaxRho/rho;
 
         X *= ratio;
         Y *= ratio;
